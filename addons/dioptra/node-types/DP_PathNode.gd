@@ -70,3 +70,41 @@ func next_remove_from_previous_list() -> void:
 		if foundIndex != -1:
 			nextNode.previousNodes.remove_at(foundIndex);
 		pass
+		
+## Utility Functions for using DP_PathNodes Below:
+
+## Get the position along the path given parametric input:
+func get_position_from_t(t: float) -> Vector3:
+	if nextNode != null:
+		return lerp(
+			self.position + self.to * t,
+			nextNode.position + nextNode.from * (1.0 - t),
+			t);
+	return position;
+	
+## Get the position along the path given percentage of the motion:
+func get_position_from_percent(t_p: float) -> Vector3:
+	if nextNode != null:
+		# TODO: Convert from t_p to t, based entirely on this node's to and the next node's from:
+		var weighted_t : float = t_p;
+		return get_position_from_t(weighted_t);
+	return position;
+	
+## Get the direction along the path at the given parametric input, non-normalized:
+func get_direction_from_t(t: float) -> Vector3:
+	if nextNode != null:
+		return (nextNode.position - self.position) + lerp(self.to, nextNode.from, t);
+	return Vector3.FORWARD;
+
+## Get the closest parametric value on the segment to the two points.
+## The resulting value will be unclamped to test for going beyond the ends of a path.
+func get_closest_parametric(world_position : Vector3) -> float:
+	# todo: make work with curve
+	if nextNode != null:
+		var local_point := world_position - self.position;
+		# project onto segement
+		var dir := get_direction_from_t(0.0);
+		var dirlen := dir.length();
+		var t := local_point.dot(dir / dirlen) / dirlen;
+		return t
+	return 0.0;
