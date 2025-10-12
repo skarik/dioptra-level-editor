@@ -44,6 +44,9 @@ var mFloorNormal : Vector3 = Vector3(0, 1, 0);
 
 var mOnGround : bool = false;
 
+var mWasDashing := bool(false);
+var mWasGrinding := bool(false);
+
 var mGrinding : bool = false;
 var mGrindingDirection : int = 0;
 var mGrindingLastT : float = 0;
@@ -55,8 +58,10 @@ var mDisableSpeedLimitUntilGround : bool = false;
 var mModelNode : PlayerTest8ModelObject;
 var mModelRotationOffset : Quaternion;
 
-var mStablizerOffsetCamera : Vector3 = Vector3(0, 0, 0);
-var mStablizerOffsetModel : Vector3 = Vector3(0, 0, 0);
+## Stabilizers for smoothing out motion. Jumps in motion are added to these and then blended out over time.
+var mStablizerOffsetCamera := Vector3(0, 0, 0);			## Stabilizer for camera position
+var mStablizerOffsetModel := Vector3(0, 0, 0);			## Stabilizer for model position
+var mStabilizerRotateCamera := Vector4(0, 0, 0, 0); 	## Stabilizer for camera rotation
 
 @export
 var mAssetJuice : PackedScene;
@@ -103,10 +108,6 @@ func _process(delta: float):
 	mCamera.position = -forward * 4 + Vector3(0, 1, 0) + mStablizerOffsetCamera;
 	mCamera.rotation = Vector3(mForwardAngle.x, mForwardAngle.y, 0);
 	
-	mCamera.fov = cCameraBaseFOV;
-	if (mDashing):
-		mCamera.fov += cCameraDashFOV;
-	
 	# Update the motion logic
 	mSprintState.updateProcess();
 	if (mSprintState.was_disabled()):
@@ -135,11 +136,29 @@ func _process(delta: float):
 			juiceNode.rotation = Vector3(0, Vector2(mFullMotion.x, mFullMotion.z).angle_to(Vector2.RIGHT), 0);
 			get_parent().add_child(juiceNode) # probably bad
 		
+	# Update some FOV smooth-outs
+	if mGrinding != mWasGrinding:
+		mWasGrinding = mGrinding;
+		mStabilizerRotateCamera.w += cCameraDashFOV * (-1 if mGrinding else 1);
+	if mDashing != mWasDashing:
+		mWasDashing = mDashing;
+		mStabilizerRotateCamera.w += cCameraDashFOV * (-1 if mDashing else 1);
+		
 	# Update the jump logic
 	mJumpState.updateProcess();
 	if (mJumpState.was_enabled()):
 		print("jump pressed");
 		mJumpNextPhysicsFrame = true;
+		
+	# Update the camera offsets
+	mCamera.fov = cCameraBaseFOV;
+	if (mDashing):
+		mCamera.fov += cCameraDashFOV;
+	elif (mGrinding):
+		mCamera.fov += cCameraDashFOV;
+	
+	mCamera.rotation += Vector3(mStabilizerRotateCamera.x, mStabilizerRotateCamera.y, mStabilizerRotateCamera.z);
+	mCamera.fov += mStabilizerRotateCamera.w;
 		
 	# Update the model
 	# Rotation is going to be from the mFlatMotion
@@ -151,8 +170,10 @@ func _process(delta: float):
 	# Smooth out offsets:
 	var smoothWeight0 = 1.0 - exp(-8.0 * delta);
 	var smoothWeight1 = 1.0 - exp(-16.0 * delta);
+	var smoothWeight2 = 1.0 - exp(-40.0 * delta);
 	mStablizerOffsetCamera = mStablizerOffsetCamera.lerp(Vector3.ZERO, smoothWeight0);
 	mStablizerOffsetModel = mStablizerOffsetModel.lerp(Vector3.ZERO, smoothWeight1);
+	mStabilizerRotateCamera = mStabilizerRotateCamera.lerp(Vector4.ZERO, smoothWeight2);
 	
 	return
 	
@@ -303,6 +324,7 @@ func _physics_process(delta: float):
 
 func physicsProcessGrindPaths(delta: float) -> void:
 	var all_grindpathnodes := get_tree().get_nodes_in_group("grindpaths");
+	var started_grinding := bool(false);
 	
 	if not mGrinding:
 		# Find a spot to grind:
@@ -315,19 +337,24 @@ func physicsProcessGrindPaths(delta: float) -> void:
 					var path_point := pathnode.get_position_from_t(path_t);
 					var path_point_distance := (path_point - self.position).length();
 					
-					if ((path_point_distance < 0.4) and (not mOnGround) and (mFullMotion.y < 0.0)) or ((path_point_distance < 0.1) and (mFullMotion.y < 1.0)):
-						mGrinding = true;
-						mGrindingNode = pathnode;
-						
-						var path_direction := pathnode.get_direction_from_t(path_t);
+					if ((path_point_distance < 0.5) and (not mOnGround) and (mFullMotion.y < 0.0)) or ((path_point_distance < 0.25) and (mFullMotion.y < 1.0)):
+						var path_direction := pathnode.get_direction_from_t(path_t).normalized();
 						var input_direction := (mInputVector + Vector2(0, -0.001)).rotated(-mForwardAngle.y).normalized();
 						var path_facing = path_direction.dot(Vector3(input_direction.x, 0, input_direction.y));
-						if path_facing > 0.0:
-							mGrindingDirection = 1;
-						else:
-							mGrindingDirection = -1;
+						if abs(path_facing) > 0.25:
+							mGrinding = true;
+							mGrindingNode = pathnode;
+							
+							if path_facing > 0.0:
+								mGrindingDirection = 1;
+							else:
+								mGrindingDirection = -1;
 						
-						print("Starting Grind %d" % mGrindingDirection)
+							started_grinding = true;
+						
+							print("Starting Grind %d" % mGrindingDirection)
+						pass
+					pass
 				pass
 			pass
 		pass
@@ -356,6 +383,9 @@ func physicsProcessGrindPaths(delta: float) -> void:
 			
 			# Glue to the path
 			var path_point := mGrindingNode.get_position_from_t(clamp(path_t, 0.0, 1.0));
+			if (started_grinding):
+				mStablizerOffsetCamera += self.position - path_point;
+				mStablizerOffsetModel += self.position - path_point;
 			self.position = path_point;
 			
 			# Move along the path
