@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3 uid="uid://dv2r1m7pkr224"]
+
+[ext_resource type="Script" uid="uid://dtceo6uyw02ss" path="res://addons/Test4-Editor/TTFPButtonHello.gd" id="1_cc7cu"]
+
+[node name="Dock" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 0
+offset_right = 128.0
+offset_bottom = 64.0
+text = "pls click"
+script = ExtResource("1_cc7cu")

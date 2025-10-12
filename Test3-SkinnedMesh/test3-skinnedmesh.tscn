@@ -1,0 +1,37 @@
+[gd_scene load_steps=7 format=3 uid="uid://cjy8tx7xd70c6"]
+
+[ext_resource type="Material" uid="uid://bfnku5ov610sb" path="res://asset/dev/devmat256x256.tres" id="1_paut8"]
+[ext_resource type="PackedScene" uid="uid://bouky3w2pfpus" path="res://Test3-SkinnedMesh/character_lowpoly_v_1.tscn" id="2_j338t"]
+[ext_resource type="PackedScene" uid="uid://btsucy2fb4vxr" path="res://Test3-SkinnedMesh/alana_lowpoly.tscn" id="3_mki5w"]
+[ext_resource type="PackedScene" uid="uid://chxiqhw1cx76t" path="res://asset/tests/anim test 1.glb" id="4_y70f3"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_j338t"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_mki5w"]
+size = Vector3(1, 1, 0.10083)
+
+[node name="Node3D" type="Node3D"]
+
+[node name="Plane" type="MeshInstance3D" parent="."]
+transform = Transform3D(16.1042, 0, 0, 0, -7.02495e-07, 10, 0, -16.0712, -4.37114e-07, 0, 0, 0)
+material_override = ExtResource("1_paut8")
+mesh = SubResource("QuadMesh_j338t")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Plane"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Plane/StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.22045e-16, -0.050415)
+shape = SubResource("BoxShape3D_mki5w")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.745418, 0.598115, -0.294296, 0, 0.44149, 0.897266, 0.666598, 0.668838, -0.329095, 0, 3.2613, 0)
+shadow_enabled = true
+
+[node name="character lowpoly v2" parent="." instance=ExtResource("2_j338t")]
+transform = Transform3D(-0.5, 0, 0.866025, 0, 1, 0, -0.866025, 0, -0.5, 0, 0, 0)
+
+[node name="alana lowpoly" parent="." instance=ExtResource("3_mki5w")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -1, 0, 0)
+
+[node name="anim test 1" parent="." instance=ExtResource("4_y70f3")]
+transform = Transform3D(0.258819, 0, 0.965926, 0, 1, 0, -0.965926, 0, 0.258819, -3, -0.0407944, 0)

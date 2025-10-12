@@ -1,0 +1,119 @@
+[gd_scene load_steps=12 format=3 uid="uid://brqwtcim30lp2"]
+
+[ext_resource type="Script" uid="uid://dffv8mro3ogei" path="res://Test1-Camera/juice-test-delete-on-timeout.gd" id="1_0aow8"]
+[ext_resource type="Material" uid="uid://dtgue24ipg8x2" path="res://Test1-Camera/test1-particle-juice-mat.tres" id="1_e1b1y"]
+[ext_resource type="Script" uid="uid://cfojj3rv5rkuu" path="res://Test1-Camera/juice-test-enable-on-ready.gd" id="3_nqsm7"]
+[ext_resource type="Material" uid="uid://3t76w4tjat24" path="res://Test1-Camera/test1-particle-juice-mat2.tres" id="4_gsd0c"]
+[ext_resource type="Shader" uid="uid://ygvub7yfc1hl" path="res://Test1-Camera/animMeshTest1.gdshader" id="5_1po7k"]
+[ext_resource type="Texture2D" uid="uid://6qkvcgrp7v8" path="res://asset/fx/puffanimatio.png" id="6_yqf1b"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_h7vq3"]
+
+[sub_resource type="Curve" id="Curve_e1b1y"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.93956, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -4.4868, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="Gradient" id="Gradient_0aow8"]
+offsets = PackedFloat32Array(0, 0.975, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="QuadMesh" id="QuadMesh_gsd0c"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_mliao"]
+render_priority = 0
+shader = ExtResource("5_1po7k")
+shader_parameter/mainTexture = ExtResource("6_yqf1b")
+shader_parameter/sheetRows = 4
+shader_parameter/sheetColumns = 6
+shader_parameter/sheetFrames = 24
+shader_parameter/textureRotation = -90.0
+
+[node name="Test1-visdev" type="Node3D"]
+script = ExtResource("1_0aow8")
+
+[node name="PuffA" type="CPUParticles3D" parent="."]
+visible = false
+material_override = ExtResource("1_e1b1y")
+emitting = false
+lifetime = 0.7
+one_shot = true
+explosiveness = 0.87
+randomness = 1.0
+lifetime_randomness = 0.4
+mesh = SubResource("QuadMesh_h7vq3")
+particle_flag_align_y = true
+direction = Vector3(1, 0.3, 0)
+spread = 36.15
+flatness = 0.39
+gravity = Vector3(0, 0, 0)
+initial_velocity_min = 2.0
+initial_velocity_max = 4.0
+damping_min = 6.0
+damping_max = 6.0
+scale_amount_min = 0.7
+scale_amount_max = 0.7
+scale_amount_curve = SubResource("Curve_e1b1y")
+color_ramp = SubResource("Gradient_0aow8")
+script = ExtResource("3_nqsm7")
+
+[node name="PuffB" type="CPUParticles3D" parent="."]
+visible = false
+material_override = ExtResource("4_gsd0c")
+lifetime = 0.7
+explosiveness = 0.87
+randomness = 1.0
+lifetime_randomness = 0.4
+mesh = SubResource("QuadMesh_gsd0c")
+particle_flag_align_y = true
+direction = Vector3(1, 0.3, 0)
+spread = 36.15
+flatness = 0.39
+gravity = Vector3(0, 0, 0)
+initial_velocity_min = 2.0
+initial_velocity_max = 4.0
+damping_min = 6.0
+damping_max = 6.0
+scale_amount_min = 0.7
+scale_amount_max = 0.7
+scale_amount_curve = SubResource("Curve_e1b1y")
+color_ramp = SubResource("Gradient_0aow8")
+anim_speed_min = 1.0
+anim_speed_max = 1.0
+script = ExtResource("3_nqsm7")
+
+[node name="PuffB-2" type="CPUParticles3D" parent="."]
+material_override = SubResource("ShaderMaterial_mliao")
+emitting = false
+lifetime = 0.7
+one_shot = true
+explosiveness = 0.87
+randomness = 1.0
+lifetime_randomness = 0.4
+mesh = SubResource("QuadMesh_gsd0c")
+particle_flag_align_y = true
+direction = Vector3(1, 0.3, 0)
+spread = 36.15
+flatness = 0.39
+gravity = Vector3(0, 0, 0)
+initial_velocity_min = 2.0
+initial_velocity_max = 4.0
+damping_min = 6.0
+damping_max = 6.0
+scale_amount_curve = SubResource("Curve_e1b1y")
+color_ramp = SubResource("Gradient_0aow8")
+anim_speed_min = 1.0
+anim_speed_max = 1.0
+script = ExtResource("3_nqsm7")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.745418, 0.598115, -0.294296, 0, 0.44149, 0.897266, 0.666598, 0.668838, -0.329095, 0, 3.2613, 0)
+visible = false
+shadow_enabled = true
+
+[node name="Timer" type="Timer" parent="."]
+
+[connection signal="ready" from="." to="." method="_on_ready"]
+[connection signal="ready" from="PuffA" to="PuffA" method="_on_ready"]
+[connection signal="ready" from="PuffB" to="PuffB" method="_on_ready"]
+[connection signal="ready" from="PuffB-2" to="PuffB-2" method="_on_ready"]
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

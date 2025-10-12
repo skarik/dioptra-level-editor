@@ -1,0 +1,8 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://blwlx5br60wqn"]
+
+[resource]
+cull_mode = 2
+albedo_color = Color(0, 0, 0, 1)
+emission_enabled = true
+emission = Color(0.889397, 1.92523e-07, 0.49396, 1)
+point_size = 128.0

@@ -1,0 +1,15 @@
+[gd_scene load_steps=4 format=3 uid="uid://bouky3w2pfpus"]
+
+[ext_resource type="PackedScene" uid="uid://da1jsnjmi4tl5" path="res://asset/alana/character lowpoly v1.glb" id="1_gusm1"]
+[ext_resource type="Texture2D" uid="uid://bt3dcxphoyiaq" path="res://asset/dev/devtex128x128b.png" id="2_gusm1"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lkohr"]
+shading_mode = 2
+albedo_texture = ExtResource("2_gusm1")
+emission_enabled = true
+emission = Color(0.0792095, 0.0792095, 0.0792095, 1)
+
+[node name="character lowpoly v1" instance=ExtResource("1_gusm1")]
+
+[node name="Cube" parent="." index="0"]
+material_override = SubResource("StandardMaterial3D_lkohr")

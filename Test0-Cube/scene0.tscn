@@ -1,0 +1,24 @@
+[gd_scene load_steps=4 format=3 uid="uid://51gxo2nm83a8"]
+
+[ext_resource type="Script" uid="uid://c2i0dxrllbgfw" path="res://Test0-Cube/cube_test.gd" id="1_2ggq2"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_mpjw5"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_2ggq2"]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="CubeTest" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.723284, 0)
+mesh = SubResource("BoxMesh_mpjw5")
+script = ExtResource("1_2ggq2")
+
+[node name="Camera3D" type="Camera3D" parent="CubeTest"]
+transform = Transform3D(0.311243, 0.510076, -0.801842, 0.0626105, 0.830911, 0.552871, 0.948266, -0.222281, 0.226679, -4.68784, 2.17918, 2.13798)
+
+[node name="OmniLight3D" type="OmniLight3D" parent="CubeTest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1654, 0)
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="."]
+transform = Transform3D(10, 0, 0, 0, -4.37114e-07, 10, 0, -10, -4.37114e-07, 0, 0, 0)
+mesh = SubResource("QuadMesh_2ggq2")

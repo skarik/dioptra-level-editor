@@ -1,0 +1,86 @@
+[gd_scene load_steps=10 format=3 uid="uid://d4lq0s04mjh6a"]
+
+[ext_resource type="Material" uid="uid://bfnku5ov610sb" path="res://asset/dev/devmat256x256.tres" id="2_v4eo4"]
+[ext_resource type="Texture2D" uid="uid://dgcndo07si00m" path="res://asset/dev/devtex64x64c.png" id="3_4k3ke"]
+[ext_resource type="Script" uid="uid://bs5vuriffbx30" path="res://addons/dioptra/node-types/DP_PathNode.gd" id="3_v4eo4"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_eh35v"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_rtkhi"]
+size = Vector3(1, 1, 0.10083)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hngbt"]
+albedo_texture = ExtResource("3_4k3ke")
+uv1_scale = Vector3(0.5, 0.5, 0.5)
+uv1_triplanar = true
+uv1_world_triplanar = true
+texture_filter = 0
+
+[sub_resource type="BoxMesh" id="BoxMesh_pn6gi"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_cpl46"]
+
+[sub_resource type="Curve3D" id="Curve3D_506ku"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 2.09952, 0, 0, 2.045, 0, 0, -2.58, 0, 0, -0.383736, 1.14428, 0.0229786, 0, 0, 0, 0, 0, 0, -3.24779, 0.278745, 0),
+"tilts": PackedFloat32Array(0, 0, 0)
+}
+point_count = 3
+
+[node name="TestScene" type="Node3D"]
+
+[node name="Plane" type="MeshInstance3D" parent="."]
+transform = Transform3D(16.1042, 0, 0, 0, -7.02495e-07, 10, 0, -16.0712, -4.37114e-07, 0, 0, 0)
+visible = false
+material_override = ExtResource("2_v4eo4")
+mesh = SubResource("QuadMesh_eh35v")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Plane"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Plane/StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.22045e-16, -0.050415)
+shape = SubResource("BoxShape3D_rtkhi")
+
+[node name="Box" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -3.49632, 0.509016, -3.28441)
+material_override = SubResource("StandardMaterial3D_hngbt")
+mesh = SubResource("BoxMesh_pn6gi")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Box"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Box/StaticBody3D"]
+shape = SubResource("BoxShape3D_cpl46")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.745418, 0.598115, -0.294296, 0, 0.44149, 0.897266, 0.666598, 0.668838, -0.329095, 0, 3.2613, 0)
+shadow_enabled = true
+directional_shadow_split_1 = 0.05
+
+[node name="Path3D" type="Path3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.89055, 10.1127)
+curve = SubResource("Curve3D_506ku")
+
+[node name="DP_PathNode" type="Node3D" parent="." node_paths=PackedStringArray("nextNode")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.35202, 4.44766, 1.17959)
+script = ExtResource("3_v4eo4")
+to = Vector3(0, -2.545, 0)
+nextNode = NodePath("../DP_PathNode2")
+metadata/_custom_type_script = "uid://bs5vuriffbx30"
+
+[node name="DP_PathNode2" type="Node3D" parent="." node_paths=PackedStringArray("nextNode")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.59195, 3.5391, 2.42387)
+script = ExtResource("3_v4eo4")
+to = Vector3(-4.89, 1.74, 0)
+nextNode = NodePath("../DP_PathNode3")
+metadata/_custom_type_script = "uid://bs5vuriffbx30"
+
+[node name="DP_PathNode3" type="Node3D" parent="." node_paths=PackedStringArray("nextNode")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.58583, 3.75084, -1.48034)
+script = ExtResource("3_v4eo4")
+nextNode = NodePath("../DP_PathNode4")
+metadata/_custom_type_script = "uid://bs5vuriffbx30"
+
+[node name="DP_PathNode4" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.72702, 3.75084, -3.72418)
+script = ExtResource("3_v4eo4")
+metadata/_custom_type_script = "uid://bs5vuriffbx30"

@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3 uid="uid://btsucy2fb4vxr"]
+
+[ext_resource type="PackedScene" uid="uid://b2qq4q12aqvsu" path="res://asset/alana/alana lowpoly.glb" id="1_dekla"]
+[ext_resource type="Material" uid="uid://cjyutbx5t61r3" path="res://asset/alana/mat.alana.bod.material" id="2_dekla"]
+[ext_resource type="Material" uid="uid://byihydjlcjge" path="res://asset/alana/mat.alana.coat.material" id="3_hq36o"]
+
+[node name="alana lowpoly" instance=ExtResource("1_dekla")]
+
+[node name="alana_bod" parent="." index="0"]
+material_override = ExtResource("2_dekla")
+
+[node name="alana_hair" parent="." index="1"]
+material_override = ExtResource("2_dekla")
+
+[node name="alana_clothes" parent="." index="2"]
+material_override = ExtResource("3_hq36o")
+
+[node name="alana_timeye" parent="." index="3"]
+material_override = ExtResource("2_dekla")

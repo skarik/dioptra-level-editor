@@ -1,0 +1,10 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://d63tohh5sfq5"]
+
+[ext_resource type="Texture2D" uid="uid://dpa077l7f6ndk" path="res://asset/dev/devtex128x128.png" id="1_qjil7"]
+
+[resource]
+albedo_texture = ExtResource("1_qjil7")
+uv1_scale = Vector3(0.25, 0.25, 0.25)
+uv1_triplanar = true
+uv1_world_triplanar = true
+texture_filter = 0

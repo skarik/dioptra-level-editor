@@ -1,0 +1,6 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://d4dur281hhpvp"]
+
+[resource]
+cull_mode = 2
+albedo_color = Color(0, 0, 0, 1)
+emission_enabled = true

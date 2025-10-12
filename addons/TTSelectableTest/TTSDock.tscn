@@ -1,0 +1,32 @@
+[gd_scene load_steps=2 format=3 uid="uid://bcjq2w6y65uvs"]
+
+[ext_resource type="Script" uid="uid://bwsdgl2260d12" path="res://addons/TTSelectableTest/TTSDock.gd" id="1_dvx8b"]
+
+[node name="Selectable Test" type="Control"]
+layout_direction = 2
+layout_mode = 3
+anchors_preset = 0
+size_flags_horizontal = 2
+size_flags_vertical = 2
+script = ExtResource("1_dvx8b")
+
+[node name="ActionHFlow" type="HFlowContainer" parent="."]
+layout_direction = 2
+layout_mode = 1
+offset_right = 92.0
+offset_bottom = 93.0
+
+[node name="Label" type="Label" parent="ActionHFlow"]
+layout_mode = 2
+text = "Selectables!"
+
+[node name="Button" type="Button" parent="ActionHFlow"]
+layout_mode = 2
+text = "Make Item"
+
+[node name="Button2" type="Button" parent="ActionHFlow"]
+layout_mode = 2
+text = "Reset"
+
+[connection signal="pressed" from="ActionHFlow/Button" to="." method="input_makeItem"]
+[connection signal="pressed" from="ActionHFlow/Button2" to="." method="input_reset"]

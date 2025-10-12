@@ -1,0 +1,57 @@
+[gd_scene load_steps=7 format=3 uid="uid://vt51ji0nacvw"]
+
+[ext_resource type="Material" uid="uid://blwlx5br60wqn" path="res://Test2-Textbox/test2-ui-material.tres" id="1_1dln0"]
+[ext_resource type="FontFile" uid="uid://bhsvkv7k5ckrh" path="res://Test2-Textbox/PermanentMarker-Regular.ttf" id="2_6qwxj"]
+[ext_resource type="FontFile" uid="uid://c2866qciktke3" path="res://Test2-Textbox/Mina-Regular.ttf" id="3_iavxx"]
+[ext_resource type="Material" uid="uid://d4dur281hhpvp" path="res://Test2-Textbox/test2-ui-material-2.tres" id="4_iavxx"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_klehj"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_6qwxj"]
+
+[node name="Test2-textbox" type="Node3D"]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1.00053, 0, 0, 0, 1.00053, 0, 0, 0, 1.00053, -0.00131178, 1.61573, 2.89553)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.998549, 0)
+mesh = SubResource("CapsuleMesh_klehj")
+
+[node name="Textbox" type="Node3D" parent="."]
+transform = Transform3D(1, 7.99297e-05, 0.000478295, 0.000478412, -0.00145735, -0.999999, -7.92251e-05, 0.999999, -0.00145739, 0, 1.50456, 0.774738)
+
+[node name="Backplane" type="MeshInstance3D" parent="Textbox"]
+transform = Transform3D(0.981288, 0, -0.00402737, 0, 1, 0, 0.0134453, 0, 0.293933, 0, 0, 0)
+material_override = ExtResource("1_1dln0")
+mesh = SubResource("PlaneMesh_6qwxj")
+skeleton = NodePath("../..")
+
+[node name="textName" type="Label3D" parent="Textbox"]
+transform = Transform3D(0.99765, -0.0685203, 7.27596e-12, -2.99199e-09, -4.35524e-08, 1, -0.0685203, -0.99765, -4.37722e-08, -0.892351, 0.0938093, -0.174782)
+modulate = Color(0.890196, 0.0431373, 0.498039, 1)
+outline_modulate = Color(1, 1, 1, 1)
+text = "MICHI"
+font = ExtResource("2_6qwxj")
+horizontal_alignment = 0
+vertical_alignment = 2
+
+[node name="textWords" type="Label3D" parent="Textbox"]
+transform = Transform3D(1, 1.48148e-11, 7.27596e-12, 7.27596e-12, -4.36557e-08, 1, 6.84963e-12, -1, -4.37722e-08, -0.828709, 0.0526714, 0.105195)
+text = "What's up babygirl~"
+font = ExtResource("3_iavxx")
+horizontal_alignment = 0
+vertical_alignment = 2
+
+[node name="Backplane2" type="MeshInstance3D" parent="Textbox"]
+transform = Transform3D(0.906455, -0.00399407, -0.0410597, 0.00791489, 0.998987, 0.0172249, 0.0956564, -0.0448107, 0.387662, -0.00207909, -0.126756, 0.00237203)
+material_override = ExtResource("4_iavxx")
+mesh = SubResource("PlaneMesh_6qwxj")
+skeleton = NodePath("../..")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.915037, 0, -0.40337, 0.394152, 0.212553, 0.894128, 0.0857374, -0.97715, 0.194494, 0, 3.23395, 0)
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.38276, 0.998549, 1.60634)
+mesh = SubResource("CapsuleMesh_klehj")

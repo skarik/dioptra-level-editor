@@ -1,0 +1,34 @@
+[gd_scene load_steps=5 format=3 uid="uid://cr4373pn4yj0f"]
+
+[ext_resource type="Script" uid="uid://bty15sj56yu68" path="res://Test1-Camera/player_test3_motion2.gd" id="1_43eiv"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_xcxw5"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_43eiv"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_xcxw5"]
+
+[node name="Test1-camera-movement" type="Node3D"]
+
+[node name="Plane" type="MeshInstance3D" parent="."]
+transform = Transform3D(10, 0, 0, 0, -4.37114e-07, 10, 0, -10, -4.37114e-07, 0, 0, 0)
+mesh = SubResource("QuadMesh_xcxw5")
+
+[node name="Box" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -2.9705, 0.509016, -2.54318)
+mesh = SubResource("BoxMesh_43eiv")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.745418, 0.598115, -0.294296, 0, 0.44149, 0.897266, 0.666598, 0.668838, -0.329095, 0, 3.2613, 0)
+shadow_enabled = true
+
+[node name="PlayerTest" type="Node3D" parent="."]
+script = ExtResource("1_43eiv")
+
+[node name="PlayerModel" type="MeshInstance3D" parent="PlayerTest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.01467, 0)
+mesh = SubResource("CapsuleMesh_xcxw5")
+skeleton = NodePath("../..")
+
+[node name="Camera3D" type="Camera3D" parent="PlayerTest"]
+transform = Transform3D(1, 0, 0, 0, 0.985592, 0.169143, 0, -0.169143, 0.985592, 0, 2.35517, 2.92341)
