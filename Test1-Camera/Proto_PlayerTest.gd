@@ -16,10 +16,14 @@ const cCameraBaseFOV = 75.0;
 const cCameraDashFOV = +10.0;
 
 var mCamera : Camera3D;
-# Stores pitch & yaw
-var mForwardAngle : Vector2 = Vector2(0, 0);
-# Actual forward direction pulled from forward angle
-var mForwardDirection : Vector2 = Vector2(0, 0);
+## Stores pitch & yaw
+var mCameraForwardAngle := Vector2.ZERO;
+## Actual forward direction pulled from forward angle
+var mCameraForwardDirection := Vector2.ZERO;
+## Camera offset of what we're following
+var mCameraFollowOffset := Vector3.ZERO;
+
+var mCameraFollowOffsetBlended := Vector3.ZERO;
 
 var mInputVector : Vector2 = Vector2(0, 0);
 
@@ -66,10 +70,10 @@ var mStabilizerRotateCamera := Vector4(0, 0, 0, 0); 	## Stabilizer for camera ro
 @export
 var mAssetJuice : PackedScene;
 
-func clampInputs():
-	mForwardAngle.x = clamp(mForwardAngle.x, deg_to_rad(-100.0), deg_to_rad(100.0));
+func clampInputs() -> void:
+	mCameraForwardAngle.x = clamp(mCameraForwardAngle.x, deg_to_rad(-100.0), deg_to_rad(100.0));
 
-func _ready():
+func _ready() -> void:
 	mCamera = get_node("Camera3D") as Camera3D;
 	mModelNode = get_node("alana lowpoly") as PlayerTest8ModelObject;
 	assert(mCamera != null);
@@ -78,11 +82,11 @@ func _ready():
 	mModelRotationOffset = mModelNode.quaternion;
 	return
 
-func _unhandled_input(event: InputEvent):
+func _unhandled_input(event: InputEvent) -> void:
 	if (event is InputEventMouseMotion):
 		const rotationSpeed = PI / 180.0 * 0.5; #todo: make 0.5 sensitivity value
-		mForwardAngle.y -= event.screen_relative.x * rotationSpeed;
-		mForwardAngle.x -= event.screen_relative.y * rotationSpeed;
+		mCameraForwardAngle.y -= event.screen_relative.x * rotationSpeed;
+		mCameraForwardAngle.x -= event.screen_relative.y * rotationSpeed;
 		clampInputs();
 	elif (event.is_action("action_sprint")):
 		if (event.is_pressed() and not event.is_echo()):
@@ -97,16 +101,52 @@ func _unhandled_input(event: InputEvent):
 			mJumpState.updateValue(false);
 	return
 
-func _process(delta: float):
+func _process(delta: float) -> void:
 	# Update the forward direction
-	mForwardDirection = Vector2.UP.rotated(-mForwardAngle.y);
+	mCameraForwardDirection = Vector2.UP.rotated(-mCameraForwardAngle.y);
 	
-	var forward = Vector3.FORWARD \
-		.rotated(Vector3.RIGHT, mForwardAngle.x) \
-		.rotated(Vector3.UP, mForwardAngle.y);
+	var forward := Vector3.FORWARD \
+		.rotated(Vector3.RIGHT, mCameraForwardAngle.x) \
+		.rotated(Vector3.UP, mCameraForwardAngle.y);
 	
-	mCamera.position = -forward * 4 + Vector3(0, 1, 0) + mStablizerOffsetCamera;
-	mCamera.rotation = Vector3(mForwardAngle.x, mForwardAngle.y, 0);
+	var cameraCenterPosition := Vector3(0, 1, 0) + mStablizerOffsetCamera;
+	mCamera.position = -forward * 4 + cameraCenterPosition;
+	mCamera.rotation = Vector3(mCameraForwardAngle.x, mCameraForwardAngle.y, 0);
+
+	# Blend in mCameraFollowOffsetBlended
+	var smoothWeightC := 1.0 - exp(-8.0 * delta);
+	mCameraFollowOffsetBlended = mCameraFollowOffsetBlended.lerp(mCameraFollowOffset, smoothWeightC);
+	
+	# Move the camera towards mCameraFollowOffset, but limit it to a plane behind the player
+	var cameraPositionLimit := Plane(-forward, -forward * 2 + cameraCenterPosition);
+	var limitPoint = cameraPositionLimit.intersects_segment(mCamera.position, mCamera.position + mCameraFollowOffsetBlended);
+	if limitPoint != null:
+		mCamera.position = limitPoint;
+	else:
+		mCamera.position += mCameraFollowOffsetBlended;
+		
+	# Now rotate towards mCameraFollowOffset
+	mCamera.transform = mCamera.transform.looking_at(cameraCenterPosition + mCameraFollowOffsetBlended, Vector3.UP);
+	
+	# Limit the camera to a cone behind the player
+	var cameraLocalForward := mCamera.transform.basis * Vector3.FORWARD;
+	var cameraPositionCone := -(mCamera.position - cameraCenterPosition);
+	var cameraPositionConeLen := cameraPositionCone.length();
+	var cameraPositionConeAngle := cameraLocalForward.angle_to(cameraPositionCone / cameraPositionConeLen); # forward here needs to be the angle of the camera
+	var cameraPositionConeAngleOver : float = max(0.0, cameraPositionConeAngle / deg_to_rad(mCamera.fov * 0.5) - 1.0);
+	#var cameraPositionConeAngleOver : float = 1.0;
+	var cameraPositionFinalCone := cameraLocalForward.lerp(cameraPositionCone / cameraPositionConeLen, max(0.0, 1.0 - cameraPositionConeAngleOver));
+	mCamera.position = cameraCenterPosition - cameraPositionFinalCone * cameraPositionConeLen;
+		
+	# Limit the distance of the camera from the player
+	var cameraPositionVVec := (mCamera.position - cameraCenterPosition);
+	var cameraPositionVVecLen := cameraPositionVVec.length();
+	var cameraPositionVVecMaxLen = max(4.0, mCameraFollowOffsetBlended.length() + 0.5);
+	if (cameraPositionVVecLen > cameraPositionVVecMaxLen):
+		mCamera.position = cameraCenterPosition + cameraPositionVVec.normalized() * cameraPositionVVecMaxLen;
+	
+	# Now rotate towards mCameraFollowOffset
+	mCamera.transform = mCamera.transform.interpolate_with(mCamera.transform.looking_at(cameraCenterPosition + mCameraFollowOffsetBlended, Vector3.UP), 0.7);
 	
 	# Update the motion logic
 	mSprintState.updateProcess();
@@ -116,11 +156,11 @@ func _process(delta: float):
 		if (mSprintPressTime < cTapTime):
 			mDashing = true;
 			mDashingTime = 0.0;
-			mDashingDirection = (mInputVector + Vector2(0, -0.001)).rotated(-mForwardAngle.y).normalized();
+			mDashingDirection = (mInputVector + Vector2(0, -0.001)).rotated(-mCameraForwardAngle.y).normalized();
 			
 			var juiceNode : Node3D = mAssetJuice.instantiate()
 			juiceNode.position = position
-			juiceNode.rotation = Vector3(0, mForwardAngle.y + (-mDashingDirection).angle_to(Vector2.RIGHT), 0);
+			juiceNode.rotation = Vector3(0, mCameraForwardAngle.y + (-mDashingDirection).angle_to(Vector2.RIGHT), 0);
 			get_parent().add_child(juiceNode) # probably bad
 			
 	elif (mSprintState.is_enabled()):
@@ -168,21 +208,21 @@ func _process(delta: float):
 	mModelNode.position = mStablizerOffsetModel;
 	
 	# Smooth out offsets:
-	var smoothWeight0 = 1.0 - exp(-8.0 * delta);
-	var smoothWeight1 = 1.0 - exp(-16.0 * delta);
-	var smoothWeight2 = 1.0 - exp(-40.0 * delta);
+	var smoothWeight0 := 1.0 - exp(-8.0 * delta);
+	var smoothWeight1 := 1.0 - exp(-16.0 * delta);
+	var smoothWeight2 := 1.0 - exp(-40.0 * delta);
 	mStablizerOffsetCamera = mStablizerOffsetCamera.lerp(Vector3.ZERO, smoothWeight0);
 	mStablizerOffsetModel = mStablizerOffsetModel.lerp(Vector3.ZERO, smoothWeight1);
 	mStabilizerRotateCamera = mStabilizerRotateCamera.lerp(Vector4.ZERO, smoothWeight2);
 	
 	return
 	
-func _physics_process(delta: float):
+func _physics_process(delta: float) -> void:
 	# Get motion input impulse from the input & camera angle
 	mInputVector = Vector2(
 		Input.get_axis("move_left", "move_right"),
 		-Input.get_axis("move_back", "move_forward")).normalized();
-	var rotatedInputVector : Vector2 = mInputVector.rotated(-mForwardAngle.y);
+	var rotatedInputVector : Vector2 = mInputVector.rotated(-mCameraForwardAngle.y);
 	
 	#var floorX : Vector3 = Vector3(1, 0, 0);
 	#var floorZ : Vector3 = floorX.cross(mFloorNormal);
@@ -322,7 +362,7 @@ func _physics_process(delta: float):
 	
 	return
 
-func physicsProcessGrindPaths(delta: float) -> void:
+func physicsProcessGrindPaths(_delta: float) -> void:
 	var all_grindpathnodes := get_tree().get_nodes_in_group("grindpaths");
 	var started_grinding := bool(false);
 	
@@ -339,8 +379,8 @@ func physicsProcessGrindPaths(delta: float) -> void:
 					
 					if ((path_point_distance < 0.5) and (not mOnGround) and (mFullMotion.y < 0.0)) or ((path_point_distance < 0.25) and (mFullMotion.y < 1.0)):
 						var path_direction := pathnode.get_direction_from_t(path_t).normalized();
-						var input_direction := (mInputVector + Vector2(0, -0.001)).rotated(-mForwardAngle.y).normalized();
-						var path_facing = path_direction.dot(Vector3(input_direction.x, 0, input_direction.y));
+						var input_direction := (mInputVector + Vector2(0, -0.001)).rotated(-mCameraForwardAngle.y).normalized();
+						var path_facing := path_direction.dot(Vector3(input_direction.x, 0, input_direction.y));
 						if abs(path_facing) > 0.25:
 							mGrinding = true;
 							mGrindingNode = pathnode;
@@ -390,11 +430,30 @@ func physicsProcessGrindPaths(delta: float) -> void:
 			
 			# Move along the path
 			mFullMotion = mGrindingNode.get_direction_from_t(path_t).normalized() * cGrindSpeed * mGrindingDirection;
+			
+			# Follow the path ahead
+			var future_path_point : Vector3;
+			var cLookahead = 0.5 if (mGrindingDirection > 0) else -0.5;
+			if (path_t + cLookahead < 0.0) or (path_t + cLookahead > 1.0):
+				future_path_point = Vector3.ZERO;
+				if mGrindingDirection > 0:
+					future_path_point = mGrindingNode.get_position_from_t(1.0);
+					if mGrindingNode.nextNode != null:
+						future_path_point = mGrindingNode.nextNode.get_position_from_t(path_t + cLookahead - 1.0);
+				else:
+					future_path_point = mGrindingNode.get_position_from_t(0.0);
+					if mGrindingNode.previousNodes.size() > 0 and mGrindingNode.previousNodes[0] != null:
+						future_path_point = mGrindingNode.previousNodes[0].get_position_from_t(path_t + cLookahead + 1.0);
+				pass
+			else:
+				future_path_point = mGrindingNode.get_position_from_t(path_t + cLookahead);
+			mCameraFollowOffset = future_path_point - self.position;
 		
 		# Stop grinding when jumping or no node:
 		if mJumpNextPhysicsFrame or (mGrindingNode == null) or (mGrindingNode.nextNode == null):
 			mGrinding = false;
 			mDisableSpeedLimitUntilGround = true;
+			mCameraFollowOffset = Vector3.ZERO;
 			print("Ending Grind")
 			
 		pass
