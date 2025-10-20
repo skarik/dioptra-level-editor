@@ -61,6 +61,7 @@ var mDisableSpeedLimitUntilGround : bool = false;
 
 var mModelNode : PlayerTest8ModelObject;
 var mModelRotationOffset : Quaternion;
+var mModelUpdateTimer : float = 0.0;
 
 ## Stabilizers for smoothing out motion. Jumps in motion are added to these and then blended out over time.
 var mStablizerOffsetCamera := Vector3(0, 0, 0);			## Stabilizer for camera position
@@ -229,6 +230,13 @@ func _process(delta: float) -> void:
 		else:
 			animationPlayer.play("anim test 2/Idle 1");
 		
+	# Update animator
+	animationPlayer.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL;
+	const Framerate = 1.0 / 24.0;
+	mModelUpdateTimer += delta;
+	while (mModelUpdateTimer >= Framerate):
+		animationPlayer.advance(Framerate);
+		mModelUpdateTimer -= Framerate;
 		
 	return
 	
