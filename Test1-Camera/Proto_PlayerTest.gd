@@ -75,7 +75,7 @@ func clampInputs() -> void:
 
 func _ready() -> void:
 	mCamera = get_node("Camera3D") as Camera3D;
-	mModelNode = get_node("alana lowpoly") as PlayerTest8ModelObject;
+	mModelNode = get_node("CharacterModel") as PlayerTest8ModelObject;
 	assert(mCamera != null);
 	assert(mModelNode != null);
 	
@@ -215,6 +215,21 @@ func _process(delta: float) -> void:
 	mStablizerOffsetModel = mStablizerOffsetModel.lerp(Vector3.ZERO, smoothWeight1);
 	mStabilizerRotateCamera = mStabilizerRotateCamera.lerp(Vector4.ZERO, smoothWeight2);
 	
+	# Animations
+	var animationPlayer = mModelNode.get_node("AnimationPlayer") as AnimationPlayer;
+	
+	if mGrinding:
+		animationPlayer.play("anim test 2/Railride");
+	else:
+		if (mFlatMotion.length_squared() > 0.01):
+			if mOnGround:
+				animationPlayer.play("anim test 2/Run1", -1, 1.5);
+			else:
+				animationPlayer.play("anim test 2/Run1", 0.5, 0.0);
+		else:
+			animationPlayer.play("anim test 2/Idle 1");
+		
+		
 	return
 	
 func _physics_process(delta: float) -> void:

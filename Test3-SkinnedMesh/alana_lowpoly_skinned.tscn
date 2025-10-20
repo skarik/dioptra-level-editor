@@ -1,0 +1,38 @@
+[gd_scene load_steps=3 format=3 uid="uid://difrrmau7asa4"]
+
+[ext_resource type="PackedScene" uid="uid://4pe5iqmxlpcn" path="res://asset/alana/alana lowpoly skinned.glb" id="1_jaaar"]
+[ext_resource type="AnimationLibrary" uid="uid://b422s7x8fql03" path="res://asset/tests/anim test 2.glb" id="2_m0ea4"]
+
+[node name="alana lowpoly skinned" instance=ExtResource("1_jaaar")]
+
+[node name="Skeleton3D" parent="." index="0"]
+bones/1/position = Vector3(2.4839e-10, -0.0355896, 0.0060167)
+bones/2/position = Vector3(-0.180537, 0.0161634, 0.00213281)
+bones/2/rotation = Quaternion(0.525188, 0.474349, 0.47678, -0.521394)
+bones/3/rotation = Quaternion(-0.0347061, 0.00575564, -0.0405892, 0.998556)
+bones/4/rotation = Quaternion(0.16351, -0.00146963, -0.0166309, 0.9864)
+bones/5/rotation = Quaternion(-0.00149843, 0.00345969, 0.021513, 0.999761)
+bones/6/rotation = Quaternion(-0.276199, 0.00357735, 0.0416108, 0.960193)
+bones/7/rotation = Quaternion(-0.443498, 0.538657, -0.457172, 0.5515)
+bones/10/rotation = Quaternion(0.143814, -0.00676107, -0.203388, 0.968455)
+bones/11/rotation = Quaternion(-0.222913, -0.0161945, 0.54828, 0.805876)
+bones/12/rotation = Quaternion(0.0817627, -0.0117094, -0.0283722, 0.996179)
+bones/13/rotation = Quaternion(-0.149309, -0.00952051, 0.0283759, 0.988338)
+bones/25/rotation = Quaternion(0.186883, -0.00378596, 0.321399, 0.928312)
+bones/26/rotation = Quaternion(-0.341501, 0.130774, -0.613508, 0.699916)
+bones/27/rotation = Quaternion(0.58371, -0.0972069, -0.0369051, 0.805277)
+bones/28/rotation = Quaternion(-0.20721, 0.0324376, -0.0208763, 0.977536)
+bones/39/rotation = Quaternion(0.989377, -0.0160064, 0.135254, 0.0508229)
+bones/40/rotation = Quaternion(-0.00113487, -0.0306133, -0.000701031, 0.99953)
+bones/41/rotation = Quaternion(0.0449094, -0.698415, -0.0267172, 0.713783)
+bones/42/rotation = Quaternion(-5.47821e-08, 9.02041e-08, -0.705813, 0.708398)
+bones/43/rotation = Quaternion(0.97245, -0.130012, -0.130412, -0.14294)
+bones/44/rotation = Quaternion(-0.143886, 0.0040315, -0.000387937, 0.989586)
+bones/45/rotation = Quaternion(0.0242682, 0.564658, -0.0706369, 0.821939)
+bones/46/rotation = Quaternion(-0.00828744, -0.0180902, 0.722317, 0.691276)
+bones/53/position = Vector3(-2.66454e-15, -1.28412, 1.68801e-09)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." index="1"]
+libraries = {
+&"anim test 2": ExtResource("2_m0ea4")
+}
