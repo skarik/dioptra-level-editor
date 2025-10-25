@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3 uid="uid://c2xxtulq20p5a"]
+
+[ext_resource type="Script" uid="uid://bs5vuriffbx30" path="res://addons/dioptra/node-types/DP_PathNode.gd" id="1_ycs21"]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="DP_PathNode" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.982404, 1.02237, -0.197957)
+script = ExtResource("1_ycs21")
+metadata/_custom_type_script = "uid://bs5vuriffbx30"
+
+[node name="DP_PathNode2" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.216042, 0.760946, 0)
+script = ExtResource("1_ycs21")
+metadata/_custom_type_script = "uid://bs5vuriffbx30"

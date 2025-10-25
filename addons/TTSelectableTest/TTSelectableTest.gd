@@ -11,7 +11,8 @@ func _enter_tree() -> void:
 	
 	dock = preload("res://addons/TTSelectableTest/TTSDock.tscn").instantiate()
 	if dock:
-		add_control_to_dock(DOCK_SLOT_LEFT_UL, dock)
+		#add_control_to_dock(DOCK_SLOT_LEFT_UL, dock)
+		pass
 	
 	if gizmo_plugin:
 		gizmo_plugin.reload()
@@ -24,8 +25,9 @@ func _exit_tree() -> void:
 	# Clean-up of the plugin goes here.
 	
 	if dock:
-		remove_control_from_docks(dock)
+		#remove_control_from_docks(dock)
 		dock.free()
+		pass
 	
 	if gizmo_plugin:
 		gizmo_plugin.unload()
