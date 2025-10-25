@@ -120,7 +120,7 @@ func _process(delta: float) -> void:
 	
 	# Move the camera towards mCameraFollowOffset, but limit it to a plane behind the player
 	var cameraPositionLimit := Plane(-forward, -forward * 2 + cameraCenterPosition);
-	var limitPoint = cameraPositionLimit.intersects_segment(mCamera.position, mCamera.position + mCameraFollowOffsetBlended);
+	var limitPoint : Variant = cameraPositionLimit.intersects_segment(mCamera.position, mCamera.position + mCameraFollowOffsetBlended);
 	if limitPoint != null:
 		mCamera.position = limitPoint;
 	else:
@@ -142,7 +142,7 @@ func _process(delta: float) -> void:
 	# Limit the distance of the camera from the player
 	var cameraPositionVVec := (mCamera.position - cameraCenterPosition);
 	var cameraPositionVVecLen := cameraPositionVVec.length();
-	var cameraPositionVVecMaxLen = max(4.0, mCameraFollowOffsetBlended.length() + 0.5);
+	var cameraPositionVVecMaxLen : float = max(4.0, mCameraFollowOffsetBlended.length() + 0.5);
 	if (cameraPositionVVecLen > cameraPositionVVecMaxLen):
 		mCamera.position = cameraCenterPosition + cameraPositionVVec.normalized() * cameraPositionVVecMaxLen;
 	
@@ -217,14 +217,15 @@ func _process(delta: float) -> void:
 	mStabilizerRotateCamera = mStabilizerRotateCamera.lerp(Vector4.ZERO, smoothWeight2);
 	
 	# Animations
-	var animationPlayer = mModelNode.get_node("AnimationPlayer") as AnimationPlayer;
+	var animationPlayer := mModelNode.get_node("AnimationPlayer") as AnimationPlayer;
 	
 	if mGrinding:
 		animationPlayer.play("anim test 2/Railride");
 	else:
 		if (mFlatMotion.length_squared() > 0.01):
 			if mOnGround:
-				animationPlayer.play("anim test 2/Run1", -1, 1.5);
+				var animationSpeed := mFlatMotion.length() / (cMaxSprintSpeed);
+				animationPlayer.play("anim test 2/Run1", -1, 2.2 * animationSpeed);
 			else:
 				animationPlayer.play("anim test 2/Run1", 0.5, 0.0);
 		else:
@@ -456,7 +457,7 @@ func physicsProcessGrindPaths(_delta: float) -> void:
 			
 			# Follow the path ahead
 			var future_path_point : Vector3;
-			var cLookahead = 0.5 if (mGrindingDirection > 0) else -0.5;
+			var cLookahead := 0.5 if (mGrindingDirection > 0) else -0.5;
 			if (path_t + cLookahead < 0.0) or (path_t + cLookahead > 1.0):
 				future_path_point = Vector3.ZERO;
 				if mGrindingDirection > 0:

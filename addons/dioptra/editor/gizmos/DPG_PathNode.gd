@@ -16,7 +16,8 @@ func _init(undoredo : EditorUndoRedoManager):
 	create_material("main", Color(0.2, 1.0, 0.5))
 	create_material("handle_bars", Color(1.0, 1.0, 0.2, 0.5))
 	create_handle_material("handles")
-	create_icon_material("icon", preload("res://icon.svg"))
+	create_icon_material("icon", preload("res://addons/dioptra/asset/default/node-path.svg"))
+	create_icon_material("icon2", preload("res://addons/dioptra/asset/default/node-path-terminator.svg"))
 	
 	mUndoRedo = undoredo;
 	pass
@@ -47,7 +48,7 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 	if pathnode.nextNode != null:
 		gizmo.add_unscaled_billboard(get_material("icon", gizmo), cIconSize);
 	else:
-		gizmo.add_unscaled_billboard(get_material("icon", gizmo), cIconSize, Color(1.0, 0.5, 0.5, 1.0));
+		gizmo.add_unscaled_billboard(get_material("icon2", gizmo), cIconSize);
 
 	if pathnode.nextNode != null:
 		var lines = PackedVector3Array()
