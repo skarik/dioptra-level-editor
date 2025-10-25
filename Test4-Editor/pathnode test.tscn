@@ -4,12 +4,30 @@
 
 [node name="Node3D" type="Node3D"]
 
-[node name="DP_PathNode" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.982404, 1.02237, -0.197957)
+[node name="DP_PathNode" type="Node3D" parent="." node_paths=PackedStringArray("nextNode")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.44295, 1.14835, -0.517474)
 script = ExtResource("1_ycs21")
+to = Vector3(0.308532, 1.75719, 0.93408)
+nextNode = NodePath("../DP_PathNode2")
 metadata/_custom_type_script = "uid://bs5vuriffbx30"
 
-[node name="DP_PathNode2" type="Node3D" parent="."]
+[node name="DP_PathNode2" type="Node3D" parent="." node_paths=PackedStringArray("nextNode")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.216042, 0.760946, 0)
+script = ExtResource("1_ycs21")
+from = Vector3(-0.624574, 0.00824499, 0.110676)
+to = Vector3(-0.263893, -1.03839, -0.0119753)
+nextNode = NodePath("../DP_PathNode3")
+metadata/_custom_type_script = "uid://bs5vuriffbx30"
+
+[node name="DP_PathNode3" type="Node3D" parent="." node_paths=PackedStringArray("nextNode")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.580675, 0.952509, 0)
+script = ExtResource("1_ycs21")
+from = Vector3(0.610485, 0.00147271, 0.155154)
+to = Vector3(-0.238255, 1.09889, 0.0528657)
+nextNode = NodePath("../DP_PathNode4")
+metadata/_custom_type_script = "uid://bs5vuriffbx30"
+
+[node name="DP_PathNode4" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.470717, 0.952509, -0.608316)
 script = ExtResource("1_ycs21")
 metadata/_custom_type_script = "uid://bs5vuriffbx30"

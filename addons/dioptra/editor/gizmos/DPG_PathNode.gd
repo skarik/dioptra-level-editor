@@ -105,6 +105,19 @@ func _begin_handle_action(gizmo: EditorNode3DGizmo, handle_id: int, secondary: b
 	
 	if pathnode.nextNode == null:
 		mouseDragMode = DragMode.DRAG_CONNECTION;
+	elif (pathnode.previousNodes.is_empty() or not pathnode.editor_get_previous_nodes_valid()) \
+	and (pathnode.to == Vector3.ZERO):
+		mouseDragMode = DragMode.DRAG_TO;
+	elif handle_id == 0:
+		mouseDragMode = DragMode.DRAG_FROM;
+	elif handle_id == 1:
+		mouseDragMode = DragMode.DRAG_TO;
+		
+	if mouseDragMode == DragMode.DRAG_FROM:
+		mouseDragPosition = pathnode.from;
+	elif mouseDragMode == DragMode.DRAG_TO:
+		mouseDragPosition = pathnode.to;
+		
 	pass
 
 ## Returns the z-depth of the position in relation to the camera
@@ -144,8 +157,24 @@ func _set_handle(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool, came
 		else:
 			pathnode.nextNode = null;
 		pass
-	else:
+	# Draw the slope handles around
+	elif mouseDragMode == DragMode.DRAG_FROM  or mouseDragMode == DragMode.DRAG_TO:
+		var isFrom := (mouseDragMode == DragMode.DRAG_FROM);
+		var starting_position := pathnode.from if isFrom else pathnode.to;
 		
+		var position_depth := get_z_depth(camera, starting_position * 0.5 + pathnode.global_position);
+		var new_position = camera.project_position(screen_pos, position_depth) * pathnode.global_transform;
+		
+		#var new_position_local = (new_position - pathnode.global_position) * 1.0;
+		var new_position_local = (new_position) * 2.0;
+		
+		if isFrom:
+			pathnode.from = new_position_local;
+		else:
+			pathnode.to = new_position_local;
+		
+		pass
+	else:
 		pass
 	
 	pass
@@ -158,10 +187,19 @@ func _commit_handle(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool, r
 	
 	match mouseDragMode:
 		DragMode.DRAG_CONNECTION:
-			#var undoRedo = UndoRedo.new();
 			undoRedo.create_action("Pathnode Edit");
 			undoRedo.add_do_property(pathnode, "nextNode", pathnode.nextNode);
 			undoRedo.add_undo_property(pathnode, "nextNode", restore);
+			undoRedo.commit_action();
+		DragMode.DRAG_FROM:
+			undoRedo.create_action("Pathnode Edit From");
+			undoRedo.add_do_property(pathnode, "from", pathnode.from);
+			undoRedo.add_undo_property(pathnode, "from", mouseDragPosition);
+			undoRedo.commit_action();
+		DragMode.DRAG_TO:
+			undoRedo.create_action("Pathnode Edit To");
+			undoRedo.add_do_property(pathnode, "to", pathnode.to);
+			undoRedo.add_undo_property(pathnode, "to", mouseDragPosition);
 			undoRedo.commit_action();
 		_:
 			pass

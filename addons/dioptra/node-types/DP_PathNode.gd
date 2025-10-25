@@ -56,6 +56,14 @@ func editor_update_target_gizmos() -> void:
 			if node != null:
 				node.update_gizmos();
 		
+## In editor, returns if any of the previous nodes are valid:
+func editor_get_previous_nodes_valid() -> bool:
+	if Engine.is_editor_hint():
+		for node in previousNodes:
+			if node != null:
+				return true;
+	return false;
+		
 ## If it doesn't exist in the next node's "previous" list, will add self to it. 
 func next_add_to_previous_list() -> void:
 	if nextNode != null:
