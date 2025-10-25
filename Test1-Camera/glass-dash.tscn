@@ -1,0 +1,58 @@
+[gd_scene load_steps=7 format=3 uid="uid://cnvnvvdipw4p4"]
+
+[ext_resource type="Script" uid="uid://dffv8mro3ogei" path="res://Test1-Camera/juice-test-delete-on-timeout.gd" id="1_2lfib"]
+[ext_resource type="Material" uid="uid://b74vg852fsjdx" path="res://Test1-Camera/dglass-test.tres" id="1_u648f"]
+[ext_resource type="Script" uid="uid://cfojj3rv5rkuu" path="res://Test1-Camera/juice-test-enable-on-ready.gd" id="3_hvgr1"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_hvgr1"]
+orientation = 0
+
+[sub_resource type="Curve" id="Curve_momne"]
+_data = [Vector2(0, 0), 0.0, 4.39222, 0, 0, Vector2(0.0503049, 1), 0.0, 0.0, 0, 0, Vector2(0.922256, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -0.746163, 0.0, 0, 0]
+point_count = 4
+
+[sub_resource type="Gradient" id="Gradient_2lfib"]
+offsets = PackedFloat32Array(0, 0.854237, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0)
+
+[node name="Glass-dash" type="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.38419e-07, 0)
+script = ExtResource("1_2lfib")
+
+[node name="CPUParticles3D" type="CPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.932062, 0)
+material_override = ExtResource("1_u648f")
+emitting = false
+amount = 15
+lifetime = 0.6
+one_shot = true
+explosiveness = 1.0
+lifetime_randomness = 0.5
+fixed_fps = 24
+mesh = SubResource("PlaneMesh_hvgr1")
+emission_shape = 3
+emission_box_extents = Vector3(-0.09, 0.63, 0.29)
+particle_flag_rotate_y = true
+direction = Vector3(-1, 0, 0)
+spread = 7.12
+gravity = Vector3(0, 0, 0)
+initial_velocity_min = 2.0
+initial_velocity_max = 6.0
+angular_velocity_min = -180.0
+angular_velocity_max = 180.0
+damping_min = 4.0
+damping_max = 4.0
+angle_min = -166.8
+angle_max = 264.4
+scale_amount_min = 0.2
+scale_amount_max = 0.2
+scale_amount_curve = SubResource("Curve_momne")
+color_ramp = SubResource("Gradient_2lfib")
+anim_offset_max = 1.0
+script = ExtResource("3_hvgr1")
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 3.0
+
+[connection signal="ready" from="CPUParticles3D" to="CPUParticles3D" method="_on_ready"]
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

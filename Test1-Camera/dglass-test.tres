@@ -1,0 +1,17 @@
+[gd_resource type="ShaderMaterial" load_steps=5 format=3 uid="uid://b74vg852fsjdx"]
+
+[ext_resource type="Shader" uid="uid://lkfnjfj88p4i" path="res://Test1-Camera/animMeshTest2.gdshader" id="1_gnvh3"]
+[ext_resource type="Texture2D" uid="uid://dsp86lsrdnee7" path="res://asset/fx/dglass-colors.png" id="2_4a15p"]
+[ext_resource type="Texture2D" uid="uid://c62ilhrfewl4t" path="res://asset/fx/dglass-shard-sheet.png" id="2_gnvh3"]
+[ext_resource type="Texture2D" uid="uid://x1lesk73pw7k" path="res://asset/fx/dglass-shine.png" id="3_4a15p"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_gnvh3")
+shader_parameter/mainTexture = ExtResource("2_gnvh3")
+shader_parameter/glassColorsTexture = ExtResource("2_4a15p")
+shader_parameter/glassShineTexture = ExtResource("3_4a15p")
+shader_parameter/sheetRows = 4
+shader_parameter/sheetColumns = 4
+shader_parameter/sheetFrames = 16
+shader_parameter/textureRotation = 0.0

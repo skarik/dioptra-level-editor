@@ -70,6 +70,8 @@ var mStabilizerRotateCamera := Vector4(0, 0, 0, 0); 	## Stabilizer for camera ro
 
 @export
 var mAssetJuice : PackedScene;
+@export
+var mAssetJuiceDash : PackedScene;
 
 func clampInputs() -> void:
 	mCameraForwardAngle.x = clamp(mCameraForwardAngle.x, deg_to_rad(-100.0), deg_to_rad(100.0));
@@ -101,6 +103,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif (event.is_released()):
 			mJumpState.updateValue(false);
 	return
+
+func queue_remote_free(node : Node) -> void:
+	node.queue_free();
 
 func _process(delta: float) -> void:
 	# Update the forward direction
@@ -159,10 +164,27 @@ func _process(delta: float) -> void:
 			mDashingTime = 0.0;
 			mDashingDirection = (mInputVector + Vector2(0, -0.001)).rotated(-mCameraForwardAngle.y).normalized();
 			
-			var juiceNode : Node3D = mAssetJuice.instantiate()
+			var juiceNode : Node3D = mAssetJuiceDash.instantiate()
 			juiceNode.position = position
-			juiceNode.rotation = Vector3(0, mCameraForwardAngle.y + (-mDashingDirection).angle_to(Vector2.RIGHT), 0);
+			juiceNode.rotation = Vector3(0, (-mDashingDirection).angle_to(Vector2.RIGHT), 0);
 			get_parent().add_child(juiceNode) # probably bad
+			
+			var juiceNode2 : Node3D = mAssetJuice.instantiate()
+			juiceNode2.position = position
+			juiceNode2.rotation = Vector3(0, (-mDashingDirection).angle_to(Vector2.RIGHT), 0);
+			get_parent().add_child(juiceNode2) # probably bad
+			
+			var dupeNode : Node3D = mModelNode.duplicate(DuplicateFlags.DUPLICATE_USE_INSTANTIATION);
+			dupeNode.global_transform = mModelNode.global_transform;
+			get_parent().add_child(dupeNode) # probably bad
+			#dupeNode.reparent(get_parent());
+			
+			var timer := Timer.new()
+			dupeNode.add_child(timer)
+			timer.wait_time = 1/12.0;
+			timer.one_shot = true;
+			timer.timeout.connect(queue_remote_free.bind(dupeNode));
+			timer.start();
 			
 	elif (mSprintState.is_enabled()):
 		mSprintPressTime += delta;

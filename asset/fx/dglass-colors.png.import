@@ -2,24 +2,24 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://du00bxxubb7cj"
-path="res://.godot/imported/33f914a1-fb94-417f-ace6-f4a26c85d90b.png-6388af1b50497b0df536c376b899d7c5.ctex"
+uid="uid://dsp86lsrdnee7"
+path="res://.godot/imported/dglass-colors.png-ff06229310dcfce9afda785c0d3c46f6.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://asset/fx/33f914a1-fb94-417f-ace6-f4a26c85d90b.png"
-dest_files=["res://.godot/imported/33f914a1-fb94-417f-ace6-f4a26c85d90b.png-6388af1b50497b0df536c376b899d7c5.ctex"]
+source_file="res://asset/fx/dglass-colors.png"
+dest_files=["res://.godot/imported/dglass-colors.png-ff06229310dcfce9afda785c0d3c46f6.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=3
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1
-compress/normal_map=0
+compress/normal_map=2
 compress/channel_pack=0
 mipmaps/generate=false
 mipmaps/limit=-1
@@ -31,4 +31,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0
