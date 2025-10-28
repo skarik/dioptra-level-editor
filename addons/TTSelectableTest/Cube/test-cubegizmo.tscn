@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://b0yigrj4vuv3o"]
+
+[ext_resource type="Script" uid="uid://hy8wovqnrssr" path="res://addons/TTSelectableTest/Cube/TTSCube.gd" id="1_tckmg"]
+
+[node name="Test-cubegizmo" type="Node3D"]
+
+[node name="TTSCube" type="Node3D" parent="."]
+script = ExtResource("1_tckmg")
+metadata/_custom_type_script = "uid://hy8wovqnrssr"
