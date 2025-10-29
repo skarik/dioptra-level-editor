@@ -5,5 +5,14 @@
 [node name="Test-cubegizmo" type="Node3D"]
 
 [node name="TTSCube" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.308478, 0)
 script = ExtResource("1_tckmg")
 metadata/_custom_type_script = "uid://hy8wovqnrssr"
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.71807, -2.04286)
+pixel_size = 0.001
+billboard = 1
+fixed_size = true
+texture_filter = 0
+text = "Testing Text"

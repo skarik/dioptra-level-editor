@@ -19,4 +19,5 @@ func _enter_tree() -> void:
 
 func _exit_tree() -> void:
 	# Clean-up of the plugin goes here.
+	DPULabelPool.free_instance();
 	pass
