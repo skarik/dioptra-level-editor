@@ -26,8 +26,13 @@ var _types_contained : int = 0;
 var _vertex_count: int = 0;
 var _index_count: int = 0;
 
+# We ALWAYS use triangles for the AM
+var _primitive_type : Mesh.PrimitiveType = Mesh.PRIMITIVE_TRIANGLES;
+
+const _FuncQuads = preload("arraymesher_quads.gd");
+
 ## Creates a new DP with the given arrays available in it.
-func _init(types : TypeFlags = TypeFlags.VERTEX | TypeFlags.NORMAL | TypeFlags.TEX_UV | TypeFlags.INDEX) -> void:
+func _init(types : int = TypeFlags.VERTEX | TypeFlags.NORMAL | TypeFlags.TEX_UV | TypeFlags.INDEX) -> void:
 	_surface_array = [];
 	_surface_array.resize(Mesh.ARRAY_MAX);
 	_types_contained = types;
@@ -62,8 +67,24 @@ func _init(types : TypeFlags = TypeFlags.VERTEX | TypeFlags.NORMAL | TypeFlags.T
 	if (_types_contained & TypeFlags.INDEX):
 		_surface_array[Mesh.ARRAY_INDEX] = PackedInt32Array();
 			
+#------------------------------------------------------------------------------#
+			
 func get_surface_array() -> Array[Variant]:
+	resize(_vertex_count, _index_count);
 	return _surface_array;
+func get_surface_vertex() -> PackedVector3Array:
+	return _surface_array[Mesh.ARRAY_VERTEX];
+func get_surface_normal() -> PackedVector3Array:
+	return _surface_array[Mesh.ARRAY_NORMAL];
+func get_surface_tex_uv() -> PackedVector2Array:
+	return _surface_array[Mesh.ARRAY_TEX_UV];
+func get_surface_index() -> PackedInt32Array:
+	return _surface_array[Mesh.ARRAY_INDEX];
+	
+func get_primitive_type() -> Mesh.PrimitiveType:
+	return _primitive_type;
+
+#------------------------------------------------------------------------------#
 
 ## Resize the used type meshes to the given input amount.
 ## If the container finds that it needs more room, it still still allocate more.
@@ -93,3 +114,52 @@ func preallocate_quads(quads : int) -> void:
 	var vertexCount := quads * 4;
 	var indexCount := quads * 6;
 	preallocate(vertexCount, indexCount);
+	
+## Adds the given amount of storage
+func add_storage(vertices : int, indicies : int) -> void:
+	preallocate(_vertex_count + vertices, _index_count + indicies);
+
+## Sets the storage to the given size and sets the vertex and index count to that same size
+##
+## Sets the internal arrays to the same size. Unlike preallocate, this will shrink arrays and delete
+## data. This also sets the internal vertex and index count used for adding additional geometry and
+## thus will affect any subsequent *_add calls.
+func resize(vertices : int, indicies : int) -> void:
+	for i in (Mesh.ARRAY_MAX - 1):
+		var type_mask := 1 << i;
+		if (_types_contained & type_mask):
+			if (i == Mesh.ARRAY_TANGENT or i == Mesh.ARRAY_CUSTOM0 or i == Mesh.ARRAY_CUSTOM1 \
+			or i == Mesh.ARRAY_CUSTOM2 or i == Mesh.ARRAY_CUSTOM3 or i == Mesh.ARRAY_BONES \
+			or i == Mesh.ARRAY_WEIGHTS):
+				_surface_array[i].resize(vertices * 4);
+			else:
+				_surface_array[i].resize(vertices);
+	if (_types_contained & TypeFlags.INDEX):
+		_surface_array[Mesh.ARRAY_INDEX].resize(indicies);
+	_vertex_count = vertices;
+	_index_count = indicies;
+	pass
+	
+#------------------------------------------------------------------------------#
+	
+## Does this mesher have indicies?
+func has_indicies() -> bool:
+	return (_types_contained & TypeFlags.INDEX) != 0;
+## Does this mesher have normals?
+func has_normals() -> bool:
+	return (_types_contained & TypeFlags.NORMAL) != 0;
+## Does this mesher have UVs?
+func has_uv() -> bool:
+	return (_types_contained & TypeFlags.TEX_UV) != 0;
+## Does this mesher have secondary UVs?
+func has_uv2() -> bool:
+	return (_types_contained & TypeFlags.TEX_UV2) != 0;
+	
+#------------------------------------------------------------------------------#
+
+## Adds a quad to the positions.
+##
+## Adds a quad to the vertex positions, with normal if enabled. UVs added defaults to a 0,0 -> 1,1 cube.
+func quad_add(position : Vector3, up : Vector3, right : Vector3) -> void:
+	assert(has_indicies());
+	_FuncQuads.quad_add(self, position, up, right);

@@ -18,34 +18,13 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 	
 	var local_mesh : ArrayMesh = ArrayMesh.new();
 	if true:
-		var surface_array : Array[Variant] = [];
-		surface_array.resize(Mesh.ARRAY_MAX);
-		
-		var verts := PackedVector3Array();
-		var uvs := PackedVector2Array();
-		var normals := PackedVector3Array();
-		var indices := PackedInt32Array();
-		
-		verts.append(Vector3(1, 1, 0));
-		verts.append(Vector3(-1, 1, 0));
-		verts.append(Vector3(1, -1, 0));
-		verts.append(Vector3(-1, -1, 0));
-		
-		uvs.append(Vector2(0, 0));
-		uvs.append(Vector2(1, 0));
-		uvs.append(Vector2(0, 1));
-		uvs.append(Vector2(1, 1));
-		
-		for i in 4:
-			normals.append(Vector3(0, 0, 1))
-			indices.append(i)
-		
-		surface_array[Mesh.ARRAY_VERTEX] = verts
-		surface_array[Mesh.ARRAY_TEX_UV] = uvs
-		surface_array[Mesh.ARRAY_NORMAL] = normals
-		surface_array[Mesh.ARRAY_INDEX] = indices
-		
-		local_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLE_STRIP, surface_array)
+		var am := DPArrayMesher.new();
+		am.quad_add(Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(0, 0, 1));
+		am.quad_add(Vector3(0, -1, 0), Vector3(1, 0, 0), Vector3(0, 0, 1));
+		am.quad_add(Vector3(0, -2, 0), Vector3(1, 0, 0), Vector3(0, 0, 1));
+		am.quad_add(Vector3(0, -3, 0), Vector3(1, 0, 0), Vector3(0, 0, 1));
+		am.quad_add(Vector3(0, -4, 0), Vector3(1, 0, 0), Vector3(0, 0, 1));
+		local_mesh.add_surface_from_arrays(am.get_primitive_type(), am.get_surface_array());
 	
 	gizmo.add_mesh(local_mesh, get_material("geo"));
 	
