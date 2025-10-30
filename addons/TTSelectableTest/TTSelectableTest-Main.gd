@@ -24,6 +24,13 @@ func remove_gizmo_plugin(plugin : EditorNode3DGizmoPlugin, loader : bool = false
 			plugin.unload()
 		remove_node_3d_gizmo_plugin(plugin)
 
+
+func _enable_plugin() -> void:
+	EditorInterface.set_plugin_enabled("TTSelectableTest/Cube", true)
+
+func _disable_plugin() -> void:
+	EditorInterface.set_plugin_enabled("TTSelectableTest/Cube", false)
+
 func _enter_tree() -> void:
 	# Initialization of the plugin goes here.
 	
@@ -34,9 +41,7 @@ func _enter_tree() -> void:
 	
 	mTTSItemGizmoPlugin = add_gizmo_plugin(cTTSItemGizmoPlugin, mTTSItemGizmoPlugin, true);
 	mTTSCubeGizmoPlugin = add_gizmo_plugin(cTTSCubeGizmoPlugin, mTTSCubeGizmoPlugin);
-	
 	pass
-
 
 func _exit_tree() -> void:
 	# Clean-up of the plugin goes here.
@@ -48,5 +53,4 @@ func _exit_tree() -> void:
 	
 	remove_gizmo_plugin(mTTSItemGizmoPlugin, true);
 	remove_gizmo_plugin(mTTSCubeGizmoPlugin);
-	
 	pass

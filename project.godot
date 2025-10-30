@@ -26,7 +26,7 @@ window/size/viewport_height=720
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/TTSelectableTest/plugin.cfg", "res://addons/dioptra-geobuilder/plugin.cfg", "res://addons/dioptra/editor/plugin.cfg", "res://addons/dioptra/node-types/plugin.cfg", "res://addons/dioptra/plugin.cfg", "res://addons/godot-plugin-refresher/plugin.cfg", "res://addons/ttselectabletest/plugin.cfg")
+enabled=PackedStringArray("res://addons/TTSelectableTest/Cube/plugin.cfg", "res://addons/TTSelectableTest/plugin.cfg", "res://addons/dioptra-geobuilder/plugin.cfg", "res://addons/dioptra/editor/plugin.cfg", "res://addons/dioptra/node-types/plugin.cfg", "res://addons/dioptra/plugin.cfg", "res://addons/godot-plugin-refresher/plugin.cfg", "res://addons/ttselectabletest/plugin.cfg")
 
 [global_group]
 
