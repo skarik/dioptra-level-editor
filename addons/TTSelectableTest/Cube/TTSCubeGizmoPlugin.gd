@@ -5,7 +5,8 @@ var _label_y : DPULabelPool.LabelNodeItem = null;
 var _label_z : DPULabelPool.LabelNodeItem = null;
 
 func _init() -> void:
-	create_material("geo", Color(1.0, 1.0, 0.5), false, false, false);
+	create_material("geo", Color(1.0, 1.0, 0.5, 0.5), false, false, false);
+	create_material("edges", Color(1.0, 1.0, 1.0, 1.0), false, true, true);
 	pass
 
 func _get_gizmo_name() -> String:
@@ -30,6 +31,7 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 	var node3d = gizmo.get_node_3d();
 	var nodecube = node3d as TTSCube;
 	
+	
 	var local_mesh : ArrayMesh = ArrayMesh.new();
 	if true:
 		var am := DPArrayMesher.new();
@@ -39,19 +41,37 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 		am.quad_add(Vector3(0, -3, 0), Vector3(1, 0, 0), Vector3(0, 0, 1));
 		am.quad_add(Vector3(0, -4, 0), Vector3(1, 0, 0), Vector3(0, 0, 1));
 		local_mesh.add_surface_from_arrays(am.get_primitive_type(), am.get_surface_array());
-	
-	gizmo.add_mesh(local_mesh, get_material("geo"));
-	
+	gizmo.add_mesh(local_mesh, get_material("geo", gizmo));
 	gizmo.add_collision_triangles(local_mesh.generate_triangle_mesh());
 	
 	var nodes = EditorInterface.get_selection().get_selected_nodes()
 	if nodes.has(node3d):
+		# Draw text
+		var color_x : Color = EditorInterface.get_editor_theme().get_color("property_color_x", "Editor");
+		var color_z : Color = EditorInterface.get_editor_theme().get_color("property_color_z", "Editor");
+		
 		_label_x = DPULabelPool.get_label(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
-		_label_x.get_node().text = "2.0m";
-		_label_x.get_node().global_position = node3d.global_position + Vector3(1.2, 0, 0);
+		var lbl_x : Label3D = _label_x.get_node();
+		lbl_x.text = "2.0m\n64px";
+		lbl_x.global_position = node3d.global_position + Vector3(0, 0, 1.2);
+		lbl_x.modulate = color_x;
 		_label_y = DPULabelPool.get_label(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
-		_label_y.get_node().text = "2.0m";
-		_label_y.get_node().global_position = node3d.global_position + Vector3(0, 0, 1.2);
+		var lbl_y : Label3D = _label_y.get_node();
+		lbl_y.text = "2.0m\n64px";
+		lbl_y.global_position = node3d.global_position + Vector3(1.2, 0, 0);
+		lbl_y.modulate = color_z;
+		
+		# Draw lines
+		var edge_x := PackedVector3Array();
+		var edge_z := PackedVector3Array();
+		
+		edge_x.append(Vector3(-1.0, 0, 1.0));
+		edge_x.append(Vector3( 1.0, 0, 1.0));
+		gizmo.add_lines(edge_x, get_material("edges", gizmo), true, EditorInterface.get_editor_theme().get_color("axis_x_color", "Editor"));
+		
+		edge_z.append(Vector3(1.0, 0, -1.0));
+		edge_z.append(Vector3(1.0, 0, 1.0));
+		gizmo.add_lines(edge_z, get_material("edges", gizmo), true, EditorInterface.get_editor_theme().get_color("axis_z_color", "Editor"));
 		pass
 	
 	pass

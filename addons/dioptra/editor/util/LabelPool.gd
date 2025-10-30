@@ -30,6 +30,7 @@ static func free_instance() -> void:
 	
 # Options
 static var TextFixedSize : bool = true;
+static var UseCodeFont : bool = true;
 
 #------------------------------------------------------------------------------#
 
@@ -76,18 +77,25 @@ var _editor_font_size : int = 15;
 func _init() -> void:
 	_used_labels = [];
 	_unused_labels = [];
-	_editor_font = load(EditorInterface.get_editor_settings().get_setting("interface/editor/code_font"));
-	print(EditorInterface.get_editor_settings().get_setting("interface/editor/code_font"))
-	_editor_font_size = EditorInterface.get_editor_settings().get_setting("interface/editor/main_font_size");
 	
-	print(_editor_font);
+	if UseCodeFont:
+		_editor_font = EditorInterface.get_editor_theme().get_font("font", "CodeEdit");
+		_editor_font_size = EditorInterface.get_editor_theme().get_font_size("font", "CodeEdit");
+	else:
+		_editor_font = EditorInterface.get_editor_theme().get_font("main_msdf", "EditorFonts");
+		_editor_font_size = EditorInterface.get_editor_theme().default_font_size;
 	
-		
-	for type in EditorInterface.get_editor_theme().get_font_type_list():
-		print(type);
-		for name in EditorInterface.get_editor_theme().get_font_list(type):
-			print("-%s" % name);
-	
+	# Check what fonts/colors are available in the editor theme:
+	#print("Fonts:");
+	#for type in EditorInterface.get_editor_theme().get_font_type_list():
+		#print(type);
+		#for name in EditorInterface.get_editor_theme().get_font_list(type):
+			#print("  - %s" % name);
+	#print("Colors:");
+	#for type in EditorInterface.get_editor_theme().get_color_type_list():
+		#print(type);
+		#for name in EditorInterface.get_editor_theme().get_color_list(type):
+			#print("-%s" % name);
 	pass
 
 func _exit_tree() -> void:
@@ -117,14 +125,7 @@ func _get_label(camera : Camera3D) -> LabelNodeItem:
 	# Grab unused item & add to the used
 	var item := _unused_labels.pop_back();
 	_used_labels.push_back(item);
-	
-	#_editor_font = EditorInterface.get_editor_theme().get_font("main_msdf", "EditorFonts");
-	_editor_font = EditorInterface.get_editor_theme().get_font("font", "CodeEdit");
-	#_editor_font_size = EditorInterface.get_editor_theme().default_font_size;
-	_editor_font_size = EditorInterface.get_editor_theme().get_font_size("font", "CodeEdit");
-	
-	print(_editor_font_size)
-	
+
 	# Let it be used now
 	var lbl : Label3D = item.get_node()
 	lbl.set_visible(true);
