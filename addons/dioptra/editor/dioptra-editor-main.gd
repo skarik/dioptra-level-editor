@@ -4,11 +4,22 @@ class_name DioptraEditorMainPlugin
 
 #------------------------------------------------------------------------------#
 
+enum ToolMode {
+	SELECT = 0,
+	BOX_TEST = 1,
+}
+
+#------------------------------------------------------------------------------#
+
 const cDPG_PathNode := preload("res://addons/dioptra/editor/gizmos/DPG_PathNode.gd");
 var DPGizmoPlugin_PathNode : EditorNode3DGizmoPlugin = null;
 
 const cDPG_ToolCube := preload("res://addons/dioptra/editor/gizmos/DPG_ToolCube.gd");
 var DPGizmoPlugin_ToolCube : EditorNode3DGizmoPlugin = null;
+
+const cDock_Tools := preload("res://addons/dioptra/editor/panel-tools.tscn");
+var DPDock_Tools : Control = null;
+const cScript_Tools := preload("res://addons/dioptra/editor/DP_PanelTools.gd");
 
 #------------------------------------------------------------------------------#
 
@@ -29,6 +40,13 @@ func stop_gizmo_plugin(item : EditorNode3DGizmoPlugin) -> void:
 func _enter_tree() -> void:
 	DPGizmoPlugin_PathNode = start_gizmo_plugin(DPGizmoPlugin_PathNode, func(): return cDPG_PathNode.new(get_undo_redo()) );
 	DPGizmoPlugin_ToolCube = start_gizmo_plugin(DPGizmoPlugin_ToolCube, func(): return cDPG_ToolCube.new(get_undo_redo()) );
+	
+	if DPDock_Tools == null:
+		DPDock_Tools = cDock_Tools.instantiate()
+	if DPDock_Tools:
+		add_control_to_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_SIDE_LEFT, DPDock_Tools);
+		var tools := DPDock_Tools as cScript_Tools;
+		tools.setPlugin(self);
 	pass
 
 func _exit_tree() -> void:
@@ -37,6 +55,28 @@ func _exit_tree() -> void:
 		
 	stop_gizmo_plugin(DPGizmoPlugin_ToolCube);
 	DPGizmoPlugin_ToolCube = null;
+	
+	if DPDock_Tools:
+		remove_control_from_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_SIDE_LEFT, DPDock_Tools);
+		DPDock_Tools.queue_free()
+	pass
+
+#------------------------------------------------------------------------------#
+
+var _editorNode : EditorDP_InternalTool = null;
+
+func onToolSelect(tool : ToolMode) -> void:
+	# We want to make a EditorDP_InternalTool node.
+	if _editorNode == null:
+		# Create the new node
+		_editorNode = EditorDP_InternalTool.new();
+		# We need this node in the scene so it can update the sizes of items
+		EditorInterface.get_edited_scene_root().add_child(_editorNode, false, Node.INTERNAL_MODE_FRONT);
+	
+	EditorInterface.get_selection().clear();
+	if tool != ToolMode.SELECT:
+		EditorInterface.get_selection().add_node(_editorNode);
+	
 	pass
 
 #------------------------------------------------------------------------------#
@@ -47,4 +87,5 @@ func _handles(object: Object) -> bool:
 		return true;
 	return false;
 	
-	
+func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
+	return EditorPlugin.AFTER_GUI_INPUT_STOP;
