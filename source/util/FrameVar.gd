@@ -1,6 +1,7 @@
 class_name FrameVar
 
 class AsVariant:
+	extends RefCounted # TODO: is there a way to have a value-type instead?
 	var value : Variant;
 	var previous : Variant;
 
@@ -12,6 +13,7 @@ class AsVariant:
 		return value != previous;
 
 class AsBool:
+	extends RefCounted # TODO: is there a way to have a value-type instead?
 	var value : bool;
 	var previous : bool;
 	var wasProcessed : bool = false;

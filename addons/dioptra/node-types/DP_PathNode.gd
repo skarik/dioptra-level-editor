@@ -1,7 +1,7 @@
 @tool
 extends Node3D
 class_name DP_PathNode
-## Class for building nodes.
+## Class for building paths.
 ##
 ## Unlike Curve3D, paths entirely use points, which allows for easier path changes.
 ##
