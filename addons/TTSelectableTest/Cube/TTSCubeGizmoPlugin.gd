@@ -34,12 +34,14 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 	
 	var local_mesh : ArrayMesh = ArrayMesh.new();
 	if true:
+		var halfsize = nodecube.size * 0.5;
 		var am := DPArrayMesher.new();
-		am.quad_add(Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(0, 0, 1));
-		am.quad_add(Vector3(0, -1, 0), Vector3(1, 0, 0), Vector3(0, 0, 1));
-		am.quad_add(Vector3(0, -2, 0), Vector3(1, 0, 0), Vector3(0, 0, 1));
-		am.quad_add(Vector3(0, -3, 0), Vector3(1, 0, 0), Vector3(0, 0, 1));
-		am.quad_add(Vector3(0, -4, 0), Vector3(1, 0, 0), Vector3(0, 0, 1));
+		am.quad_add(Vector3(0, -halfsize.y, 0), Vector3(halfsize.x, 0, 0), Vector3(0, 0, halfsize.z));
+		am.quad_add(Vector3(0,  halfsize.y, 0), Vector3(halfsize.x, 0, 0), Vector3(0, 0, halfsize.z));
+		#am.quad_add(Vector3(0, -1, 0), Vector3(1, 0, 0), Vector3(0, 0, 1));
+		#am.quad_add(Vector3(0, -2, 0), Vector3(1, 0, 0), Vector3(0, 0, 1));
+		#am.quad_add(Vector3(0, -3, 0), Vector3(1, 0, 0), Vector3(0, 0, 1));
+		#am.quad_add(Vector3(0, -4, 0), Vector3(1, 0, 0), Vector3(0, 0, 1));
 		local_mesh.add_surface_from_arrays(am.get_primitive_type(), am.get_surface_array());
 	gizmo.add_mesh(local_mesh, get_material("geo", gizmo));
 	gizmo.add_collision_triangles(local_mesh.generate_triangle_mesh());
@@ -52,14 +54,14 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 		
 		_label_x = DPULabelPool.get_label(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
 		var lbl_x : Label3D = _label_x.get_node();
-		lbl_x.text = "2.0m\n64px";
+		lbl_x.text = "%.1fm\n%dpx" % [nodecube.size.x, int(nodecube.size.x * 64.0)];
 		lbl_x.global_position = node3d.global_position + Vector3(0, 0, 1.2);
 		lbl_x.modulate = color_x;
-		_label_y = DPULabelPool.get_label(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
-		var lbl_y : Label3D = _label_y.get_node();
-		lbl_y.text = "2.0m\n64px";
-		lbl_y.global_position = node3d.global_position + Vector3(1.2, 0, 0);
-		lbl_y.modulate = color_z;
+		_label_z = DPULabelPool.get_label(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
+		var lbl_z : Label3D = _label_z.get_node();
+		lbl_z.text = "%.1fm\n%dpx" % [nodecube.size.z, int(nodecube.size.z * 64.0)];
+		lbl_z.global_position = node3d.global_position + Vector3(1.2, 0, 0);
+		lbl_z.modulate = color_z;
 		
 		# Draw lines
 		var edge_x := PackedVector3Array();

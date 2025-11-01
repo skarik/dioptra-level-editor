@@ -5,8 +5,9 @@
 [node name="Test-cubegizmo" type="Node3D"]
 
 [node name="TTSCube" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.308478, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.953172, 1.7991, 0.925332)
 script = ExtResource("1_tckmg")
+size = Vector3(3.66197, 3.59821, 5.52411)
 metadata/_custom_type_script = "uid://hy8wovqnrssr"
 
 [node name="Label3D" type="Label3D" parent="."]
