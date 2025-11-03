@@ -76,6 +76,8 @@ func get_surface_vertex() -> PackedVector3Array:
 	return _surface_array[Mesh.ARRAY_VERTEX];
 func get_surface_normal() -> PackedVector3Array:
 	return _surface_array[Mesh.ARRAY_NORMAL];
+func get_surface_color() -> PackedColorArray:
+	return _surface_array[Mesh.ARRAY_COLOR];
 func get_surface_tex_uv() -> PackedVector2Array:
 	return _surface_array[Mesh.ARRAY_TEX_UV];
 func get_surface_index() -> PackedInt32Array:
@@ -148,6 +150,9 @@ func has_indicies() -> bool:
 ## Does this mesher have normals?
 func has_normals() -> bool:
 	return (_types_contained & TypeFlags.NORMAL) != 0;
+## Does this mesher have vertex colors?
+func has_colors() -> bool:
+	return (_types_contained & TypeFlags.COLOR) != 0;
 ## Does this mesher have UVs?
 func has_uv() -> bool:
 	return (_types_contained & TypeFlags.TEX_UV) != 0;

@@ -14,11 +14,13 @@ func _disable_plugin() -> void:
 
 func _enter_tree() -> void:
 	# Initialization of the plugin goes here.
+	DioptraInterface.init_instance();
 	pass
 
 func _exit_tree() -> void:
 	# Clean-up of the plugin goes here.
 	DPULabelPool.free_instance();
+	DioptraInterface.free_instance();
 	pass
 
 func _has_main_screen():

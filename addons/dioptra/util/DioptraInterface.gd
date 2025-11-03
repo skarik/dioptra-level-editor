@@ -9,6 +9,12 @@ static func _get_instance() -> DioptraInterface:
 	assert(_Instance != null);
 	return _Instance;
 
+static func init_instance() -> void:
+	_Instance = DioptraInterface.new();
+	
+static func free_instance() -> void:
+	_Instance = null; # Refcounted, so should clear up
+
 #------------------------------------------------------------------------------#
 
 var _scale_dpunits_per : int = 128;

@@ -64,6 +64,7 @@ func _exit_tree() -> void:
 #------------------------------------------------------------------------------#
 
 var _editorNode : EditorDP_InternalTool = null;
+var _currentTool : DPUTool = null;
 
 func onToolSelect(tool : ToolMode) -> void:
 	# We want to make a EditorDP_InternalTool node.
@@ -73,11 +74,38 @@ func onToolSelect(tool : ToolMode) -> void:
 		# We need this node in the scene so it can update the sizes of items
 		EditorInterface.get_edited_scene_root().add_child(_editorNode, false, Node.INTERNAL_MODE_FRONT);
 	
+	# Switch to the editor mode
 	EditorInterface.get_selection().clear();
 	if tool != ToolMode.SELECT:
+		_editorNode.basis = Basis.IDENTITY;
+		_editorNode.global_position = Vector3.ZERO;
 		EditorInterface.get_selection().add_node(_editorNode);
+	else:
+		_editorNode.queue_free();
+	
+	var newTool : DPUTool = null;
+	# Select the type of tool:
+	if tool == ToolMode.SELECT:
+		if _currentTool != null:
+			_currentTool.cleanup();
+		_currentTool = null;
+	elif tool == ToolMode.BOX_TEST:
+		if not (_currentTool is DPUTool_BoxTest):
+			newTool = DPUTool_BoxTest.new(self);
+	
+	# Switch to the new tool after cleaning up
+	if newTool != null:
+		if _currentTool != null:
+			_currentTool.cleanup();
+		_currentTool = newTool;
+	
+	# Tools will be automatically cleared as they are RefCounted.
 	
 	pass
+
+## Returns editor node, mostly for updating gizmos
+#func get_editor_node() -> EditorDP_InternalTool:
+	#return _editorNode;
 
 #------------------------------------------------------------------------------#
 
@@ -88,4 +116,6 @@ func _handles(object: Object) -> bool:
 	return false;
 	
 func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
-	return EditorPlugin.AFTER_GUI_INPUT_STOP;
+	if _currentTool != null:
+		return _currentTool.forward_3d_gui_input(viewport_camera, event);
+	return EditorPlugin.AFTER_GUI_INPUT_PASS;

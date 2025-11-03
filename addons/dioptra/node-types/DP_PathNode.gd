@@ -79,6 +79,7 @@ func next_remove_from_previous_list() -> void:
 			nextNode.previousNodes.remove_at(foundIndex);
 		pass
 		
+#------------------------------------------------------------------------------#
 ## Utility Functions for using DP_PathNodes Below:
 
 ## Get the position along the path given parametric input:

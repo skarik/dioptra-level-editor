@@ -1,35 +1,24 @@
-[gd_scene load_steps=3 format=3 uid="uid://bts6ia1mem5ul"]
+[gd_scene load_steps=4 format=3 uid="uid://bts6ia1mem5ul"]
 
 [ext_resource type="Script" uid="uid://88tx0flt4ny8" path="res://addons/dioptra/editor/DP_PanelTools.gd" id="1_dku0r"]
-[ext_resource type="Texture2D" uid="uid://n5ppa5ptcmrl" path="res://addons/dioptra/asset/plugin-icon.svg" id="1_qkr31"]
+[ext_resource type="Texture2D" uid="uid://sl8ox5v87pin" path="res://addons/dioptra/asset/default/tool-godot.svg" id="2_wko21"]
+[ext_resource type="Texture2D" uid="uid://6qf0h3qjt6si" path="res://addons/dioptra/asset/default/tool-cub.svg" id="3_wko21"]
 
-[node name="DP Tools" type="Control"]
-layout_mode = 3
-anchors_preset = 0
-offset_right = 64.0
-offset_bottom = 560.0
+[node name="DP Tools" type="HFlowContainer"]
+offset_right = 48.0
 script = ExtResource("1_dku0r")
 
-[node name="HFlowContainer" type="HFlowContainer" parent="."]
-clip_contents = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Selection" type="Button" parent="HFlowContainer"]
+[node name="Selection" type="Button" parent="."]
 layout_mode = 2
 tooltip_text = "Select"
 toggle_mode = true
-icon = ExtResource("1_qkr31")
+icon = ExtResource("2_wko21")
 
-[node name="Box" type="Button" parent="HFlowContainer"]
+[node name="Box" type="Button" parent="."]
 layout_mode = 2
 tooltip_text = "Make Box"
 toggle_mode = true
-icon = ExtResource("1_qkr31")
+icon = ExtResource("3_wko21")
 
-[connection signal="pressed" from="HFlowContainer/Selection" to="." method="onSelect_Select"]
-[connection signal="pressed" from="HFlowContainer/Box" to="." method="onSelect_BoxTest"]
+[connection signal="pressed" from="Selection" to="." method="onSelect_Select"]
+[connection signal="pressed" from="Box" to="." method="onSelect_BoxTest"]
