@@ -67,6 +67,16 @@ static func quad_set_uvs(mesher : DPArrayMesher, corner_00 : int,
 	tex_uv[corner_00 + 2] = uv_01;
 	tex_uv[corner_00 + 3] = uv_11;
 	pass
+## Sets the UVs of the quad at the given corner
+static func quad_set_uv2s(mesher : DPArrayMesher, corner_00 : int,
+				  uv_00 : Vector2, uv_10 : Vector2,
+				  uv_01 : Vector2, uv_11 : Vector2) -> void:
+	var tex_uv2 = mesher.get_surface_tex_uv2();
+	tex_uv2[corner_00 + 0] = uv_00;
+	tex_uv2[corner_00 + 1] = uv_10;
+	tex_uv2[corner_00 + 2] = uv_01;
+	tex_uv2[corner_00 + 3] = uv_11;
+	pass
 	
 ## Sets the normal of the quad
 static func quad_set_normal(mesher : DPArrayMesher, corner_00 : int, in_normal : Vector3) -> void:

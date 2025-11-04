@@ -7,6 +7,7 @@ var box_end : Vector3 = Vector3.ZERO;
 var _label_x : DPULabelPool.LabelNodeItem = null;
 var _label_y : DPULabelPool.LabelNodeItem = null;
 var _label_z : DPULabelPool.LabelNodeItem = null;
+var _lines : DPULines3D.LinesItem = null;
 
 func cleanup() -> void:
 	if _label_x:
@@ -18,6 +19,8 @@ func cleanup() -> void:
 	if _label_z:
 		_label_z.release();
 		_label_z = null;
+	if _lines:
+		_lines = null;
 
 func update(viewport_camera : Camera3D) -> void:
 	# Cleanup the previous state:
