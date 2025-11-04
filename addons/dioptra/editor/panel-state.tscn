@@ -1,0 +1,52 @@
+[gd_scene load_steps=2 format=3 uid="uid://w4h7fd6pioos"]
+
+[ext_resource type="Texture2D" uid="uid://ckolvoynw0ckf" path="res://addons/dioptra/asset/default/block-dot.svg" id="1_t7e5s"]
+
+[node name="DP State" type="HFlowContainer"]
+offset_right = 704.0
+offset_bottom = 160.0
+size_flags_horizontal = 0
+size_flags_vertical = 0
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 2
+text = "Select:"
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 2
+icon = ExtResource("1_t7e5s")
+
+[node name="Button2" type="Button" parent="."]
+layout_mode = 2
+icon = ExtResource("1_t7e5s")
+
+[node name="Button3" type="Button" parent="."]
+layout_mode = 2
+icon = ExtResource("1_t7e5s")
+
+[node name="Label2" type="Label" parent="."]
+layout_mode = 2
+text = "Editor:"
+
+[node name="Button4" type="Button" parent="."]
+layout_mode = 2
+icon = ExtResource("1_t7e5s")
+
+[node name="Button5" type="Button" parent="."]
+layout_mode = 2
+icon = ExtResource("1_t7e5s")
+
+[node name="Button6" type="Button" parent="."]
+layout_mode = 2
+icon = ExtResource("1_t7e5s")
+
+[node name="SpinBox" type="SpinBox" parent="."]
+layout_mode = 2
+max_value = 128.0
+value = 16.0
+rounded = true
+alignment = 1
+
+[node name="Label3" type="Label" parent="."]
+layout_mode = 2
+text = "View:"

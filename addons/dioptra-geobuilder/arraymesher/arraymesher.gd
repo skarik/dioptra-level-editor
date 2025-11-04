@@ -30,6 +30,7 @@ var _index_count: int = 0;
 var _primitive_type : Mesh.PrimitiveType = Mesh.PRIMITIVE_TRIANGLES;
 
 const _FuncQuads = preload("arraymesher_quads.gd");
+const _FuncMisc = preload("arraymesher_misc.gd");
 
 ## Creates a new DP with the given arrays available in it.
 func _init(types : int = TypeFlags.VERTEX | TypeFlags.NORMAL | TypeFlags.TEX_UV | TypeFlags.INDEX) -> void:
@@ -85,6 +86,11 @@ func get_surface_index() -> PackedInt32Array:
 	
 func get_primitive_type() -> Mesh.PrimitiveType:
 	return _primitive_type;
+	
+func get_vertex_count() -> int:
+	return _vertex_count;
+func get_index_count() -> int:
+	return _index_count;
 
 #------------------------------------------------------------------------------#
 
@@ -168,3 +174,35 @@ func has_uv2() -> bool:
 func quad_add(position : Vector3, up : Vector3, right : Vector3) -> void:
 	assert(has_indicies());
 	_FuncQuads.quad_add(self, position, up, right);
+	
+## Adds a quad with given indicies:
+func quad_add_indicies(corner_00 : int, corner_10 : int,
+					   corner_01 : int, corner_11 : int) -> void:
+	assert(has_indicies());
+	_FuncQuads.quad_add_indicies(self, corner_00, corner_10, corner_01, corner_11);
+
+## Sets the UVs of the quad at the given corner
+func quad_set_uvs(corner_00 : int,
+				  uv_00 : Vector2, uv_10 : Vector2,
+				  uv_01 : Vector2, uv_11 : Vector2) -> void:
+	assert(corner_00 + 4 <= _vertex_count);
+	assert(has_uv());
+	_FuncQuads.quad_set_uvs(self, corner_00, uv_00, uv_10, uv_01, uv_11);
+
+## Sets the normal of the quad
+func quad_set_normal(corner_00 : int, normal : Vector3) -> void:
+	assert(corner_00 + 4 <= _vertex_count);
+	assert(has_normals());
+	_FuncQuads.quad_set_normal(self, corner_00, normal);
+	
+## Sets the UVs of the quad at the given corner
+func quad_set_colors(corner_00 : int,
+					 color_00 : Color, color_10 : Color,
+					 color_01 : Color, color_11 : Color) -> void:
+	assert(corner_00 + 4 <= _vertex_count);
+	assert(has_colors());
+	_FuncQuads.quad_set_colors(self, corner_00, color_00, color_10, color_01, color_11);
+
+## Adds a point to the data.
+func point_add(position : Vector3) -> void:
+	_FuncMisc.point_add(self, position);

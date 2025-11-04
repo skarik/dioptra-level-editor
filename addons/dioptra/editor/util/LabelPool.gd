@@ -102,9 +102,11 @@ func _exit_tree() -> void:
 	# Clean up all the nodes
 	for item in _used_labels:
 		item.get_node().queue_free();
+		item.free();
 	_used_labels.clear();
 	for item in _unused_labels:
 		item.get_node().queue_free();
+		item.free();
 	_unused_labels.clear();
 	
 ## Get a brand new label to draw the given text with

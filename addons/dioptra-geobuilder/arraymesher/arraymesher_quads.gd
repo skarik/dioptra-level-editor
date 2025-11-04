@@ -41,3 +41,48 @@ static func quad_add(mesher : DPArrayMesher, position : Vector3, up : Vector3, r
 	mesher._vertex_count += 4;
 	mesher._index_count += 6;
 	pass
+
+## Adds a quad with given indicies:
+static func quad_add_indicies(mesher : DPArrayMesher, corner_00 : int, corner_10 : int, corner_01 : int, corner_11 : int) -> void:
+	mesher.add_storage(0, 6);
+
+	var index := mesher.get_surface_index();
+	index[mesher._index_count + 0] = corner_00;
+	index[mesher._index_count + 1] = corner_10;
+	index[mesher._index_count + 2] = corner_01;
+	index[mesher._index_count + 3] = corner_10;
+	index[mesher._index_count + 4] = corner_11;
+	index[mesher._index_count + 5] = corner_01;
+
+	mesher._index_count += 6;
+	pass
+
+## Sets the UVs of the quad at the given corner
+static func quad_set_uvs(mesher : DPArrayMesher, corner_00 : int,
+				  uv_00 : Vector2, uv_10 : Vector2,
+				  uv_01 : Vector2, uv_11 : Vector2) -> void:
+	var tex_uv = mesher.get_surface_tex_uv();
+	tex_uv[corner_00 + 0] = uv_00;
+	tex_uv[corner_00 + 1] = uv_10;
+	tex_uv[corner_00 + 2] = uv_01;
+	tex_uv[corner_00 + 3] = uv_11;
+	pass
+	
+## Sets the normal of the quad
+static func quad_set_normal(mesher : DPArrayMesher, corner_00 : int, in_normal : Vector3) -> void:
+	var normal = mesher.get_surface_normal();
+	normal[corner_00 + 0] = in_normal;
+	normal[corner_00 + 1] = in_normal;
+	normal[corner_00 + 2] = in_normal;
+	normal[corner_00 + 3] = in_normal;
+		
+## Sets the UVs of the quad at the given corner
+static func quad_set_colors(mesher : DPArrayMesher, corner_00 : int,
+					 color_00 : Color, color_10 : Color,
+					 color_01 : Color, color_11 : Color) -> void:
+	var color = mesher.get_surface_color();
+	color[corner_00 + 0] = color_00;
+	color[corner_00 + 1] = color_10;
+	color[corner_00 + 2] = color_01;
+	color[corner_00 + 3] = color_11;
+	pass
