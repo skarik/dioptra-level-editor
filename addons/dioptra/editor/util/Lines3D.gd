@@ -32,6 +32,7 @@ class LinesItem:
 	var colors : PackedColorArray = []; 
 	var width : float = 2.0;
 	var segments : bool = false; ## Is this one big line or a collection of lines?
+	var dpi_aware : bool = true; ## Do we scale up and down for the DPI?
 
 	func _init(lines : DPULines3D) -> void:
 		#_lines = lines;
@@ -133,6 +134,10 @@ func rebuild_line_mesh() -> void:
 		assert(item.points.size() >= 2);
 		if item.segments:
 			assert((item.points.size() % 2) == 0);
+		# Get item info
+		var dpi_scale : float = 1.0;
+		if item.dpi_aware:
+			dpi_scale = EditorInterface.get_editor_scale();
 		# Loop through the points in the item
 		var step_size := 2 if item.segments else 1;
 		am.preallocate(item.points.size() * 8 / step_size, item.points.size() * 12 / step_size);
@@ -153,8 +158,8 @@ func rebuild_line_mesh() -> void:
 				Vector2(0.0, 0.5), Vector2(1.0, 0.5),
 				Vector2(0.0, 0.5), Vector2(1.0, 0.5));
 			am.quad_set_uv2s(vertex_0, 
-				Vector2(item.width, 0.0), Vector2(item.width, 0.0),
-				Vector2(item.width, 0.0), Vector2(item.width, 0.0));
+				Vector2(item.width * dpi_scale, 0.0), Vector2(item.width * dpi_scale, 0.0),
+				Vector2(item.width * dpi_scale, 0.0), Vector2(item.width * dpi_scale, 0.0));
 			am.quad_set_normal(vertex_0, point_1 - point_0);
 			am.quad_set_colors(vertex_0, color_0, color_0, color_1, color_1);
 			
