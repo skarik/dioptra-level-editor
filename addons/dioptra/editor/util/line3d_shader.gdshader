@@ -1,6 +1,8 @@
 shader_type spatial;
 render_mode skip_vertex_transform, unshaded, cull_disabled;
 
+const float AA_RADIUS = 0.707;
+
 void vertex() {
 	// Start with default position
 	vec4 v_position = PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
@@ -19,7 +21,7 @@ void vertex() {
 	vec2 offset = screen_side.xy / screen_side_xy_len * pixel_size;
 	offset *= mix(-1.0, 1.0, UV.x);
 	offset *= v_position.w;
-	offset *= UV2.x;
+	offset *= UV2.x + AA_RADIUS;
 	
 	// Apply outline offset
 	v_position.xy += offset;
@@ -29,12 +31,20 @@ void vertex() {
 	
 	// Pass other junk to pixel shader
 	COLOR = COLOR;
+	UV = vec2(UV.x, AA_RADIUS / (UV2.x + AA_RADIUS));
 }
 
 void fragment() {
-	// Called for every pixel the material is visible on.
+	// Use UV to get the fade out gradient
+	float in_width_grad = UV.x;
+	float in_aa_width_ratio = UV.y;
+	float alpha_blend = 
+		min(1.0, in_width_grad / in_aa_width_ratio)
+		* min(1.0, (1.0 - in_width_grad) / in_aa_width_ratio);
+	
+	// Apply!
 	ALBEDO = COLOR.rgb;
-	ALPHA = COLOR.a;
+	ALPHA = COLOR.a * alpha_blend;
 }
 
 //void light() {
