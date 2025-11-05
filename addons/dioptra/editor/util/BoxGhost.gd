@@ -20,6 +20,7 @@ func cleanup() -> void:
 		_label_z.release();
 		_label_z = null;
 	if _lines:
+		_lines.release();
 		_lines = null;
 
 func update(viewport_camera : Camera3D) -> void:
@@ -46,6 +47,49 @@ func update(viewport_camera : Camera3D) -> void:
 	
 	# TODO: mesh
 	
+	# Wires
+	if _lines == null:
+		_lines = DPULines3D.get_line();
+		_lines.points.resize(24);
+		_lines.colors.resize(24);
+		_lines.segments = true;
+
+	_lines.points[0] = center + Vector3(-halfsize.x, -halfsize.y, -halfsize.z);
+	_lines.points[1] = center + Vector3( halfsize.x, -halfsize.y, -halfsize.z);
+	_lines.points[2] = center + Vector3(-halfsize.x,  halfsize.y, -halfsize.z);
+	_lines.points[3] = center + Vector3( halfsize.x,  halfsize.y, -halfsize.z);
+	
+	_lines.points[4] = center + Vector3(-halfsize.x, -halfsize.y,  halfsize.z);
+	_lines.points[5] = center + Vector3( halfsize.x, -halfsize.y,  halfsize.z);
+	_lines.points[6] = center + Vector3(-halfsize.x,  halfsize.y,  halfsize.z);
+	_lines.points[7] = center + Vector3( halfsize.x,  halfsize.y,  halfsize.z);
+	
+	_lines.points[8] = center + Vector3( halfsize.x, -halfsize.y, -halfsize.z);
+	_lines.points[9] = center + Vector3( halfsize.x, -halfsize.y,  halfsize.z);
+	_lines.points[10]= center + Vector3( halfsize.x,  halfsize.y, -halfsize.z);
+	_lines.points[11]= center + Vector3( halfsize.x,  halfsize.y,  halfsize.z);
+	
+	_lines.points[12]= center + Vector3(-halfsize.x, -halfsize.y, -halfsize.z);
+	_lines.points[13]= center + Vector3(-halfsize.x, -halfsize.y,  halfsize.z);
+	_lines.points[14]= center + Vector3(-halfsize.x,  halfsize.y, -halfsize.z);
+	_lines.points[15]= center + Vector3(-halfsize.x,  halfsize.y,  halfsize.z);
+	
+	_lines.points[16]= center + Vector3(-halfsize.x, -halfsize.y, -halfsize.z);
+	_lines.points[17]= center + Vector3(-halfsize.x,  halfsize.y, -halfsize.z);
+	_lines.points[18]= center + Vector3( halfsize.x, -halfsize.y, -halfsize.z);
+	_lines.points[19]= center + Vector3( halfsize.x,  halfsize.y, -halfsize.z);
+	
+	_lines.points[20]= center + Vector3(-halfsize.x, -halfsize.y,  halfsize.z);
+	_lines.points[21]= center + Vector3(-halfsize.x,  halfsize.y,  halfsize.z);
+	_lines.points[22]= center + Vector3( halfsize.x, -halfsize.y,  halfsize.z);
+	_lines.points[23]= center + Vector3( halfsize.x,  halfsize.y,  halfsize.z);
+	
+	for i in _lines.colors.size():
+		_lines.colors[i] = Color.WHITE;
+	
+	_lines.update();
+	
+	# Labels:
 	_label_x = DPULabelPool.get_label(viewport_camera);
 	var lbl_x : Label3D = _label_x.get_node();
 	lbl_x.text = "%.1fm\n%dpx" % [size.x, int(size.x * 64.0)];

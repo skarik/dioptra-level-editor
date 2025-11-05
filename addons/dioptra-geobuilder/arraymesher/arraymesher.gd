@@ -81,6 +81,8 @@ func get_surface_color() -> PackedColorArray:
 	return _surface_array[Mesh.ARRAY_COLOR];
 func get_surface_tex_uv() -> PackedVector2Array:
 	return _surface_array[Mesh.ARRAY_TEX_UV];
+func get_surface_tex_uv2() -> PackedVector2Array:
+	return _surface_array[Mesh.ARRAY_TEX_UV2];
 func get_surface_index() -> PackedInt32Array:
 	return _surface_array[Mesh.ARRAY_INDEX];
 	
@@ -172,43 +174,43 @@ func has_uv2() -> bool:
 ##
 ## Adds a quad to the vertex positions, with normal if enabled. UVs added defaults to a 0,0 -> 1,1 cube.
 func quad_add(position : Vector3, up : Vector3, right : Vector3) -> void:
-	assert(has_indicies());
+	assert(has_indicies(), "Array mesher missing Indicies's.");
 	_FuncQuads.quad_add(self, position, up, right);
 	
 ## Adds a quad with given indicies:
 func quad_add_indicies(corner_00 : int, corner_10 : int,
 					   corner_01 : int, corner_11 : int) -> void:
-	assert(has_indicies());
+	assert(has_indicies(), "Array mesher missing Indicies's.");
 	_FuncQuads.quad_add_indicies(self, corner_00, corner_10, corner_01, corner_11);
 
 ## Sets the UVs of the quad at the given corner
 func quad_set_uvs(corner_00 : int,
 				  uv_00 : Vector2, uv_10 : Vector2,
 				  uv_01 : Vector2, uv_11 : Vector2) -> void:
-	assert(corner_00 + 4 <= _vertex_count);
-	assert(has_uv());
+	assert(corner_00 + 4 <= _vertex_count, "Not enough verticies to work from the given index");
+	assert(has_uv(), "Array mesher missing UV's.");
 	_FuncQuads.quad_set_uvs(self, corner_00, uv_00, uv_10, uv_01, uv_11);
 
 ## Sets the UV2s of the quad at the given corner
 func quad_set_uv2s(corner_00 : int,
 				  uv_00 : Vector2, uv_10 : Vector2,
 				  uv_01 : Vector2, uv_11 : Vector2) -> void:
-	assert(corner_00 + 4 <= _vertex_count);
-	assert(has_uv2());
+	assert(corner_00 + 4 <= _vertex_count, "Not enough verticies to work from the given index");
+	assert(has_uv2(), "Array mesher missing UV2's.");
 	_FuncQuads.quad_set_uv2s(self, corner_00, uv_00, uv_10, uv_01, uv_11);
 
 ## Sets the normal of the quad
 func quad_set_normal(corner_00 : int, normal : Vector3) -> void:
-	assert(corner_00 + 4 <= _vertex_count);
-	assert(has_normals());
+	assert(corner_00 + 4 <= _vertex_count, "Not enough verticies to work from the given index");
+	assert(has_normals(), "Array mesher missing normals.");
 	_FuncQuads.quad_set_normal(self, corner_00, normal);
 	
 ## Sets the UVs of the quad at the given corner
 func quad_set_colors(corner_00 : int,
 					 color_00 : Color, color_10 : Color,
 					 color_01 : Color, color_11 : Color) -> void:
-	assert(corner_00 + 4 <= _vertex_count);
-	assert(has_colors());
+	assert(corner_00 + 4 <= _vertex_count, "Not enough verticies to work from the given index");
+	assert(has_colors(), "Array mesher missing colorss.");
 	_FuncQuads.quad_set_colors(self, corner_00, color_00, color_10, color_01, color_11);
 
 ## Adds a point to the data.

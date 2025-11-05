@@ -1,4 +1,5 @@
-extends Node
+@tool
+extends Node3D
 class_name DPULines3D
 
 #------------------------------------------------------------------------------#
@@ -61,8 +62,8 @@ func _init() -> void:
 	#_unused_lines = [];
 	_lines = [];
 	_line_renderer = MeshInstance3D.new();
-	_line_renderer.owner = self;
 	add_child(_line_renderer, false, Node.INTERNAL_MODE_FRONT);
+	_line_renderer.owner = self;
 	
 	_line_rebuild_requested = false;
 	pass
@@ -70,8 +71,9 @@ func _init() -> void:
 func _exit_tree() -> void:
 	# Clean up all the items
 	for item in _lines:
-		if item != null:
-			item.free();
+		#if item != null:
+		#	item.free();
+		item = null;
 	_lines.clear();
 	# We shouldn't need to touch _line_renderer, as it's a child of this node.
 
@@ -96,6 +98,7 @@ static func get_line() -> LinesItem:
 
 func _get_line() -> LinesItem:
 	var line = LinesItem.new(self);
+	_lines.push_back(line);
 	_request_update();
 	return line;
 	
@@ -106,7 +109,7 @@ static func release_item(line : LinesItem) -> void:
 func _release_item(line : LinesItem) -> void:
 	var line_item_pos := _lines.find(line);
 	if line_item_pos != -1:
-		_lines[line_item_pos].free();
+		#_lines[line_item_pos].free();
 		_lines.remove_at(line_item_pos);
 		_request_update();
 	pass
@@ -115,9 +118,10 @@ func _release_item(line : LinesItem) -> void:
 
 ## Rebuilds the internal line mesh immediately
 func rebuild_line_mesh() -> void:
-	var mesher := DPArrayMesher.new(DPArrayMesher.TypeFlags.VERTEX
-		| DPArrayMesher.TypeFlags.NORMAL
-		| DPArrayMesher.TypeFlags.COLOR | DPArrayMesher.TypeFlags.TEX_UV
+	var am := DPArrayMesher.new(DPArrayMesher.TypeFlags.VERTEX \
+		| DPArrayMesher.TypeFlags.NORMAL \
+		| DPArrayMesher.TypeFlags.COLOR | DPArrayMesher.TypeFlags.TEX_UV \
+		| DPArrayMesher.TypeFlags.TEX_UV2 \
 		| DPArrayMesher.TypeFlags.INDEX);
 	
 	for item in _lines:
@@ -125,46 +129,58 @@ func rebuild_line_mesh() -> void:
 		if item == null:
 			continue;
 		# Ensure item has valid data
-		assert(item._points.size() == item._colors.size());
-		assert(item._points.size() >= 2);
+		assert(item.points.size() == item.colors.size());
+		assert(item.points.size() >= 2);
 		if item.segments:
-			assert((item._points.size() % 2) == 0);
+			assert((item.points.size() % 2) == 0);
 		# Loop through the points in the item
 		var step_size := 2 if item.segments else 1;
-		for i in range(0, item._points.size() - 1, step_size):
+		am.preallocate(item.points.size() * 8 / step_size, item.points.size() * 12 / step_size);
+		for i in range(0, item.points.size() - 1, step_size):
 			var point_0 := item.points[i];
-			var point_1 := item.points[i];
+			var point_1 := item.points[i + 1];
 			var color_0 := item.colors[i];
-			var color_1 := item.colors[i];
+			var color_1 := item.colors[i + 1];
 		
-			var vertex_0 = mesher.get_vertex_count();
+			var vertex_0 = am.get_vertex_count();
 		
-			mesher.add_point(point_0);
-			mesher.add_point(point_0);
-			mesher.add_point(point_1);
-			mesher.add_point(point_1);
+			am.point_add(point_0 + Vector3.LEFT * 0.1);
+			am.point_add(point_0 + Vector3.UP * 0.1);
+			am.point_add(point_1 + Vector3.LEFT * 0.1);
+			am.point_add(point_1 + Vector3.UP * 0.1);
 			
-			mesher.quad_set_uvs(vertex_0, 
+			am.quad_set_uvs(vertex_0, 
 				Vector2(0.0, 0.5), Vector2(1.0, 0.5),
 				Vector2(0.0, 0.5), Vector2(1.0, 0.5));
-			mesher.quad_set_uv2s(vertex_0, 
+			am.quad_set_uv2s(vertex_0, 
 				Vector2(item.width, 0.0), Vector2(item.width, 0.0),
 				Vector2(item.width, 0.0), Vector2(item.width, 0.0));
-			mesher.quad_set_normal(vertex_0, point_1 - point_0);
-			mesher.quad_set_colors(vertex_0, color_0, color_0, color_1, color_1);
+			am.quad_set_normal(vertex_0, point_1 - point_0);
+			am.quad_set_colors(vertex_0, color_0, color_0, color_1, color_1);
 			
-			mesher.quad_add_indicies(
+			am.quad_add_indicies(
 				vertex_0, vertex_0 + 1,
 				vertex_0 + 2, vertex_0 + 3);
 			pass
 		pass
 		
-	var old_mesh = _line_renderer.mesh;
-	var new_mesh = ArrayMesh.new();
-	new_mesh.add_surface_from_arrays(mesher.get_primitive_type(), mesher.get_surface_array());
-	_line_renderer.mesh = new_mesh;
-	
-	# TODO: check if mesh is freeing properly
-	old_mesh = null;
-	
+	if am.get_index_count() > 0:
+		var old_mesh = _line_renderer.mesh;
+		var new_mesh = ArrayMesh.new();
+		new_mesh.add_surface_from_arrays(am.get_primitive_type(), am.get_surface_array());
+		new_mesh.surface_set_material(0, preload("res://addons/dioptra/editor/util/line3d_material.tres"));
+		_line_renderer.mesh = new_mesh;
+		
+		# TODO: check if mesh is freeing properly
+		old_mesh = null;
+		pass
+	else:
+		var old_mesh = _line_renderer.mesh;
+		_line_renderer.mesh = null;
+		
+		# TODO: check if mesh is freeing properly
+		old_mesh = null;
+		pass
+		
+		
 	pass # End rebuild_line_mesh

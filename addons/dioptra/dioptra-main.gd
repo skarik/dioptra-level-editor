@@ -20,6 +20,7 @@ func _enter_tree() -> void:
 func _exit_tree() -> void:
 	# Clean-up of the plugin goes here.
 	DPULabelPool.free_instance();
+	DPULines3D.free_instance();
 	DioptraInterface.free_instance();
 	pass
 
