@@ -85,7 +85,7 @@ func update(viewport_camera : Camera3D) -> void:
 	_lines.points[23]= center + Vector3( halfsize.x,  halfsize.y,  halfsize.z);
 	
 	for i in _lines.colors.size():
-		_lines.colors[i] = Color.WHITE;
+		_lines.colors[i] = color_w;
 	
 	_lines.update();
 	

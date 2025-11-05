@@ -144,10 +144,10 @@ func rebuild_line_mesh() -> void:
 		
 			var vertex_0 = am.get_vertex_count();
 		
-			am.point_add(point_0 + Vector3.LEFT * 0.1);
-			am.point_add(point_0 + Vector3.UP * 0.1);
-			am.point_add(point_1 + Vector3.LEFT * 0.1);
-			am.point_add(point_1 + Vector3.UP * 0.1);
+			am.point_add(point_0);
+			am.point_add(point_0);
+			am.point_add(point_1);
+			am.point_add(point_1);
 			
 			am.quad_set_uvs(vertex_0, 
 				Vector2(0.0, 0.5), Vector2(1.0, 0.5),
