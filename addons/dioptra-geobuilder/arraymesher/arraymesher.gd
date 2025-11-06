@@ -31,6 +31,7 @@ var _primitive_type : Mesh.PrimitiveType = Mesh.PRIMITIVE_TRIANGLES;
 
 const _FuncQuads = preload("arraymesher_quads.gd");
 const _FuncMisc = preload("arraymesher_misc.gd");
+const _FuncTris = preload("arraymesher_tris.gd");
 
 ## Creates a new DP with the given arrays available in it.
 func _init(types : int = TypeFlags.VERTEX | TypeFlags.NORMAL | TypeFlags.TEX_UV | TypeFlags.INDEX) -> void:
@@ -177,7 +178,7 @@ func quad_add(position : Vector3, up : Vector3, right : Vector3) -> void:
 	assert(has_indicies(), "Array mesher missing Indicies's.");
 	_FuncQuads.quad_add(self, position, up, right);
 	
-## Adds a quad with given indicies:
+## Adds a quad with given indicies.
 func quad_add_indicies(corner_00 : int, corner_10 : int,
 					   corner_01 : int, corner_11 : int) -> void:
 	assert(has_indicies(), "Array mesher missing Indicies's.");
@@ -216,3 +217,12 @@ func quad_set_colors(corner_00 : int,
 ## Adds a point to the data.
 func point_add(position : Vector3) -> void:
 	_FuncMisc.point_add(self, position);
+
+## Adds an array of points to the data
+func points_add(positions : PackedVector3Array) -> void:
+	_FuncMisc.points_add(self, positions);
+	
+## Adds a triangle with the given indicies.
+func tri_add_indicies(corner_0 : int, corner_1 : int, corner_2 : int) -> void:
+	assert(has_indicies(), "Array mesher missing Indicies's.");
+	_FuncTris.tri_add_indicies(self, corner_0, corner_1, corner_2);

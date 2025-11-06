@@ -49,9 +49,6 @@ class LinesItem:
 
 #------------------------------------------------------------------------------#
 
-#var _used_lines : Array[LinesItem];
-#var _unused_lines : Array[LinesItem];
-#var _last_camera : Camera3D = null;
 var _lines : Array[LinesItem];
 var _line_renderer : MeshInstance3D;
 var _line_rebuild_requested : bool = false;

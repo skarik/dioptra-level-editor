@@ -87,11 +87,40 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 		# Loop through each face in the group
 		for i_face in solid.faces.size():
 			var face := solid.faces[i_face];
-			var am := get_mesher.call(face.material);
+			var am : DPArrayMesher = get_mesher.call(face.material);
+			var v0 := am.get_vertex_count();
 			
 			# Build a quad or triangles with the given item
+			var face_corners : PackedVector3Array = [];
+			face_corners.resize(face.corners.size());
+			for i_corner in face.corners.size():
+				face_corners[i_corner] = solid.points[face.corners[i_corner]].v3;
+			am.points_add(face_corners);
+				
+			# Fill in the indicies
+			for i_corner in range(1, face.corners.size() - 1):
+				am.tri_add(v0, v0 + i_corner + 0, v0 + i_corner + 1);
+				
+			pass # i_face
+		pass # i_solid
+	
+	# Find the meshers and add the given meshes
+	var mesh := ArrayMesh.new();
+	var has_data := false;
+	for material_index in mesher_list:
+		var am : DPArrayMesher = mesher_list[material_index];
+		# Only update if there's geometry in the index count
+		if am.get_index_count() > 0:
+			var surface_index = mesh.get_surface_count();
+			mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, am.get_surface_array());
+			mesh.surface_set_material(surface_index, materials[material_index]);
+			has_data = true; # Mark the mesh is valid
+		pass
+	
+	# Apply the mesh
+	mesh_instance.mesh = mesh if has_data else null;
 		
-	pass
+	pass # func _rebuild_editor_map_group
 	
 # Returns the mesh instance for the given group.
 # If it doesn't exist, it will be created
