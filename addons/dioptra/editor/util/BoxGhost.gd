@@ -3,11 +3,15 @@ class_name DPUBoxGhost
 
 var box_start : Vector3 = Vector3.ZERO;
 var box_end : Vector3 = Vector3.ZERO;
+var icon_corners : bool = false;
+var show_size_labels : bool = true;
+var show_edge_highlight : bool = true;
 
 var _label_x : DPULabelPool.LabelNodeItem = null;
 var _label_y : DPULabelPool.LabelNodeItem = null;
 var _label_z : DPULabelPool.LabelNodeItem = null;
 var _lines : DPULines3D.LinesItem = null;
+var _lines_edge : DPULines3D.LinesItem = null;
 
 func cleanup() -> void:
 	if _label_x:
@@ -22,6 +26,10 @@ func cleanup() -> void:
 	if _lines:
 		_lines.release();
 		_lines = null;
+	if _lines_edge:
+		_lines_edge.release();
+		_lines_edge = null;
+	
 
 func update(viewport_camera : Camera3D) -> void:
 	# Cleanup the previous state:
@@ -53,6 +61,7 @@ func update(viewport_camera : Camera3D) -> void:
 		_lines.points.resize(24);
 		_lines.colors.resize(24);
 		_lines.segments = true;
+		_lines.width = 1.0;
 
 	_lines.points[0] = center + Vector3(-halfsize.x, -halfsize.y, -halfsize.z);
 	_lines.points[1] = center + Vector3( halfsize.x, -halfsize.y, -halfsize.z);
@@ -89,22 +98,90 @@ func update(viewport_camera : Camera3D) -> void:
 	
 	_lines.update();
 	
-	# Labels:
-	_label_x = DPULabelPool.get_label(viewport_camera);
-	var lbl_x : Label3D = _label_x.get_node();
-	lbl_x.text = "%.1fm\n%dpx" % [size.x, int(size.x * 64.0)];
-	lbl_x.global_position = center + Vector3(0, -halfsize.y, halfsize.z);
-	lbl_x.modulate = color_x;
+	if show_size_labels:
+		# Labels:
+		_label_x = DPULabelPool.get_label(viewport_camera);
+		_label_z = DPULabelPool.get_label(viewport_camera);
+		if size.y > 0:
+			_label_y = DPULabelPool.get_label(viewport_camera);
+		_update_labels(viewport_camera);
+		
+	if show_edge_highlight:
+		if _lines_edge == null:
+			_lines_edge = DPULines3D.get_line();
+			_lines_edge.points.resize(6);
+			_lines_edge.colors.resize(6);
+			_lines_edge.segments = true;
+			_lines_edge.width = 3.0;
+		_update_edge(viewport_camera);
 	
-	_label_z = DPULabelPool.get_label(viewport_camera);
-	var lbl_z : Label3D = _label_z.get_node();
-	lbl_z.text = "%.1fm\n%dpx" % [size.z, int(size.z * 64.0)];
-	lbl_z.global_position = center + Vector3(halfsize.x, -halfsize.y, 0);
-	lbl_z.modulate = color_z;
+	pass
+
+func _update_labels(viewport_camera : Camera3D) -> void:
+	# Update the current state
+	var size := (box_start - box_end).abs();
+	var halfsize := size * 0.5;
+	var center := (box_start + box_end) * 0.5;
 	
-	if size.y > 0:
-		_label_y = DPULabelPool.get_label(viewport_camera);
+	# Get the theme colors
+	var color_x : Color = EditorInterface.get_editor_theme().get_color("property_color_x", "Editor");
+	var color_y : Color = EditorInterface.get_editor_theme().get_color("property_color_y", "Editor");
+	var color_z : Color = EditorInterface.get_editor_theme().get_color("property_color_z", "Editor");
+	
+	# Get the sign of all edges:
+	var delta := viewport_camera.global_position - center;
+	var signs := delta.sign();
+	
+	if _label_x:
+		var lbl_x : Label3D = _label_x.get_node();
+		lbl_x.visible = true;
+		lbl_x.text = "%.1fm\n%dpx" % [size.x, int(size.x * 64.0)];
+		lbl_x.global_position = center + Vector3(0, halfsize.y, halfsize.z) * signs;
+		lbl_x.modulate = color_x;
+	
+	if _label_z:
+		var lbl_z : Label3D = _label_z.get_node();
+		lbl_z.visible = true;
+		lbl_z.text = "%.1fm\n%dpx" % [size.z, int(size.z * 64.0)];
+		lbl_z.global_position = center + Vector3(halfsize.x, halfsize.y, 0) * signs;
+		lbl_z.modulate = color_z;
+	
+	if _label_y:
 		var lbl_y : Label3D = _label_y.get_node();
+		lbl_y.visible = true;
 		lbl_y.text = "%.1fm\n%dpx" % [size.y, int(size.y * 64.0)];
-		lbl_y.global_position = center + Vector3(halfsize.x, 0, halfsize.z);
+		lbl_y.global_position = center + Vector3(halfsize.x, 0, halfsize.z) * signs;
 		lbl_y.modulate = color_y;
+
+func _update_edge(viewport_camera : Camera3D) -> void:
+	# Update the current state
+	var size := (box_start - box_end).abs();
+	var halfsize := size * 0.5;
+	var center := (box_start + box_end) * 0.5;
+	
+	# Get the theme colors
+	var color_x : Color = EditorInterface.get_editor_theme().get_color("axis_x_color", "Editor");
+	var color_y : Color = EditorInterface.get_editor_theme().get_color("axis_y_color", "Editor");
+	var color_z : Color = EditorInterface.get_editor_theme().get_color("axis_z_color", "Editor");
+	
+	# Get the sign of all edges:
+	var delta := viewport_camera.global_position - center;
+	var signs := delta.sign();
+	
+	if _lines_edge:
+		_lines_edge.points[0] = center + Vector3(-halfsize.x, halfsize.y, halfsize.z) * signs;
+		_lines_edge.points[1] = center + Vector3( halfsize.x, halfsize.y, halfsize.z) * signs;
+		_lines_edge.colors[0] = color_x;
+		_lines_edge.colors[1] = color_x;
+		
+		_lines_edge.points[2] = center + Vector3(halfsize.x, halfsize.y, -halfsize.z) * signs;
+		_lines_edge.points[3] = center + Vector3(halfsize.x, halfsize.y,  halfsize.z) * signs;
+		_lines_edge.colors[2] = color_z;
+		_lines_edge.colors[3] = color_z;
+		
+		_lines_edge.points[4] = center + Vector3(halfsize.x, -halfsize.y, halfsize.z) * signs;
+		_lines_edge.points[5] = center + Vector3(halfsize.x,  halfsize.y, halfsize.z) * signs;
+		_lines_edge.colors[4] = color_y;
+		_lines_edge.colors[5] = color_y;
+		
+		_lines_edge.update();

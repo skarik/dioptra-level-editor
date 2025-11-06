@@ -6,5 +6,4 @@
 
 [node name="DP_Map" type="Node3D" parent="."]
 script = ExtResource("1_mu5qe")
-materials = null
 metadata/_custom_type_script = "uid://b1o8seedypiyh"

@@ -28,12 +28,12 @@ void vertex() {
 	vec2 glassUVs = vec2(float(INSTANCE_ID % 8), float(INSTANCE_ID / 8));
 	glassUVs += vec2(0.5, 0.5);
 	glassUVs /= vec2(8.0, 3.0);
-	
+
 	vec3 viewPosition = (MODELVIEW_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	vec3 viewNormal = MODELVIEW_NORMAL_MATRIX * NORMAL;
 	vec2 shineUVs = viewPosition.xy + viewNormal.xy;
 	mat2 shineRotation = mat2(vec2(viewNormal.x, -viewNormal.y), viewNormal.yx);
-	
+
 	shineUVs = shineUVs.xy * shineRotation;
 	shineUVs *= 3.0;
 
