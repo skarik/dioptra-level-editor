@@ -1,5 +1,6 @@
 @tool
 extends EditorPlugin
+## Plugin for just dealing with the node types and their presence in the editor.
 
 func _enter_tree() -> void:
 	# Initialization of the plugin goes here.
