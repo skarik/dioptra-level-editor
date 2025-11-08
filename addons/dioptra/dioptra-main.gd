@@ -1,12 +1,19 @@
 @tool
 extends EditorPlugin
 
-# The main plugin is located at res://addons/dioptra/
-const cPluginName = "dioptra"
+## Directory of the main plugin
+const cPluginName = "dioptra";
+## Directory of the dependant geobuilder plugin we need to function
+const cPluginName_Geobuilder = "dioptra-geobuilder";
 
 func _enable_plugin() -> void:
 	EditorInterface.set_plugin_enabled(cPluginName + "/node-types", true)
 	EditorInterface.set_plugin_enabled(cPluginName + "/editor", true)
+	
+	# Restart the Geobuilder for Dioptra (get around nullref of class definitions that Godot gets stuck in sometimes)
+	if EditorInterface.is_plugin_enabled(cPluginName_Geobuilder):
+		EditorInterface.set_plugin_enabled(cPluginName_Geobuilder, false);
+	EditorInterface.set_plugin_enabled(cPluginName_Geobuilder, true);
 
 func _disable_plugin() -> void:
 	EditorInterface.set_plugin_enabled(cPluginName + "/node-types", false)
