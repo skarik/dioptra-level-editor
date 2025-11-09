@@ -10,6 +10,10 @@ var _value : Vector3i;
 var v3 : Vector3:
 	get = get_v3,
 	set = set_v3
+## Get the underlying storage of the map vector
+var v3i : Vector3i:
+	get = get_v3i,
+	set = set_v3i
 
 func _init(v : Variant = Vector3.ZERO) -> void:
 	if v is Vector3:

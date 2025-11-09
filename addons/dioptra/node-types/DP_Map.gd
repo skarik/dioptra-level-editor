@@ -77,7 +77,7 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 	# Maintain a dictionary of all the mats to array mesher
 	var mesher_list : Dictionary[int, DPArrayMesher] = {};
 	var get_mesher = func(material_index : int) -> DPArrayMesher:
-		if mesher_list[material_index] == null:
+		if not mesher_list.has(material_index):
 			mesher_list[material_index] = DPArrayMesher.new();
 		return mesher_list[material_index];
 	
@@ -96,10 +96,15 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 			for i_corner in face.corners.size():
 				face_corners[i_corner] = solid.points[face.corners[i_corner]].v3;
 			am.points_add(face_corners);
+			
+			# Get a normal for the face
+			var normal : Vector3 = -((face_corners[1] - face_corners[0]).cross(face_corners[2] - face_corners[0])).normalized();
+			for i_vertex in range(v0, am.get_vertex_count()):
+				am.get_surface_normal()[i_vertex] = normal;
 				
 			# Fill in the indicies
 			for i_corner in range(1, face.corners.size() - 1):
-				am.tri_add(v0, v0 + i_corner + 0, v0 + i_corner + 1);
+				am.tri_add_indicies(v0, v0 + i_corner + 0, v0 + i_corner + 1);
 				
 			pass # i_face
 		pass # i_solid
@@ -113,7 +118,7 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 		if am.get_index_count() > 0:
 			var surface_index = mesh.get_surface_count();
 			mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, am.get_surface_array());
-			mesh.surface_set_material(surface_index, materials[material_index]);
+			mesh.surface_set_material(surface_index, null if (material_index == -1) else materials[material_index]);
 			has_data = true; # Mark the mesh is valid
 		pass
 	
@@ -126,7 +131,7 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 # If it doesn't exist, it will be created
 func _editor_get_mesh_instance(group_index : int) -> MeshInstance3D:
 	if group_index >= _editor_mesh_instances.size():
-		_editor_mesh_instances.resize(group_index);
+		_editor_mesh_instances.resize(group_index + 1);
 		
 	# fill in if null, instantiate a hidden child :)
 	if _editor_mesh_instances[group_index] == null:
@@ -136,3 +141,26 @@ func _editor_get_mesh_instance(group_index : int) -> MeshInstance3D:
 		_editor_mesh_instances[group_index] = mesh_renderer;
 		
 	return _editor_mesh_instances[group_index];
+
+## Adds the given solid to the map
+func editor_add_solid(solid : DPMapSolid) -> void:
+	assert(not solids.has(solid), "Solid that already exists in the editor attempted to be added");
+	
+	# First, add it to the solids list:
+	solids.append(solid);
+	# Now, make it part of an editor group
+	var mesh_group : EditorMeshGroup = null;
+	if _editor_mesh_groups.is_empty():
+		_editor_mesh_groups.append(EditorMeshGroup.new());
+		mesh_group = _editor_mesh_groups[0];
+		mesh_group.start_solid = 0;
+	else:
+		mesh_group = _editor_mesh_groups[0];
+		
+	# For now make it run the whole way
+	mesh_group.end_solid = solids.size();
+	
+	# And it's added!
+	pass
+
+#------------------------------------------------------------------------------#

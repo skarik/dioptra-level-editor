@@ -24,6 +24,7 @@ func _init(plugin : DioptraEditorMainPlugin) -> void:
 func cleanup() -> void:
 	if _ghost_box != null:
 		_ghost_box.cleanup()
+		_ghost_box = null;
 	
 ## Overrideable GUI input handling
 func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
@@ -135,7 +136,17 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 		
 		pass
 	elif _state == TOOLSTATE_WAITING_WITH_CUBE:
+		# Update ghost for the camera when we're working here:
+		_ghost_box.update(viewport_camera);
+		
 		# Waiting for the user to commit the box or edit the box
+		if event is InputEventKey and event.keycode == KEY_ENTER:			
+			# Create a cube in the current map with the ghost:
+			_add_box();
+		
+			# Clean up the state of the tool
+			_ghost_box.cleanup();
+			_state = TOOLSTATE_WAITING; # Reset
 		
 		# Otherwise, let other events through
 		return EditorPlugin.AFTER_GUI_INPUT_PASS;
@@ -143,9 +154,47 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 	
 	return EditorPlugin.AFTER_GUI_INPUT_STOP;
 
-## Overridable frame-update 
 func process(delta: float) -> void:
 	pass
 	
+#------------------------------------------------------------------------------#
 	
+# Adds a box to the current map. Builds the solid and then passes it to the manager above
+func _add_box() -> void:
+	# Using _box_end and _box_start
+	var solid := DPMapSolid.new();
+	
+	var box_min : Vector3i = _box_start.v3i.min(_box_end.v3i);
+	var box_max : Vector3i = _box_start.v3i.max(_box_end.v3i);
+	
+	# Add the 8 points of a cube (clockwise geometry):
+	solid.points.resize(8);
+	solid.points[0] = MapVector3.new(Vector3i(box_min.x, box_min.y, box_min.z));
+	solid.points[1] = MapVector3.new(Vector3i(box_max.x, box_min.y, box_min.z));
+	solid.points[2] = MapVector3.new(Vector3i(box_max.x, box_max.y, box_min.z));
+	solid.points[3] = MapVector3.new(Vector3i(box_min.x, box_max.y, box_min.z));
+	solid.points[4] = MapVector3.new(Vector3i(box_min.x, box_min.y, box_max.z));
+	solid.points[5] = MapVector3.new(Vector3i(box_max.x, box_min.y, box_max.z));
+	solid.points[6] = MapVector3.new(Vector3i(box_max.x, box_max.y, box_max.z));
+	solid.points[7] = MapVector3.new(Vector3i(box_min.x, box_max.y, box_max.z));
+	
+	# Now build the 6 faces
+	solid.faces.resize(6);
+	solid.faces[0] = DPMapSolid.Face.new();
+	solid.faces[0].corners = [0, 1, 2, 3];
+	solid.faces[1] = DPMapSolid.Face.new();
+	solid.faces[1].corners = [4, 7, 6, 5];
+	solid.faces[2] = DPMapSolid.Face.new();
+	solid.faces[2].corners = [0, 4, 5, 1];
+	solid.faces[3] = DPMapSolid.Face.new();
+	solid.faces[3].corners = [2, 6, 7, 3];
+	solid.faces[4] = DPMapSolid.Face.new();
+	solid.faces[4].corners = [0, 3, 7, 4];
+	solid.faces[5] = DPMapSolid.Face.new();
+	solid.faces[5].corners = [1, 5, 6, 2];
+	
+	# Find the correct map
+	_plugin.add_new_solid(solid);
+	
+	pass
 	

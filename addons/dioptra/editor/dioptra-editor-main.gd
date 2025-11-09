@@ -66,6 +66,10 @@ func _exit_tree() -> void:
 var _editorNode : EditorDP_InternalTool = null;
 var _currentTool : DPUTool = null;
 
+var _last_edited_map : DP_Map = null;
+
+#------------------------------------------------------------------------------#
+
 func onToolSelect(tool : ToolMode) -> void:
 	# We want to make a EditorDP_InternalTool node.
 	if _editorNode == null:
@@ -119,3 +123,45 @@ func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 	if _currentTool != null:
 		return _currentTool.forward_3d_gui_input(viewport_camera, event);
 	return EditorPlugin.AFTER_GUI_INPUT_PASS;
+	
+func _edit(object: Object) -> void:
+	if object is DP_Map:
+		_last_edited_map = object as DP_Map;
+	
+#------------------------------------------------------------------------------#
+
+func _get_current_map() -> DP_Map:
+	if _last_edited_map != null:
+		return _last_edited_map;
+	
+	var editor_selection := EditorInterface.get_selection();
+	for item in editor_selection.get_selected_nodes():
+		if item is DP_Map:
+			return item as DP_Map;
+			
+	var root := EditorInterface.get_edited_scene_root();
+	for node in root.get_children():
+		if node is DP_Map:
+			return node;
+	
+	return null;
+
+## Adds a new solid to the last edited map, or first map found.
+func add_new_solid(solid : DPMapSolid) -> void:
+	var map := _get_current_map();
+	_last_edited_map = map;
+	if map == null:
+		push_warning("Tried to edit a map with no existing DP_Map instance in the scene");
+		return;
+	
+	# Add it to the map. Map will handle partitioning
+	map.editor_add_solid(solid);
+	
+	# Set up face materials of the solid
+	for face in solid.faces:
+		face.material = -1; # Let's just stick with a default material right now
+	
+	# Request a map rebuild
+	map.rebuild_editor_map(solid);
+	
+	pass
