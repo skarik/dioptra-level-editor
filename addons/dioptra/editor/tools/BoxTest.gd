@@ -180,17 +180,17 @@ func _add_box() -> void:
 	
 	# Now build the 6 faces
 	solid.faces.resize(6);
-	solid.faces[0] = DPMapSolid.Face.new();
+	solid.faces[0] = DPMapFace.new();
 	solid.faces[0].corners = [0, 1, 2, 3];
-	solid.faces[1] = DPMapSolid.Face.new();
+	solid.faces[1] = DPMapFace.new();
 	solid.faces[1].corners = [4, 7, 6, 5];
-	solid.faces[2] = DPMapSolid.Face.new();
+	solid.faces[2] = DPMapFace.new();
 	solid.faces[2].corners = [0, 4, 5, 1];
-	solid.faces[3] = DPMapSolid.Face.new();
+	solid.faces[3] = DPMapFace.new();
 	solid.faces[3].corners = [2, 6, 7, 3];
-	solid.faces[4] = DPMapSolid.Face.new();
+	solid.faces[4] = DPMapFace.new();
 	solid.faces[4].corners = [0, 3, 7, 4];
-	solid.faces[5] = DPMapSolid.Face.new();
+	solid.faces[5] = DPMapFace.new();
 	solid.faces[5].corners = [1, 5, 6, 2];
 	
 	# Find the correct map

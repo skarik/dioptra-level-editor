@@ -1,4 +1,6 @@
+@tool
 extends RefCounted # TODO: is there a way to have a value-type instead? If not, move this class to C++
+#extends Resource # TODO: is there a way to have a value-type instead? If not, move this class to C++
 class_name MapVector3
 ## A vector class that holds an integer vector with precision related to the current map DP interface.
 ## 
@@ -23,6 +25,26 @@ func _init(v : Variant = Vector3.ZERO) -> void:
 	
 func _to_string() -> String:
 	return "<%d, %d, %d>" % [_value.x, _value.y, _value.z];
+	
+# Serialization interface
+func _get_property_list() -> Array[Dictionary]:
+	var properties : Array[Dictionary] = [];
+	properties.append({
+		"name" : "value",
+		"type" : TYPE_VECTOR3I,
+		"hint" : PROPERTY_HINT_NONE,
+		"usage" : PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR
+	});
+	return properties;
+func _set(property: StringName, value: Variant) -> bool:
+	if property == "value":
+		_value = value;
+		return true;
+	return false;
+func _get(property: StringName) -> Variant:
+	if property == "value":
+		return _value;
+	return null;
 	
 ## Sets the value of map vector and truncates the value
 func set_v3(v : Vector3) -> void:

@@ -13,13 +13,21 @@ class_name DP_Map
 @export_custom(PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR)
 var solids : Array[DPMapSolid] = [];
 ## The materials that make up the map, referenced by the solids
-@export_storage
+#@export_storage
+@export_custom(PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR)
 var materials : Array[Material] = [];
 
 #------------------------------------------------------------------------------#
 
 @export_storage
 var baked_geoemtry : Resource = null; # TODO
+
+#------------------------------------------------------------------------------#
+
+func _ready() -> void:
+	if Engine.is_editor_hint():
+		rebuild_editor_mesh_groups();
+		rebuild_editor_map();
 
 #------------------------------------------------------------------------------#
 
@@ -37,17 +45,36 @@ class EditorMeshGroup:
 var _editor_mesh_groups : Array[EditorMeshGroup] = [];
 var _editor_mesh_instances : Array[MeshInstance3D] = [];
 
+## Rebuilds the mesh groups:
+func rebuild_editor_mesh_groups() -> void:
+	_editor_mesh_groups = [];
+	#for solid in solids:
+	
+	# Now, make it part of an editor group
+	var mesh_group : EditorMeshGroup = null;
+	if _editor_mesh_groups.is_empty():
+		_editor_mesh_groups.append(EditorMeshGroup.new());
+		mesh_group = _editor_mesh_groups[0];
+		mesh_group.start_solid = 0;
+	else:
+		mesh_group = _editor_mesh_groups[0];
+		
+	# For now make it run the whole way
+	mesh_group.end_solid = solids.size();
+	
+	pass
+
 ## Rebuilds editor map, which is a separate case than the "baked" map but uses
 ## building similar techniques.
 ## If the solid is specified, only rebuilds part of the map (fast!).
 ## Otherwise, rebuilds the entire map (slow).
 func rebuild_editor_map(solid : DPMapSolid = null) -> void:
 	## Get solid index in list
-	var solid_index := solids.find(solid);
+	var solid_index := -1 if solid == null else solids.find(solid);
 	
 	## Figure out which management group the solid is with and rebuild that group:
 	var containing_group := -1;
-	if solid_index == -1:
+	if solid != null and solid_index == -1:
 		for i_group in _editor_mesh_groups.size():
 			var group := _editor_mesh_groups[i_group];
 			if group.has_solid(self, solid_index):
