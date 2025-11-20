@@ -97,15 +97,84 @@ func _subgizmos_intersect_ray(gizmo: EditorNode3DGizmo, camera: Camera3D, screen
 	
 	return closest_solid;
 	
+func _begin_handle_action(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool) -> void:
+	print("action: %s" % ("true" if secondary else "false"));
+	pass
+	
 func _get_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int) -> Transform3D:
 	var t := Transform3D.IDENTITY;
 	
 	var node3d := gizmo.get_node_3d()
 	var map := node3d as DP_Map;
 	
-	var selection := gizmo.get_subgizmo_selection();
-	if not selection.is_empty():
-		var selected_index := selection[0];
-		t = t.translated(map.solids[selected_index].points[0].v3);
+	#var selection := gizmo.get_subgizmo_selection();
+	#if not selection.is_empty():
+		#var selected_index := selection[0];
+		#t = t.translated(map.solids[selected_index].points[0].v3);
+	if subgizmo_id >= 0:
+		t = t.translated(map.solids[subgizmo_id].points[0].v3);
 	
 	return t;
+	
+class StartingTransform:
+	var transform : Transform3D;
+	var points : Array[MapVector3];
+	
+var _is_transforming : bool = false;
+var _transform_start : Array[StartingTransform];
+
+func _start_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int) -> void:
+	var node3d := gizmo.get_node_3d()
+	var map := node3d as DP_Map;
+	var solid := map.solids[subgizmo_id];
+	
+	_is_transforming = true;
+	if _transform_start.size() <= subgizmo_id:
+		_transform_start.resize(subgizmo_id + 1);
+		
+	_transform_start[subgizmo_id] = StartingTransform.new();
+	_transform_start[subgizmo_id].transform = _get_subgizmo_transform(gizmo, subgizmo_id);
+	_transform_start[subgizmo_id].points = solid.points.duplicate();
+	for i in _transform_start[subgizmo_id].points.size():
+		_transform_start[subgizmo_id].points[i] = MapVector3.new();
+		_transform_start[subgizmo_id].points[i].v3i = solid.points[i].v3i;
+	
+	pass
+	
+func _set_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int, transform: Transform3D) -> void:
+	# if we're beginning then mark a start with the current transform start
+	if not _is_transforming:
+		_start_subgizmo_transform(gizmo, subgizmo_id);
+	
+	print("set gizmo transform: %d" % subgizmo_id);
+	
+	var node3d := gizmo.get_node_3d()
+	var map := node3d as DP_Map;
+	
+	var solid := map.solids[subgizmo_id];
+	var reference := _transform_start[subgizmo_id];
+	
+	var delta_position = DioptraInterface.get_grid_round_v3((reference.transform.inverse() * transform).origin);
+	
+	# Offset the points
+	for i in solid.points.size():
+		solid.points[i].v3 = reference.points[i].v3 + delta_position;
+		
+	map.update_gizmos();
+		
+	pass
+
+func _commit_subgizmos(gizmo: EditorNode3DGizmo, ids: PackedInt32Array, restores: Array[Transform3D], cancel: bool) -> void:
+	print("commit subgizmos: cancel %s" % ("true" if cancel else "false"));
+	
+	_is_transforming = false;
+	
+	var node3d := gizmo.get_node_3d()
+	var map := node3d as DP_Map;
+	map.rebuild_editor_map(); #todo
+	
+	map.update_gizmos();
+	
+	pass
+	
+	

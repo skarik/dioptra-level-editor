@@ -31,3 +31,12 @@ static func get_position_scale_div() -> int:
 	return _get_instance()._scale_per_gdunits;
 
 #------------------------------------------------------------------------------#
+
+var _grid_round : float = 8;
+
+static func get_grid_round_v3(vector : Vector3) -> Vector3:
+	var inst := _get_instance();
+	return (vector * inst._grid_round).round() / inst._grid_round;
+
+
+#------------------------------------------------------------------------------#

@@ -31,8 +31,6 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 	#if _plugin and _plugin.DPGizmoPlugin_ToolCube:
 	#	_plugin.DPGizmoPlugin_ToolCube.enabled = true;
 	
-	var grid_round : float = 8;
-	
 	if _state == TOOLSTATE_WAITING:
 		# Waiting for an initial drag, so we wait for a click:
 		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
@@ -51,7 +49,7 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 			if drag_position_result != null:
 				var drag_position = drag_position_result as Vector3;
 				_drag_start = drag_position;
-				_box_start.v3 = (drag_position * grid_round).round() / grid_round;
+				_box_start.v3 = DioptraInterface.get_grid_round_v3(drag_position);
 				
 				_ghost_box.box_start = _box_start.v3;
 				_ghost_box.box_end = _box_start.v3;
@@ -76,7 +74,7 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 			var drag_position_result : Variant = drag_plane.intersects_ray(drag_from, drag_dir);
 			if drag_position_result != null:
 				var drag_position = drag_position_result as Vector3;
-				_box_end.v3 = (drag_position * grid_round).round() / grid_round;
+				_box_end.v3 = DioptraInterface.get_grid_round_v3(drag_position);
 				
 				_ghost_box.box_start = _box_start.v3;
 				_ghost_box.box_end = _box_end.v3;
@@ -122,7 +120,7 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 				var drag_position = drag_position_result as Vector3;
 				
 				var current_box_end = _box_end.v3;
-				current_box_end[_normal_axis] = round(drag_position[_normal_axis] * grid_round) / grid_round;
+				current_box_end[_normal_axis] = DioptraInterface.get_grid_round_v3(drag_position[_normal_axis]);
 				_box_end.v3 = current_box_end;
 				
 				_ghost_box.box_start = _box_start.v3;

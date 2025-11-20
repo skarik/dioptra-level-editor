@@ -144,6 +144,7 @@ func _update_labels(viewport_camera : Camera3D) -> void:
 		lbl_x.text = "%.1fm\n%dpx" % [size.x, int(size.x * 64.0)];
 		lbl_x.global_position = center + Vector3(0, halfsize.y, halfsize.z) * signs;
 		lbl_x.modulate = color_x;
+		lbl_x.render_priority = 10;
 	
 	if _label_z:
 		var lbl_z : Label3D = _label_z.get_node();
@@ -151,6 +152,7 @@ func _update_labels(viewport_camera : Camera3D) -> void:
 		lbl_z.text = "%.1fm\n%dpx" % [size.z, int(size.z * 64.0)];
 		lbl_z.global_position = center + Vector3(halfsize.x, halfsize.y, 0) * signs;
 		lbl_z.modulate = color_z;
+		lbl_z.render_priority = 10;
 	
 	if _label_y:
 		var lbl_y : Label3D = _label_y.get_node();
@@ -158,6 +160,7 @@ func _update_labels(viewport_camera : Camera3D) -> void:
 		lbl_y.text = "%.1fm\n%dpx" % [size.y, int(size.y * 64.0)];
 		lbl_y.global_position = center + Vector3(halfsize.x, 0, halfsize.z) * signs;
 		lbl_y.modulate = color_y;
+		lbl_y.render_priority = 10;
 
 func _update_edge(viewport_camera : Camera3D) -> void:
 	# Update the current state

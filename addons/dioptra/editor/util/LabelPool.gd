@@ -133,6 +133,7 @@ func _get_label(camera : Camera3D) -> LabelNodeItem:
 	lbl.set_visible(true);
 	lbl.set_font(_editor_font); 
 	lbl.set_font_size(_editor_font_size);
+	lbl.render_priority = 0;
 	
 	return item;
 	
