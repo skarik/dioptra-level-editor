@@ -10,7 +10,6 @@ transform = Transform3D(-0.866023, -0.433016, 0.250001, 0, 0.499998, 0.866027, -
 shadow_enabled = true
 
 [node name="DP_Map" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.0798111, 0)
 script = ExtResource("1_mu5qe")
 solids = Array[ExtResource("2_46nm1")]([Object(RefCounted,"script":ExtResource("2_46nm1"),"points":Array[Resource("res://addons/dioptra/util/MapVector3.gd")]([Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-4096, 0, 1072),"v3":Vector3(-32, 0, 8.375),"v3i":Vector3i(-4096, 0, 1072),"value":Vector3i(-4096, 0, 1072))
 , Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-2592, 0, 1072),"v3":Vector3(-20.25, 0, 8.375),"v3i":Vector3i(-2592, 0, 1072),"value":Vector3i(-2592, 0, 1072))

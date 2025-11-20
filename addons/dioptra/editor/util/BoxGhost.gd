@@ -13,6 +13,8 @@ var _label_z : DPULabelPool.LabelNodeItem = null;
 var _lines : DPULines3D.LinesItem = null;
 var _lines_edge : DPULines3D.LinesItem = null;
 
+var _last_valid_camera : Camera3D = null;
+
 func cleanup() -> void:
 	if _label_x:
 		_label_x.release();
@@ -42,6 +44,10 @@ func update(viewport_camera : Camera3D) -> void:
 	if _label_z:
 		_label_z.release();
 		_label_z = null;
+		
+	# Grab a good camera
+	if viewport_camera:
+		_last_valid_camera = viewport_camera;
 	
 	# Update the current state
 	var size := (box_start - box_end).abs();
@@ -100,11 +106,11 @@ func update(viewport_camera : Camera3D) -> void:
 	
 	if show_size_labels:
 		# Labels:
-		_label_x = DPULabelPool.get_label(viewport_camera);
-		_label_z = DPULabelPool.get_label(viewport_camera);
+		_label_x = DPULabelPool.get_label(_last_valid_camera);
+		_label_z = DPULabelPool.get_label(_last_valid_camera);
 		if size.y > 0:
-			_label_y = DPULabelPool.get_label(viewport_camera);
-		_update_labels(viewport_camera);
+			_label_y = DPULabelPool.get_label(_last_valid_camera);
+		_update_labels(_last_valid_camera);
 		
 	if show_edge_highlight:
 		if _lines_edge == null:
@@ -113,7 +119,7 @@ func update(viewport_camera : Camera3D) -> void:
 			_lines_edge.colors.resize(6);
 			_lines_edge.segments = true;
 			_lines_edge.width = 3.0;
-		_update_edge(viewport_camera);
+		_update_edge(_last_valid_camera);
 	
 	pass
 

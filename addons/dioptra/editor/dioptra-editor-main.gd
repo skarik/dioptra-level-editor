@@ -17,6 +17,9 @@ var DPGizmoPlugin_PathNode : EditorNode3DGizmoPlugin = null;
 const cDPG_ToolCube := preload("res://addons/dioptra/editor/gizmos/DPG_ToolCube.gd");
 var DPGizmoPlugin_ToolCube : EditorNode3DGizmoPlugin = null;
 
+const cDPG_MapTest1 := preload("res://addons/dioptra/editor/gizmos/DPG_MapTest1.gd");
+var DPGizmoPlugin_MapTest1 : EditorNode3DGizmoPlugin = null;
+
 const cDock_Tools := preload("res://addons/dioptra/editor/panel-tools.tscn");
 var DPDock_Tools : Control = null;
 const cScript_Tools := preload("res://addons/dioptra/editor/DP_PanelTools.gd");
@@ -40,6 +43,7 @@ func stop_gizmo_plugin(item : EditorNode3DGizmoPlugin) -> void:
 func _enter_tree() -> void:
 	DPGizmoPlugin_PathNode = start_gizmo_plugin(DPGizmoPlugin_PathNode, func(): return cDPG_PathNode.new(get_undo_redo()) );
 	DPGizmoPlugin_ToolCube = start_gizmo_plugin(DPGizmoPlugin_ToolCube, func(): return cDPG_ToolCube.new(get_undo_redo()) );
+	DPGizmoPlugin_MapTest1 = start_gizmo_plugin(DPGizmoPlugin_MapTest1, func(): return cDPG_MapTest1.new(get_undo_redo()) );
 	
 	if DPDock_Tools == null:
 		DPDock_Tools = cDock_Tools.instantiate()
@@ -52,9 +56,10 @@ func _enter_tree() -> void:
 func _exit_tree() -> void:
 	stop_gizmo_plugin(DPGizmoPlugin_PathNode);
 	DPGizmoPlugin_PathNode = null;
-		
 	stop_gizmo_plugin(DPGizmoPlugin_ToolCube);
 	DPGizmoPlugin_ToolCube = null;
+	stop_gizmo_plugin(DPGizmoPlugin_MapTest1);
+	DPGizmoPlugin_MapTest1 = null;
 	
 	if DPDock_Tools:
 		remove_control_from_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_SIDE_LEFT, DPDock_Tools);
