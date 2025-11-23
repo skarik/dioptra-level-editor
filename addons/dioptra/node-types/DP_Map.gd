@@ -129,6 +129,39 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 			for i_vertex in range(v0, am.get_vertex_count()):
 				am.get_surface_normal()[i_vertex] = normal;
 				
+			# Build UVs for the face
+			if face.material != -1:
+				if face.uv_mode == DPMapFace.UVMode.WORLD:
+					# Detect the face UV mode in world mode
+					if face.uv_subflags & DPMapFace.UV_WORLD_FLAG_AUTO:
+						face.uv_subflags = DPMapFace.UV_WORLD_FLAG_AUTO;
+						var normal_abs := normal.abs();
+						if normal_abs.x >= normal_abs.y and normal_abs.x >= normal_abs.z:
+							face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_X;
+						elif normal_abs.y >= normal_abs.x and normal_abs.y >= normal_abs.z:
+							face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_Y;
+						else:
+							face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_Z;
+					# Pull everything we need:
+					var material := materials[face.material];
+					var positions := am.get_surface_vertex();
+					var uvs := am.get_surface_tex_uv();
+					var texture_scale1d := DioptraInterface.get_pixel_scale_top() * float(DioptraInterface.get_pixel_scale_div());
+					var texture_scale2d := Vector2(texture_scale1d, texture_scale1d) / Vector2(DPHelpers.get_material_primary_texture_size(material));
+					# Apply the world-mode UVs depending on the flag:
+					if face.uv_subflags & DPMapFace.UV_WORLD_FLAG_X:
+						for i_vertex in range(v0, am.get_vertex_count()):
+							uvs[i_vertex] = Vector2(-positions[i_vertex].z, -positions[i_vertex].y) * texture_scale2d;
+					elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Y:
+						for i_vertex in range(v0, am.get_vertex_count()):
+							uvs[i_vertex] = Vector2(positions[i_vertex].x, positions[i_vertex].z) * texture_scale2d;
+					elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Z:
+						for i_vertex in range(v0, am.get_vertex_count()):
+							uvs[i_vertex] = Vector2(positions[i_vertex].x, -positions[i_vertex].y) * texture_scale2d;
+					pass # End UVMode.WORLD
+				#
+				pass # End face.material != -1;
+				
 			# Fill in the indicies
 			for i_corner in range(1, face.corners.size() - 1):
 				am.tri_add_indicies(v0, v0 + i_corner + 0, v0 + i_corner + 1);
