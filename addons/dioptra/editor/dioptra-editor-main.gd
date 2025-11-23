@@ -24,6 +24,10 @@ const cDock_Tools := preload("res://addons/dioptra/editor/panel-tools.tscn");
 var DPDock_Tools : Control = null;
 const cScript_Tools := preload("res://addons/dioptra/editor/DP_PanelTools.gd");
 
+const cDock_Texturing := preload("res://addons/dioptra/editor/panel-texturing.tscn");
+var DPDock_Texturing : Control = null;
+const cScript_Texturing := preload("res://addons/dioptra/editor/DP_PanelTexture.gd");
+
 #------------------------------------------------------------------------------#
 
 ## Starts the given gizmo plugin, instantiating it if it's not read with the given factor
@@ -51,6 +55,13 @@ func _enter_tree() -> void:
 		add_control_to_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_SIDE_LEFT, DPDock_Tools);
 		var tools := DPDock_Tools as cScript_Tools;
 		tools.setPlugin(self);
+		
+	if DPDock_Texturing == null:
+		DPDock_Texturing = cDock_Texturing.instantiate()
+	if DPDock_Texturing:
+		add_control_to_dock(EditorPlugin.DOCK_SLOT_RIGHT_BL, DPDock_Texturing);
+		var textures := DPDock_Texturing as cScript_Texturing;
+		textures.setPlugin(self);
 	pass
 
 func _exit_tree() -> void:
@@ -64,6 +75,9 @@ func _exit_tree() -> void:
 	if DPDock_Tools:
 		remove_control_from_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_SIDE_LEFT, DPDock_Tools);
 		DPDock_Tools.queue_free()
+	if DPDock_Texturing:
+		remove_control_from_docks(DPDock_Texturing);
+		DPDock_Texturing.queue_free()
 	pass
 
 #------------------------------------------------------------------------------#
@@ -72,6 +86,9 @@ var _editorNode : EditorDP_InternalTool = null;
 var _currentTool : DPUTool = null;
 
 var _last_edited_map : DP_Map = null;
+var _last_material : int = -1;
+
+var _plugin_maphelper : DioptraEditorMaphelperPlugin = null;
 
 #------------------------------------------------------------------------------#
 
@@ -180,7 +197,7 @@ func add_new_solid(solid : DPMapSolid) -> void:
 	
 	# Set up face materials of the solid
 	for face in solid.faces:
-		face.material = -1; # Let's just stick with a default material right now
+		face.material = _last_material;
 	
 	# Request a map rebuild
 	map.rebuild_editor_map(solid);

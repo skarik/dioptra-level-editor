@@ -1,6 +1,6 @@
 [gd_scene load_steps=8 format=3 uid="uid://cjy8tx7xd70c6"]
 
-[ext_resource type="Material" uid="uid://bfnku5ov610sb" path="res://asset/dev/devmat256x256.tres" id="1_paut8"]
+[ext_resource type="Material" uid="uid://bfnku5ov610sb" path="res://asset/dev/devmat_w256x256.tres" id="1_paut8"]
 [ext_resource type="PackedScene" uid="uid://bouky3w2pfpus" path="res://Test3-SkinnedMesh/character_lowpoly_v_1.tscn" id="2_j338t"]
 [ext_resource type="PackedScene" uid="uid://btsucy2fb4vxr" path="res://Test3-SkinnedMesh/alana_lowpoly.tscn" id="3_mki5w"]
 [ext_resource type="PackedScene" uid="uid://chxiqhw1cx76t" path="res://asset/tests/anim test 1.glb" id="4_y70f3"]

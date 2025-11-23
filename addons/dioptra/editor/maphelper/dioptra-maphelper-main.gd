@@ -1,10 +1,17 @@
 @tool
 extends EditorPlugin
 class_name DioptraEditorMaphelperPlugin
+## Class for handling editor input with the DP_Map itself.
+##
+## Any input that needs to come in through the 3D editor when the DP_Map is selected is captured by
+## this class. The signals are then either forwarded to the main plugin or handled here, depending
+## on the action.
+## 
+## TODO: make most of the map actions here for cleanliness & consistency or no?
 
 #------------------------------------------------------------------------------#
 
-var _editor_plugin : DioptraEditorMainPlugin = null;
+var _editor_plugin : DioptraEditorMainPlugin = null; #circular is OK here because they're nodes
 
 #------------------------------------------------------------------------------#
 
@@ -21,6 +28,9 @@ func _enable_plugin() -> void:
 func _disable_plugin() -> void:
 	_editor_plugin = null;
 	pass
+	
+func _ready() -> void:
+	_get_editor_plugin();
 	
 func _process(delta: float) -> void:
 	# TODO: Does not work
@@ -54,11 +64,13 @@ func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 	var editor := _get_editor_plugin();
 	var map := editor.get_last_edited_map();
 	
+	#print(event.get_class() + " : " + event.as_text());
+	
 	if editor._currentTool == null:
 		if event is InputEventKey:
 			#print(event.get_class() + " : " + event.as_text());
 			if event.keycode == KEY_DELETE:
-				if _action_delete_selected_object(editor, map):
+				if _action_delete_selected_solids(editor, map):
 					return EditorPlugin.AFTER_GUI_INPUT_STOP;
 		pass
 	
@@ -71,10 +83,10 @@ func _get_editor_plugin() -> DioptraEditorMainPlugin:
 		return _editor_plugin;
 	
 	# Search the owner (assumed editor):
-	#for child in EditorInterface.get_edited_scene_root():
 	for child in get_parent().get_children():
 		if child is DioptraEditorMainPlugin:
 			_editor_plugin = child;
+			_editor_plugin._plugin_maphelper = self;
 			break;
 		
 	return _editor_plugin;
@@ -93,7 +105,8 @@ func _get_target_gizmo(editor : DioptraEditorMainPlugin, map : DP_Map) -> Editor
 				break;
 	return target_gizmo;
 
-func _action_delete_selected_object(editor : DioptraEditorMainPlugin, map : DP_Map) -> bool:
+func _action_delete_selected_solids(editor : DioptraEditorMainPlugin, map : DP_Map) -> bool:
+	# TODO: assert we're in solid selection mode
 	var target_gizmo := _get_target_gizmo(editor, map);
 	if target_gizmo:
 		var subgizmo_selection := target_gizmo.get_subgizmo_selection();
@@ -116,3 +129,35 @@ func _action_delete_selected_object(editor : DioptraEditorMainPlugin, map : DP_M
 	else:
 		push_warning("Could not find the selection gizmo plugin when working in Maphelper.");
 	return false;
+
+func _action_assign_material_to_selected_solids(editor : DioptraEditorMainPlugin, map : DP_Map, mat : Material) -> bool:
+	# TODO: assert we're in solid selection mode
+	# Add material to the map
+	var material_index := map.get_or_add_material(mat);
+	editor._last_material = material_index;
+	
+	# Apply the material to all faces
+	var target_gizmo := _get_target_gizmo(editor, map);
+	if target_gizmo:
+		var subgizmo_selection := target_gizmo.get_subgizmo_selection();
+		# Apply it to all items in selection
+		for selection in subgizmo_selection:
+			# Apply it to all faces in selection
+			for face in map.solids[selection].faces:
+				face.material = material_index;
+		# Rebuild the mesh with the new material
+		if not subgizmo_selection.is_empty():
+			if subgizmo_selection.size() > 1:
+				map.rebuild_editor_map();
+			else:
+				map.rebuild_editor_map(map.solids[subgizmo_selection[0]]);
+			return true;
+	
+	return false;
+
+func do_assign_material(mat : Material) -> void:
+	var editor := _get_editor_plugin();
+	var map := editor.get_last_edited_map();
+	_action_assign_material_to_selected_solids(editor, map, mat);
+	
+	

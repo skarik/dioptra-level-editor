@@ -19,6 +19,8 @@ static func free_instance() -> void:
 
 var _scale_dpunits_per : int = 128;
 var _scale_per_gdunits : int = 1;
+var _tscale_pixels_per : int = 32;
+var _tscale_per_gdunits : int = 1;
 
 ## Returns the integer numerator of how many units are in one Godot unit. 
 ## If you have a MapVector3, divide by this value to get Godot meters.
@@ -29,6 +31,14 @@ static func get_position_scale_top() -> int:
 ## If you have a MapVector3, multiply by this value to get Godot meters.
 static func get_position_scale_div() -> int:
 	return _get_instance()._scale_per_gdunits;
+	
+## Returns the integer numerator of how many pixels are in one Godot unit.
+static func get_pixel_scale_top() -> int:
+	return _get_instance()._tscale_pixels_per;
+
+## Returns the integer divisor of how many pixels are in one Godot unit.
+static func get_pixel_scale_div() -> int:
+	return _get_instance()._tscale_per_gdunits;
 
 ## TODO	
 #static func get_settings() -> 

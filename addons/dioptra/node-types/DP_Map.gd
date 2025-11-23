@@ -191,3 +191,13 @@ func editor_add_solid(solid : DPMapSolid) -> void:
 	pass
 
 #------------------------------------------------------------------------------#
+
+## Adds the given material to the array, or finds it. Returns material index in the map.
+func get_or_add_material(mat : Material) -> int:
+	var existing_index = materials.find(mat);
+	if existing_index == -1:
+		existing_index = materials.size();
+		materials.push_back(mat);
+	return existing_index;
+
+#------------------------------------------------------------------------------#

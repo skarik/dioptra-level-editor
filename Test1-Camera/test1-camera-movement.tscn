@@ -1,7 +1,7 @@
 [gd_scene load_steps=17 format=3 uid="uid://cr4373pn4yj0f"]
 
 [ext_resource type="Script" uid="uid://ch4mqmu0xnvrw" path="res://Test1-Camera/Proto_PlayerTest.gd" id="1_0a2rw"]
-[ext_resource type="Material" uid="uid://bfnku5ov610sb" path="res://asset/dev/devmat256x256.tres" id="1_msbi2"]
+[ext_resource type="Material" uid="uid://bfnku5ov610sb" path="res://asset/dev/devmat_w256x256.tres" id="1_msbi2"]
 [ext_resource type="Texture2D" uid="uid://dgcndo07si00m" path="res://asset/dev/devtex64x64c.png" id="2_msbi2"]
 [ext_resource type="PackedScene" uid="uid://brqwtcim30lp2" path="res://Test1-Camera/test1-visdev.tscn" id="2_uxxvx"]
 [ext_resource type="PackedScene" uid="uid://difrrmau7asa4" path="res://Test3-SkinnedMesh/alana_lowpoly_skinned.tscn" id="3_d3djr"]

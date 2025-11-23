@@ -1,0 +1,95 @@
+[gd_scene load_steps=2 format=3 uid="uid://bhxmwac2fj16y"]
+
+[ext_resource type="Script" uid="uid://hcmgfcqh10uc" path="res://addons/dioptra/editor/DP_PanelTexture.gd" id="1_0o48c"]
+
+[node name="DP Texturing" type="FlowContainer"]
+offset_right = 195.0
+offset_bottom = 50.0
+size_flags_horizontal = 0
+size_flags_vertical = 0
+script = ExtResource("1_0o48c")
+
+[node name="Container Material Select" type="VBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PanelContainer" type="PanelContainer" parent="Container Material Select"]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="Label" type="Label" parent="Container Material Select/PanelContainer"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+text = "Material"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HFlowContainer" type="HFlowContainer" parent="Container Material Select"]
+layout_mode = 2
+
+[node name="TextureButton" type="Button" parent="Container Material Select/HFlowContainer"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="MaterialName" type="Label" parent="Container Material Select/HFlowContainer"]
+layout_mode = 2
+text = "<no material>"
+
+[node name="Container UVs" type="VBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PanelContainer" type="PanelContainer" parent="Container UVs"]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="Label2" type="Label" parent="Container UVs/PanelContainer"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+text = "UV Setting"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="VFlowContainer UVs" type="VBoxContainer" parent="Container UVs"]
+layout_mode = 2
+
+[node name="HBoxContainer Mapping" type="HBoxContainer" parent="Container UVs/VFlowContainer UVs"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Container UVs/VFlowContainer UVs/HBoxContainer Mapping"]
+layout_mode = 2
+text = "Mapping"
+
+[node name="OptionButton" type="OptionButton" parent="Container UVs/VFlowContainer UVs/HBoxContainer Mapping"]
+layout_mode = 2
+selected = 0
+item_count = 3
+popup/item_0/text = "World"
+popup/item_0/id = 0
+popup/item_1/text = "Face"
+popup/item_1/id = 1
+popup/item_2/text = "Hotspot"
+popup/item_2/id = 2
+popup/item_2/disabled = true
+
+[node name="HBoxContainer World Options" type="HBoxContainer" parent="Container UVs/VFlowContainer UVs"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Container UVs/VFlowContainer UVs/HBoxContainer World Options"]
+layout_mode = 2
+text = "World Normal Axis"
+
+[node name="OptionButton" type="OptionButton" parent="Container UVs/VFlowContainer UVs/HBoxContainer World Options"]
+layout_mode = 2
+selected = 0
+item_count = 4
+popup/item_0/text = "Auto"
+popup/item_0/id = 8
+popup/item_1/text = "X"
+popup/item_1/id = 1
+popup/item_2/text = "Y"
+popup/item_2/id = 2
+popup/item_3/text = "Z"
+popup/item_3/id = 4
+
+[connection signal="pressed" from="Container Material Select/HFlowContainer/TextureButton" to="." method="_on_texture_button_pressed"]
