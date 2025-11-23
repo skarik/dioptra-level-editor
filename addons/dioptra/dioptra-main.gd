@@ -7,8 +7,9 @@ const cPluginName = "dioptra";
 const cPluginName_Geobuilder = "dioptra-geobuilder";
 
 func _enable_plugin() -> void:
-	EditorInterface.set_plugin_enabled(cPluginName + "/node-types", true)
-	EditorInterface.set_plugin_enabled(cPluginName + "/editor", true)
+	EditorInterface.set_plugin_enabled(cPluginName + "/node-types", true);
+	EditorInterface.set_plugin_enabled(cPluginName + "/editor", true);
+	EditorInterface.set_plugin_enabled(cPluginName + "/editor/maphelper", true);
 	
 	# Restart the Geobuilder for Dioptra (get around nullref of class definitions that Godot gets stuck in sometimes)
 	if EditorInterface.is_plugin_enabled(cPluginName_Geobuilder):
@@ -16,8 +17,9 @@ func _enable_plugin() -> void:
 	EditorInterface.set_plugin_enabled(cPluginName_Geobuilder, true);
 
 func _disable_plugin() -> void:
-	EditorInterface.set_plugin_enabled(cPluginName + "/node-types", false)
-	EditorInterface.set_plugin_enabled(cPluginName + "/editor", false)
+	EditorInterface.set_plugin_enabled(cPluginName + "/node-types", false);
+	EditorInterface.set_plugin_enabled(cPluginName + "/editor/maphelper", false);
+	EditorInterface.set_plugin_enabled(cPluginName + "/editor", false);
 
 func _enter_tree() -> void:
 	# Initialization of the plugin goes here.

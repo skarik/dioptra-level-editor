@@ -150,14 +150,30 @@ func _get_current_map() -> DP_Map:
 			return node;
 	
 	return null;
-
+	
+## Returns the last edited map, or the first one found in the scene if not
+func get_last_edited_map() -> DP_Map:
+	if _last_edited_map == null:
+		_last_edited_map = _get_current_map();
+	return _last_edited_map;
+	
 ## Adds a new solid to the last edited map, or first map found.
 func add_new_solid(solid : DPMapSolid) -> void:
 	var map := _get_current_map();
 	_last_edited_map = map;
 	if map == null:
-		push_warning("Tried to edit a map with no existing DP_Map instance in the scene");
-		return;
+		push_warning("Tried to edit a map with no existing DP_Map instance in the scene.");
+		# Create new map
+		if DioptraInterface.FutureSettingTrue:
+			push_warning("Creating DP_Map instance.");
+			map = DP_Map.new();
+			EditorInterface.get_edited_scene_root().add_child(map);
+			map.set_owner(EditorInterface.get_edited_scene_root());
+			_last_edited_map = map;
+		else:
+			push_warning("Create a DP_Map instance in order to edit a map.");
+			return;
+		pass
 	
 	# Add it to the map. Map will handle partitioning
 	map.editor_add_solid(solid);

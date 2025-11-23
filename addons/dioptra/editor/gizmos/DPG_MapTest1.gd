@@ -111,7 +111,7 @@ func _get_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int) -> Tran
 	#if not selection.is_empty():
 		#var selected_index := selection[0];
 		#t = t.translated(map.solids[selected_index].points[0].v3);
-	if subgizmo_id >= 0:
+	if subgizmo_id >= 0 and subgizmo_id < map.solids.size():
 		t = t.translated(map.solids[subgizmo_id].points[0].v3);
 	
 	return t;

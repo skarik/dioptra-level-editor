@@ -117,10 +117,10 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 			var drag_plane : Plane = Plane(AxesLookup[_normal_axis].cross(viewport_camera.basis.x).normalized(), _drag_start);
 			var drag_position_result : Variant = drag_plane.intersects_ray(drag_from, drag_dir);
 			if drag_position_result != null:
-				var drag_position = drag_position_result as Vector3;
+				var drag_position := drag_position_result as Vector3;
 				
-				var current_box_end = _box_end.v3;
-				current_box_end[_normal_axis] = DioptraInterface.get_grid_round_v3(drag_position[_normal_axis]);
+				var current_box_end := _box_end.v3;
+				current_box_end[_normal_axis] = DioptraInterface.get_grid_round_v3(drag_position)[_normal_axis];
 				_box_end.v3 = current_box_end;
 				
 				_ghost_box.box_start = _box_start.v3;

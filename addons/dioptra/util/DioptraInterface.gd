@@ -30,13 +30,18 @@ static func get_position_scale_top() -> int:
 static func get_position_scale_div() -> int:
 	return _get_instance()._scale_per_gdunits;
 
+## TODO	
+#static func get_settings() -> 
+
+const FutureSettingTrue : bool = true;
+
 #------------------------------------------------------------------------------#
 
 var _grid_round : float = 8;
 
+## Rounds the given Vector3 to the current editor grid settings.
 static func get_grid_round_v3(vector : Vector3) -> Vector3:
 	var inst := _get_instance();
 	return (vector * inst._grid_round).round() / inst._grid_round;
-
 
 #------------------------------------------------------------------------------#
