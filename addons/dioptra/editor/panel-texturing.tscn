@@ -1,6 +1,9 @@
-[gd_scene load_steps=2 format=3 uid="uid://bhxmwac2fj16y"]
+[gd_scene load_steps=5 format=3 uid="uid://bhxmwac2fj16y"]
 
 [ext_resource type="Script" uid="uid://hcmgfcqh10uc" path="res://addons/dioptra/editor/DP_PanelTexture.gd" id="1_0o48c"]
+[ext_resource type="Script" uid="uid://ymtvdjr4c6o" path="res://addons/dioptra/util/StylesOverride.gd" id="2_r5rll"]
+[ext_resource type="Texture2D" uid="uid://bbnhdwmklnusu" path="res://addons/dioptra/asset/default/tex-flip-x.svg" id="3_hl7nd"]
+[ext_resource type="Texture2D" uid="uid://b264naldos6im" path="res://addons/dioptra/asset/default/tex-flip-y.svg" id="4_vn6ip"]
 
 [node name="DP Texturing" type="FlowContainer"]
 offset_right = 195.0
@@ -16,6 +19,7 @@ size_flags_horizontal = 3
 [node name="PanelContainer" type="PanelContainer" parent="Container Material Select"]
 layout_mode = 2
 size_flags_vertical = 4
+script = ExtResource("2_r5rll")
 
 [node name="Label" type="Label" parent="Container Material Select/PanelContainer"]
 layout_mode = 2
@@ -33,6 +37,7 @@ layout_mode = 2
 
 [node name="MaterialName" type="Label" parent="Container Material Select/HFlowContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "<no material>"
 
 [node name="Container UVs" type="VBoxContainer" parent="."]
@@ -50,17 +55,18 @@ text = "UV Setting"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="VFlowContainer UVs" type="VBoxContainer" parent="Container UVs"]
+[node name="VContainer UVs" type="VBoxContainer" parent="Container UVs"]
 layout_mode = 2
 
-[node name="HBoxContainer Mapping" type="HBoxContainer" parent="Container UVs/VFlowContainer UVs"]
+[node name="GridContainer" type="GridContainer" parent="Container UVs/VContainer UVs"]
 layout_mode = 2
+columns = 2
 
-[node name="Label" type="Label" parent="Container UVs/VFlowContainer UVs/HBoxContainer Mapping"]
+[node name="LabelMapping" type="Label" parent="Container UVs/VContainer UVs/GridContainer"]
 layout_mode = 2
 text = "Mapping"
 
-[node name="OptionButton" type="OptionButton" parent="Container UVs/VFlowContainer UVs/HBoxContainer Mapping"]
+[node name="OptionMapping" type="OptionButton" parent="Container UVs/VContainer UVs/GridContainer"]
 layout_mode = 2
 selected = 0
 item_count = 3
@@ -72,14 +78,11 @@ popup/item_2/text = "Hotspot"
 popup/item_2/id = 2
 popup/item_2/disabled = true
 
-[node name="HBoxContainer World Options" type="HBoxContainer" parent="Container UVs/VFlowContainer UVs"]
+[node name="World-LabelAxis" type="Label" parent="Container UVs/VContainer UVs/GridContainer"]
 layout_mode = 2
+text = "   Normal"
 
-[node name="Label" type="Label" parent="Container UVs/VFlowContainer UVs/HBoxContainer World Options"]
-layout_mode = 2
-text = "World Normal Axis"
-
-[node name="OptionButton" type="OptionButton" parent="Container UVs/VFlowContainer UVs/HBoxContainer World Options"]
+[node name="World-OptionAxis" type="OptionButton" parent="Container UVs/VContainer UVs/GridContainer"]
 layout_mode = 2
 selected = 0
 item_count = 4
@@ -91,5 +94,193 @@ popup/item_2/text = "Y"
 popup/item_2/id = 2
 popup/item_3/text = "Z"
 popup/item_3/id = 4
+
+[node name="LabelScale" type="Label" parent="Container UVs/VContainer UVs/GridContainer"]
+layout_mode = 2
+size_flags_vertical = 1
+text = "Scale"
+
+[node name="VBoxContainerScale" type="VBoxContainer" parent="Container UVs/VContainer UVs/GridContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainerScale"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainerScale/HBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.6965, 0.575, 1)
+text = "x"
+script = ExtResource("2_r5rll")
+colors = {
+"font_color": "property_color_x"
+}
+
+[node name="Button" type="Button" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainerScale/HBoxContainer"]
+layout_mode = 2
+icon = ExtResource("3_hl7nd")
+icon_alignment = 1
+
+[node name="SpinBoxX" type="SpinBox" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainerScale/HBoxContainer"]
+layout_mode = 2
+min_value = -100.0
+step = 0.1
+value = 1.0
+allow_greater = true
+allow_lesser = true
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainerScale"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainerScale/HBoxContainer2"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.575, 0.98, 0.6965, 1)
+text = "y"
+script = ExtResource("2_r5rll")
+colors = {
+"font_color": "property_color_y"
+}
+
+[node name="Button" type="Button" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainerScale/HBoxContainer2"]
+layout_mode = 2
+icon = ExtResource("4_vn6ip")
+icon_alignment = 1
+
+[node name="SpinBoxY" type="SpinBox" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainerScale/HBoxContainer2"]
+layout_mode = 2
+min_value = -100.0
+step = 0.1
+value = 1.0
+allow_greater = true
+allow_lesser = true
+
+[node name="LabelRot" type="Label" parent="Container UVs/VContainer UVs/GridContainer"]
+layout_mode = 2
+size_flags_vertical = 1
+text = "Rotation"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Container UVs/VContainer UVs/GridContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 8
+
+[node name="Button180" type="Button" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+tooltip_text = "Rotate 180°"
+icon = ExtResource("3_hl7nd")
+icon_alignment = 1
+
+[node name="Button90" type="Button" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+tooltip_text = "Rotate clockwise 90°"
+icon = ExtResource("3_hl7nd")
+icon_alignment = 1
+
+[node name="ButtonN90" type="Button" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+tooltip_text = "Rotate Counterclockwise 90°"
+icon = ExtResource("3_hl7nd")
+icon_alignment = 1
+
+[node name="Button45" type="Button" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+tooltip_text = "Rotate Clockwise 45°"
+icon = ExtResource("3_hl7nd")
+icon_alignment = 1
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 8
+
+[node name="SpinBoxRot" type="SpinBox" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+min_value = -180.0
+max_value = 180.0
+suffix = "°"
+
+[node name="LabelRot2" type="Label" parent="Container UVs/VContainer UVs/GridContainer"]
+layout_mode = 2
+size_flags_vertical = 1
+text = "Offset"
+
+[node name="VBoxContainerScale2" type="VBoxContainer" parent="Container UVs/VContainer UVs/GridContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainerScale2"]
+layout_mode = 2
+size_flags_horizontal = 8
+
+[node name="ButtonCenter" type="Button" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainerScale2/HBoxContainer3"]
+layout_mode = 2
+icon = ExtResource("3_hl7nd")
+icon_alignment = 1
+
+[node name="ButtonCenter2" type="Button" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainerScale2/HBoxContainer3"]
+layout_mode = 2
+icon = ExtResource("3_hl7nd")
+icon_alignment = 1
+
+[node name="ButtonCenter3" type="Button" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainerScale2/HBoxContainer3"]
+layout_mode = 2
+icon = ExtResource("3_hl7nd")
+icon_alignment = 1
+
+[node name="ButtonCenter4" type="Button" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainerScale2/HBoxContainer3"]
+layout_mode = 2
+icon = ExtResource("3_hl7nd")
+icon_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainerScale2"]
+layout_mode = 2
+size_flags_horizontal = 8
+
+[node name="Label" type="Label" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainerScale2/HBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.6965, 0.575, 1)
+text = "x"
+script = ExtResource("2_r5rll")
+colors = {
+"font_color": "property_color_x"
+}
+
+[node name="ButtonCenter" type="Button" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainerScale2/HBoxContainer"]
+layout_mode = 2
+icon = ExtResource("3_hl7nd")
+icon_alignment = 1
+
+[node name="SpinBoxX" type="SpinBox" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainerScale2/HBoxContainer"]
+layout_mode = 2
+min_value = -100.0
+step = 0.1
+value = 1.0
+allow_greater = true
+allow_lesser = true
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainerScale2"]
+layout_mode = 2
+size_flags_horizontal = 8
+
+[node name="Label" type="Label" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainerScale2/HBoxContainer2"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.575, 0.98, 0.6965, 1)
+text = "y"
+script = ExtResource("2_r5rll")
+colors = {
+"font_color": "property_color_y"
+}
+
+[node name="ButtonCenter" type="Button" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainerScale2/HBoxContainer2"]
+layout_mode = 2
+icon = ExtResource("4_vn6ip")
+icon_alignment = 1
+
+[node name="SpinBoxY" type="SpinBox" parent="Container UVs/VContainer UVs/GridContainer/VBoxContainerScale2/HBoxContainer2"]
+layout_mode = 2
+min_value = -100.0
+step = 0.1
+value = 1.0
+allow_greater = true
+allow_lesser = true
 
 [connection signal="pressed" from="Container Material Select/HFlowContainer/TextureButton" to="." method="_on_texture_button_pressed"]

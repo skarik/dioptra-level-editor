@@ -96,6 +96,16 @@ func _init() -> void:
 		#print(type);
 		#for name in EditorInterface.get_editor_theme().get_color_list(type):
 			#print("-%s" % name);
+	#print("Item Variations:");
+	#for type in EditorInterface.get_editor_theme().get_type_list():
+		#print(type);
+		#for name in EditorInterface.get_editor_theme().get_type_variation_list(type):
+			#print("-%s" % name);
+	#print("Theme info:");
+	#for type in EditorInterface.get_editor_theme().get_theme_item_type_list(Theme.DATA_TYPE_STYLEBOX):
+		#print(type);
+		#for name in EditorInterface.get_editor_theme().get_theme_item_list(Theme.DATA_TYPE_STYLEBOX, type):
+			#print("-%s" % name);
 	pass
 
 func _exit_tree() -> void:
