@@ -4,10 +4,12 @@ extends EditorNode3DGizmoPlugin
 var mUndoRedo : EditorUndoRedoManager = null;
 
 var _ghost_box : DPUBoxGhost = null;
+var _face_selection : Array[int]; # 2x array of [Solid,Face] pairs
 
 func _init(undoredo : EditorUndoRedoManager):
 	create_material("lines", Color(1.0, 1.0, 1.0), false, true, true);
 	_ghost_box = DPUBoxGhost.new();
+	_face_selection = [];
 
 	mUndoRedo = undoredo;
 	pass
@@ -59,12 +61,24 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 
 		pass
 	
+	# Move this check to user????
+	if gizmo.is_subgizmo_selected(map.solids.size()):
+		for pair_index in range(0, _face_selection.size(), 2):
+			var solid := map.solids[_face_selection[pair_index+0]];
+			var face := solid.faces[_face_selection[pair_index+1]];
+			
+			for corner_index in range(1, face.corners.size()):
+				linesSelect.append(solid.points[face.corners[corner_index - 1]].v3);
+				linesSelect.append(solid.points[face.corners[corner_index + 0]].v3);
+		pass
+	
 	# Add the solids now:
 	gizmo.add_lines(linesNormie, get_material("lines", gizmo), false, Color(0.8, 0.8, 0.1, 0.5));
 	gizmo.add_lines(linesSelect, get_material("lines", gizmo), false, Color(1.0, 1.0, 1.0, 1.0));
 	
 	pass
 	
+## Selection Raycast Logic:
 func _subgizmos_intersect_ray(gizmo: EditorNode3DGizmo, camera: Camera3D, screen_pos: Vector2) -> int:
 	var ray_pos := camera.project_ray_origin(screen_pos);
 	var ray_dir := camera.project_ray_normal(screen_pos);
@@ -72,8 +86,9 @@ func _subgizmos_intersect_ray(gizmo: EditorNode3DGizmo, camera: Camera3D, screen
 	var node3d := gizmo.get_node_3d()
 	var map := node3d as DP_Map;
 	
-	var closest_solid := -1;
+	var closest_solid := -1; # No selection
 	var closest_solid_distance := 0.0;
+	_face_selection = []; # Clear out the face selection
 	
 	# Find the solid we hit
 	for solid_index in range(0, map.solids.size()):
