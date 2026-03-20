@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bywlkqqtsecsv"
-path="res://.godot/imported/tex-center-x.svg-65f23632d60160cab566db82799e9608.ctex"
+uid="uid://2f8k644wse8b"
+path="res://.godot/imported/select-edge.svg-b0081bc4077e897a0cea62b6fb58b928.ctex"
 metadata={
 "has_editor_variant": true,
 "vram_texture": false
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://addons/dioptra/asset/default/tex-center-x.svg"
-dest_files=["res://.godot/imported/tex-center-x.svg-65f23632d60160cab566db82799e9608.ctex"]
+source_file="res://addons/dioptra/asset/default/select-edge.svg"
+dest_files=["res://.godot/imported/select-edge.svg-b0081bc4077e897a0cea62b6fb58b928.ctex"]
 
 [params]
 

@@ -9,6 +9,13 @@ enum ToolMode {
 	BOX_TEST = 1,
 }
 
+enum SelectMode {
+	SOLID = 0,
+	FACE = 1,
+	EDGE = 2,
+	VERTEX = 3,
+}
+
 #------------------------------------------------------------------------------#
 
 const cDPG_PathNode := preload("res://addons/dioptra/editor/gizmos/DPG_PathNode.gd");
@@ -27,6 +34,10 @@ const cScript_Tools := preload("res://addons/dioptra/editor/DP_PanelTools.gd");
 const cDock_Texturing := preload("res://addons/dioptra/editor/panel-texturing.tscn");
 var DPDock_Texturing : Control = null;
 const cScript_Texturing := preload("res://addons/dioptra/editor/DP_PanelTexture.gd");
+
+const cDock_State := preload("res://addons/dioptra/editor/panel-state.tscn");
+var DPDock_State : Control = null;
+const cScript_State := preload("res://addons/dioptra/editor/DP_PanelState.gd");
 
 #------------------------------------------------------------------------------#
 
@@ -56,6 +67,13 @@ func _enter_tree() -> void:
 		var tools := DPDock_Tools as cScript_Tools;
 		tools.setPlugin(self);
 		
+	if DPDock_State == null:
+		DPDock_State = cDock_State.instantiate()
+	if DPDock_State:
+		add_control_to_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_MENU, DPDock_State);
+		var state := DPDock_State as cScript_State;
+		state.setPlugin(self);
+		
 	if DPDock_Texturing == null:
 		DPDock_Texturing = cDock_Texturing.instantiate()
 	if DPDock_Texturing:
@@ -75,6 +93,9 @@ func _exit_tree() -> void:
 	if DPDock_Tools:
 		remove_control_from_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_SIDE_LEFT, DPDock_Tools);
 		DPDock_Tools.queue_free()
+	if DPDock_State:
+		remove_control_from_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_MENU, DPDock_State);
+		DPDock_State.queue_free()
 	if DPDock_Texturing:
 		remove_control_from_docks(DPDock_Texturing);
 		DPDock_Texturing.queue_free()
@@ -89,6 +110,8 @@ var _last_edited_map : DP_Map = null;
 var _last_material : int = -1;
 
 var _plugin_maphelper : DioptraEditorMaphelperPlugin = null;
+
+var _selectionMode : SelectMode = SelectMode.SOLID; # todo
 
 #------------------------------------------------------------------------------#
 

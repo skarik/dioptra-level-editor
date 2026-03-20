@@ -44,6 +44,7 @@ static func get_pixel_scale_div() -> int:
 #static func get_settings() -> 
 
 const FutureSettingTrue : bool = true;
+const FutureSettingFalse : bool = false;
 
 #------------------------------------------------------------------------------#
 

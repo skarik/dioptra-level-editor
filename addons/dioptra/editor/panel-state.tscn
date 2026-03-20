@@ -1,52 +1,92 @@
-[gd_scene load_steps=2 format=3 uid="uid://w4h7fd6pioos"]
+[gd_scene load_steps=6 format=3 uid="uid://w4h7fd6pioos"]
 
-[ext_resource type="Texture2D" uid="uid://ckolvoynw0ckf" path="res://addons/dioptra/asset/default/block-dot.svg" id="1_t7e5s"]
+[ext_resource type="Texture2D" uid="uid://rqqlq11sn5sn" path="res://addons/dioptra/asset/default/select-cube.svg" id="2_65h2v"]
+[ext_resource type="Script" uid="uid://ca5l34adahm2i" path="res://addons/dioptra/editor/DP_PanelState.gd" id="2_tp8tb"]
+[ext_resource type="Texture2D" uid="uid://bnr2ljfbxq7pd" path="res://addons/dioptra/asset/default/select-face.svg" id="3_a21wj"]
+[ext_resource type="Texture2D" uid="uid://2f8k644wse8b" path="res://addons/dioptra/asset/default/select-edge.svg" id="4_dfuey"]
+[ext_resource type="Texture2D" uid="uid://dcqhv2mvdsl2m" path="res://addons/dioptra/asset/default/select-vertex.svg" id="5_oiw7u"]
 
 [node name="DP State" type="HFlowContainer"]
-offset_right = 704.0
-offset_bottom = 160.0
-size_flags_horizontal = 0
-size_flags_vertical = 0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+script = ExtResource("2_tp8tb")
 
-[node name="Label" type="Label" parent="."]
+[node name="Box" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Box"]
 layout_mode = 2
 text = "Select:"
 
-[node name="Button" type="Button" parent="."]
+[node name="Selection" type="HBoxContainer" parent="Box"]
 layout_mode = 2
-icon = ExtResource("1_t7e5s")
 
-[node name="Button2" type="Button" parent="."]
+[node name="Solid" type="Button" parent="Box/Selection"]
 layout_mode = 2
-icon = ExtResource("1_t7e5s")
+tooltip_text = "Select solids (1)"
+toggle_mode = true
+button_pressed = true
+icon = ExtResource("2_65h2v")
 
-[node name="Button3" type="Button" parent="."]
+[node name="Face" type="Button" parent="Box/Selection"]
 layout_mode = 2
-icon = ExtResource("1_t7e5s")
+tooltip_text = "Select faces (2)"
+toggle_mode = true
+icon = ExtResource("3_a21wj")
 
-[node name="Label2" type="Label" parent="."]
+[node name="Edge" type="Button" parent="Box/Selection"]
+layout_mode = 2
+tooltip_text = "Select edges (3)"
+toggle_mode = true
+icon = ExtResource("4_dfuey")
+
+[node name="Vertex" type="Button" parent="Box/Selection"]
+layout_mode = 2
+tooltip_text = "Select corners (4)"
+toggle_mode = true
+icon = ExtResource("5_oiw7u")
+
+[node name="Label2" type="Label" parent="Box"]
 layout_mode = 2
 text = "Editor:"
 
-[node name="Button4" type="Button" parent="."]
+[node name="Editor" type="HBoxContainer" parent="Box"]
 layout_mode = 2
-icon = ExtResource("1_t7e5s")
 
-[node name="Button5" type="Button" parent="."]
+[node name="Button4" type="Button" parent="Box/Editor"]
 layout_mode = 2
-icon = ExtResource("1_t7e5s")
+tooltip_text = "Texture Lock.
+When moving solids, the editor will attempt to lock the texture by changing the offset and the rotation."
+icon = ExtResource("5_oiw7u")
 
-[node name="Button6" type="Button" parent="."]
+[node name="Button5" type="Button" parent="Box/Editor"]
+visible = false
 layout_mode = 2
-icon = ExtResource("1_t7e5s")
+icon = ExtResource("5_oiw7u")
 
-[node name="SpinBox" type="SpinBox" parent="."]
+[node name="Snapping" type="Button" parent="Box/Editor"]
+visible = false
 layout_mode = 2
+icon = ExtResource("5_oiw7u")
+
+[node name="SnapSize" type="SpinBox" parent="Box/Editor"]
+layout_mode = 2
+tooltip_text = "DP Units to snap to.
+DP unit to Godot unit conversion is controlled in the DP Settings."
 max_value = 128.0
 value = 16.0
 rounded = true
 alignment = 1
 
-[node name="Label3" type="Label" parent="."]
+[node name="Label3" type="Label" parent="Box"]
 layout_mode = 2
 text = "View:"
+
+[connection signal="pressed" from="Box/Selection/Solid" to="." method="onSelectionTypePressed" binds= [0]]
+[connection signal="pressed" from="Box/Selection/Face" to="." method="onSelectionTypePressed" binds= [1]]
+[connection signal="pressed" from="Box/Selection/Edge" to="." method="onSelectionTypePressed" binds= [2]]
+[connection signal="pressed" from="Box/Selection/Vertex" to="." method="onSelectionTypePressed" binds= [3]]

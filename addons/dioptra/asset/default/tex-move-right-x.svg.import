@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bywlkqqtsecsv"
-path="res://.godot/imported/tex-center-x.svg-65f23632d60160cab566db82799e9608.ctex"
+uid="uid://ddmn85s73mgb8"
+path="res://.godot/imported/tex-move-right-x.svg-f398620089b538d8dc01587cb0f5f818.ctex"
 metadata={
 "has_editor_variant": true,
 "vram_texture": false
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://addons/dioptra/asset/default/tex-center-x.svg"
-dest_files=["res://.godot/imported/tex-center-x.svg-65f23632d60160cab566db82799e9608.ctex"]
+source_file="res://addons/dioptra/asset/default/tex-move-right-x.svg"
+dest_files=["res://.godot/imported/tex-move-right-x.svg-f398620089b538d8dc01587cb0f5f818.ctex"]
 
 [params]
 
