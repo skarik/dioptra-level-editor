@@ -58,7 +58,7 @@ func stop_gizmo_plugin(item : EditorNode3DGizmoPlugin) -> void:
 func _enter_tree() -> void:
 	DPGizmoPlugin_PathNode = start_gizmo_plugin(DPGizmoPlugin_PathNode, func(): return cDPG_PathNode.new(get_undo_redo()) );
 	DPGizmoPlugin_ToolCube = start_gizmo_plugin(DPGizmoPlugin_ToolCube, func(): return cDPG_ToolCube.new(get_undo_redo()) );
-	DPGizmoPlugin_MapTest1 = start_gizmo_plugin(DPGizmoPlugin_MapTest1, func(): return cDPG_MapTest1.new(get_undo_redo()) );
+	DPGizmoPlugin_MapTest1 = start_gizmo_plugin(DPGizmoPlugin_MapTest1, func(): return cDPG_MapTest1.new(self, get_undo_redo()) );
 	
 	if DPDock_Tools == null:
 		DPDock_Tools = cDock_Tools.instantiate()
@@ -112,6 +112,11 @@ var _last_material : int = -1;
 var _plugin_maphelper : DioptraEditorMaphelperPlugin = null;
 
 var _selectionMode : SelectMode = SelectMode.SOLID; # todo
+
+#------------------------------------------------------------------------------#
+
+func get_selection_mode() -> SelectMode:
+	return _selectionMode;
 
 #------------------------------------------------------------------------------#
 

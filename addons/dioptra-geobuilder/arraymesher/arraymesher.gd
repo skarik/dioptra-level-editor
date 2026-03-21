@@ -84,6 +84,10 @@ func get_surface_tex_uv() -> PackedVector2Array:
 	return _surface_array[Mesh.ARRAY_TEX_UV];
 func get_surface_tex_uv2() -> PackedVector2Array:
 	return _surface_array[Mesh.ARRAY_TEX_UV2];
+func get_surface_bone() -> PackedInt32Array:
+	return _surface_array[Mesh.ARRAY_BONES];
+func get_surface_weights() -> PackedFloat32Array:
+	return _surface_array[Mesh.ARRAY_WEIGHTS];
 func get_surface_index() -> PackedInt32Array:
 	return _surface_array[Mesh.ARRAY_INDEX];
 	

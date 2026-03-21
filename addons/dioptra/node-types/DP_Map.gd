@@ -105,7 +105,11 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 	var mesher_list : Dictionary[int, DPArrayMesher] = {};
 	var get_mesher = func(material_index : int) -> DPArrayMesher:
 		if not mesher_list.has(material_index):
-			mesher_list[material_index] = DPArrayMesher.new();
+			mesher_list[material_index] = DPArrayMesher.new(
+				DPArrayMesher.TypeFlags.VERTEX | DPArrayMesher.TypeFlags.NORMAL | DPArrayMesher.TypeFlags.TEX_UV
+				| DPArrayMesher.TypeFlags.BONES
+				| DPArrayMesher.TypeFlags.INDEX
+			);
 		return mesher_list[material_index];
 	
 	# Loop through all the items in the group and rebuild the mesh
@@ -161,6 +165,13 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 					pass # End UVMode.WORLD
 				#
 				pass # End face.material != -1;
+				
+			# Pack in solid info into the bones:
+			for i_vertex in range(v0, am.get_vertex_count()):
+				am.get_surface_bone()[i_vertex * 4 + 0] = i_solid;
+				am.get_surface_bone()[i_vertex * 4 + 1] = i_solid >> 8;
+				am.get_surface_bone()[i_vertex * 4 + 2] = i_face;
+				am.get_surface_bone()[i_vertex * 4 + 3] = i_vertex;
 				
 			# Fill in the indicies
 			for i_corner in range(1, face.corners.size() - 1):

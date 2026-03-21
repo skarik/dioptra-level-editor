@@ -1,16 +1,16 @@
 @tool
 extends EditorNode3DGizmoPlugin
 
+var mEditorPlugin : DioptraEditorMainPlugin = null;
 var mUndoRedo : EditorUndoRedoManager = null;
 
 var _ghost_box : DPUBoxGhost = null;
-var _face_selection : Array[int]; # 2x array of [Solid,Face] pairs
 
-func _init(undoredo : EditorUndoRedoManager):
+func _init(editorPlugin : DioptraEditorMainPlugin, undoredo : EditorUndoRedoManager):
 	create_material("lines", Color(1.0, 1.0, 1.0), false, true, true);
 	_ghost_box = DPUBoxGhost.new();
-	_face_selection = [];
 
+	mEditorPlugin = editorPlugin;
 	mUndoRedo = undoredo;
 	pass
 
@@ -62,15 +62,15 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 		pass
 	
 	# Move this check to user????
-	if gizmo.is_subgizmo_selected(map.solids.size()):
-		for pair_index in range(0, _face_selection.size(), 2):
-			var solid := map.solids[_face_selection[pair_index+0]];
-			var face := solid.faces[_face_selection[pair_index+1]];
-			
-			for corner_index in range(1, face.corners.size()):
-				linesSelect.append(solid.points[face.corners[corner_index - 1]].v3);
-				linesSelect.append(solid.points[face.corners[corner_index + 0]].v3);
-		pass
+	#if gizmo.is_subgizmo_selected(map.solids.size()):
+		#for pair_index in range(0, _face_selection.size(), 2):
+			#var solid := map.solids[_face_selection[pair_index+0]];
+			#var face := solid.faces[_face_selection[pair_index+1]];
+			#
+			#for corner_index in range(1, face.corners.size()):
+				#linesSelect.append(solid.points[face.corners[corner_index - 1]].v3);
+				#linesSelect.append(solid.points[face.corners[corner_index + 0]].v3);
+		#pass
 	
 	# Add the solids now:
 	gizmo.add_lines(linesNormie, get_material("lines", gizmo), false, Color(0.8, 0.8, 0.1, 0.5));
@@ -88,29 +88,99 @@ func _subgizmos_intersect_ray(gizmo: EditorNode3DGizmo, camera: Camera3D, screen
 	
 	var closest_solid := -1; # No selection
 	var closest_solid_distance := 0.0;
-	_face_selection = []; # Clear out the face selection
+	var closest_face := -1;
+	var closest_vertex_proc2 := -1;
+	var closest_position : Vector3;
+	
+	# Get selection mode from the plugin:
+	var selection_mode := mEditorPlugin.get_selection_mode();
 	
 	# Find the solid we hit
+	#for solid_index in range(0, map.solids.size()):
+		#var solid := map.solids[solid_index];
+		#if solid:
+			## for now build an aabb
+			## later, use Geometry3D.ray_intersects_triangle
+			#var min_p := solid.points[0].v3;
+			#var max_p := solid.points[0].v3;
+			#for point in solid.points:
+				#min_p = min_p.min(point.v3);
+				#max_p = max_p.max(point.v3);
+			#var solid_bbox := AABB(min_p, max_p - min_p); 
+			#var hit_result = solid_bbox.intersects_ray(ray_pos, ray_dir);
+			#if hit_result != null:
+				#var dist_sqr : float = ray_pos.distance_squared_to(hit_result as Vector3);
+				#if closest_solid == -1 or dist_sqr < closest_solid_distance:
+					#closest_solid = solid_index;
+					#closest_solid_distance = dist_sqr;
+			#pass
+	
+	# TODO: We really should just raycast against the geometry the map has
+	# Each triangle already encodes the solid & face in the BONE channel
+	#Geometry3D.ray_intersects_triangle()
+	# for mesh in map.get_editor_instances()
+	# but if it's not C++ side or a built-in....
+	
+	# TODO: arrange the solids spatially if this ever starts to have speed issues
 	for solid_index in range(0, map.solids.size()):
+		# Build an AABB for the solid
 		var solid := map.solids[solid_index];
-		if solid:
-			# for now build an aabb
-			# later, use Geometry3D.ray_intersects_triangle
-			var min_p := solid.points[0].v3;
-			var max_p := solid.points[0].v3;
-			for point in solid.points:
-				min_p = min_p.min(point.v3);
-				max_p = max_p.max(point.v3);
-			var solid_bbox := AABB(min_p, max_p - min_p); 
-			var hit_result = solid_bbox.intersects_ray(ray_pos, ray_dir);
-			if hit_result != null:
-				var dist_sqr : float = ray_pos.distance_squared_to(hit_result as Vector3);
-				if closest_solid == -1 or dist_sqr < closest_solid_distance:
-					closest_solid = solid_index;
-					closest_solid_distance = dist_sqr;
-			pass
+		if not solid:
+			continue;
+		# TODO: Cache the AABBs
+		var min_p := solid.points[0].v3;
+		var max_p := solid.points[0].v3;
+		for point in solid.points:
+			min_p = min_p.min(point.v3);
+			max_p = max_p.max(point.v3);
+		var solid_bbox := AABB(min_p, max_p - min_p); 
+		# Hit against the AABB
+		var hit_result = solid_bbox.intersects_ray(ray_pos, ray_dir);
+		if hit_result == null:
+			continue;
+		var dist_sqr : float = ray_pos.distance_squared_to(hit_result as Vector3);
+		if closest_solid == -1 or dist_sqr < closest_solid_distance:
+			# If this one has been clicked, now we do the more expensive check per-triangle
+			# Loop through each face in the group
+			for i_face in solid.faces.size():
+				var face := solid.faces[i_face];
+				for i_corner in range(1, face.corners.size() - 1):
+					# Corners are 0, i_corner, i_corner+1
+					var hit_result_hd = Geometry3D.ray_intersects_triangle(
+						ray_pos, ray_dir,
+						solid.points[face.corners[0]].v3,
+						solid.points[face.corners[i_corner + 0]].v3,
+						solid.points[face.corners[i_corner + 1]].v3);
+					if hit_result_hd == null:
+						continue
+					# With out-hit result, check if it's valid:
+					dist_sqr = ray_pos.distance_squared_to(hit_result_hd as Vector3);
+					if closest_solid == -1 or dist_sqr < closest_solid_distance:
+						# If it's the closest one, update the clicked item
+						closest_solid = solid_index;
+						closest_face = i_face;
+						closest_vertex_proc2 = i_corner;
+						closest_solid_distance = dist_sqr;
+						closest_position = hit_result_hd as Vector3;
+					pass # End corner loop
+				pass # End faces loop
+			pass # End check AABB
+		pass # End solids loop
+		
+	if selection_mode == DioptraEditorMainPlugin.SelectMode.SOLID:
+		return closest_solid;
+	elif selection_mode == DioptraEditorMainPlugin.SelectMode.FACE:
+		pass
+	elif selection_mode == DioptraEditorMainPlugin.SelectMode.EDGE:
+		pass
+	elif selection_mode == DioptraEditorMainPlugin.SelectMode.VERTEX:
+		pass
+		
 	
 	return closest_solid;
+	
+	
+	
 	
 func _begin_handle_action(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool) -> void:
 	print("action: %s" % ("true" if secondary else "false"));
@@ -186,7 +256,7 @@ func _commit_subgizmos(gizmo: EditorNode3DGizmo, ids: PackedInt32Array, restores
 	
 	var node3d := gizmo.get_node_3d()
 	var map := node3d as DP_Map;
-	map.rebuild_editor_map(); #todo
+	map.rebuild_editor_map(); #todo, grab a Solid from the map
 	
 	map.update_gizmos();
 	
