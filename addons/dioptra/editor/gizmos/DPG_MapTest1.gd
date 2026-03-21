@@ -6,6 +6,18 @@ var mUndoRedo : EditorUndoRedoManager = null;
 
 var _ghost_box : DPUBoxGhost = null;
 
+const SELECTION_MAX_VALUE : int = (1 << 15) - 1;
+const SELBIT_MASK_SOLID : int = 0x7FFF;
+const SELBIT_HAS_FACE : int = (1 << 15);
+const SELBIT_SHIFT_FACE : int = 16;
+const SELBIT_MASK_FACE : int = 0x3FF;
+const SELBIT_HAS_EDGE : int = (1 << 26);
+const SELBIT_SHIFT_EDGE : int = 27;
+const SELBIT_MASK_EDGE : int = 0x3FF;
+const SELBIT_HAS_VERTEX : int = (1 << 37);
+const SELBIT_SHIFT_VERTEX : int = 38;
+const SELBIT_MASK_VERTEX : int = 0x3FF;
+
 func _init(editorPlugin : DioptraEditorMainPlugin, undoredo : EditorUndoRedoManager):
 	create_material("lines", Color(1.0, 1.0, 1.0), false, true, true);
 	_ghost_box = DPUBoxGhost.new();
@@ -31,25 +43,26 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 	var linesNormie := PackedVector3Array();
 	var linesSelect := PackedVector3Array();
 
-	
-	for solid_index in range(0, map.solids.size()):
-		var solid := map.solids[solid_index];
-		if not solid:
-			continue;
-		
-		for face in solid.faces:
-			for corner_index in range(1, face.corners.size()):
-				if gizmo.is_subgizmo_selected(solid_index):
+	# Get the selection
+	var selection_list := gizmo.get_subgizmo_selection();
+	for subgizmo_id in selection_list:
+		# Normal full selection item
+		if subgizmo_id < SELECTION_MAX_VALUE:
+			var solid_id = subgizmo_id;
+			if solid_id >= map.solids.size():
+				continue;
+			var solid := map.solids[solid_id];
+			if not solid:
+				continue;
+				
+			# Add selection for the edges:
+			for face in solid.faces:
+				for corner_index in range(1, face.corners.size()):
 					linesSelect.append(solid.points[face.corners[corner_index - 1]].v3);
 					linesSelect.append(solid.points[face.corners[corner_index + 0]].v3);
-				else:
-					#linesNormie.append(solid.points[face.corners[corner_index - 1]].v3);
-					#linesNormie.append(solid.points[face.corners[corner_index + 0]].v3);
-					pass
 				pass
-			pass	
-		
-		if gizmo.is_subgizmo_selected(solid_index):
+			
+			# Draw ghost box for the sizes (only one box so it'll work for the last selection)
 			var min_p := solid.points[0].v3;
 			var max_p := solid.points[0].v3;
 			for point in solid.points:
@@ -58,8 +71,70 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 			_ghost_box.box_start = min_p;
 			_ghost_box.box_end = max_p;
 			_ghost_box.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
-
-		pass
+			
+		elif (subgizmo_id & SELBIT_HAS_FACE) != 0:
+			print("face selection")
+			var solid_id = subgizmo_id & SELBIT_MASK_SOLID;
+			print(solid_id)
+			if solid_id >= map.solids.size():
+				continue;
+			var solid := map.solids[solid_id];
+			if not solid:
+				continue;
+				
+			# Add selection for the edges:
+			var face_id = (subgizmo_id >> SELBIT_SHIFT_FACE) & SELBIT_MASK_FACE;
+			if face_id >= solid.faces.size():
+				continue;
+			var face = solid.faces[face_id];
+			var normal : Vector3 = -(solid.points[face.corners[1]].v3 - solid.points[face.corners[0]].v3).cross(
+				solid.points[face.corners[2]].v3 - solid.points[face.corners[0]].v3).normalized();
+			normal /= DioptraInterface.get_position_scale_top();
+			normal *= DioptraInterface.get_position_scale_div();
+			for corner_index in range(1, face.corners.size()):
+				# TODO: need elevated selection lines for this face 
+				linesSelect.append(solid.points[face.corners[corner_index - 1]].v3 + normal);
+				linesSelect.append(solid.points[face.corners[corner_index + 0]].v3 + normal);
+			pass
+			
+			# Draw ghost box for the face size
+			var min_p := solid.points[face.corners[0]].v3;
+			var max_p := solid.points[face.corners[0]].v3;
+			for corner_index in face.corners:
+				min_p = min_p.min(solid.points[corner_index].v3);
+				max_p = max_p.max(solid.points[corner_index].v3);
+			_ghost_box.box_start = min_p;
+			_ghost_box.box_end = max_p;
+			_ghost_box.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
+			
+	#for solid_index in range(0, map.solids.size()):
+		#var solid := map.solids[solid_index];
+		#if not solid:
+			#continue;
+		#
+		#for face in solid.faces:
+			#for corner_index in range(1, face.corners.size()):
+				#if gizmo.is_subgizmo_selected(solid_index):
+					#linesSelect.append(solid.points[face.corners[corner_index - 1]].v3);
+					#linesSelect.append(solid.points[face.corners[corner_index + 0]].v3);
+				#else:
+					##linesNormie.append(solid.points[face.corners[corner_index - 1]].v3);
+					##linesNormie.append(solid.points[face.corners[corner_index + 0]].v3);
+					#pass
+				#pass
+			#pass	
+		#
+		#if gizmo.is_subgizmo_selected(solid_index):
+			#var min_p := solid.points[0].v3;
+			#var max_p := solid.points[0].v3;
+			#for point in solid.points:
+				#min_p = min_p.min(point.v3);
+				#max_p = max_p.max(point.v3);
+			#_ghost_box.box_start = min_p;
+			#_ghost_box.box_end = max_p;
+			#_ghost_box.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
+#
+		#pass
 	
 	# Move this check to user????
 	#if gizmo.is_subgizmo_selected(map.solids.size()):
@@ -170,8 +245,10 @@ func _subgizmos_intersect_ray(gizmo: EditorNode3DGizmo, camera: Camera3D, screen
 	if selection_mode == DioptraEditorMainPlugin.SelectMode.SOLID:
 		return closest_solid;
 	elif selection_mode == DioptraEditorMainPlugin.SelectMode.FACE:
-		pass
+		print("face: %d" % closest_face);
+		return closest_solid | SELBIT_HAS_FACE | (closest_face << SELBIT_SHIFT_FACE);
 	elif selection_mode == DioptraEditorMainPlugin.SelectMode.EDGE:
+		#return closest_solid | SELBIT_SHIFT_EDGE | (closest_face << SELBIT_SHIFT_EDGE);
 		pass
 	elif selection_mode == DioptraEditorMainPlugin.SelectMode.VERTEX:
 		pass
