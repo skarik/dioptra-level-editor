@@ -273,9 +273,18 @@ func _get_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int) -> Tran
 	#if not selection.is_empty():
 		#var selected_index := selection[0];
 		#t = t.translated(map.solids[selected_index].points[0].v3);
-	if subgizmo_id >= 0 and subgizmo_id < map.solids.size():
-		t = t.translated(map.solids[subgizmo_id].points[0].v3);
-	
+		
+	var solid_id = subgizmo_id & SELBIT_MASK_SOLID;
+	if solid_id >= 0 and solid_id < map.solids.size():
+		# Solid Corner
+		if subgizmo_id < SELECTION_MAX_VALUE:
+			t = t.translated(map.solids[solid_id].points[0].v3);
+		# Face Corner
+		elif (subgizmo_id & SELBIT_HAS_FACE) != 0:
+			var face_id = (subgizmo_id >> SELBIT_SHIFT_FACE) & SELBIT_MASK_FACE;
+			var solid := map.solids[solid_id];
+			if face_id < solid.faces.size():
+				t = t.translated(solid.points[solid.faces[face_id].corners[0]].v3);
 	return t;
 	
 class StartingTransform:
@@ -283,23 +292,37 @@ class StartingTransform:
 	var points : Array[MapVector3];
 	
 var _is_transforming : bool = false;
-var _transform_start : Array[StartingTransform];
+var _transform_start : Dictionary[int, StartingTransform];
 
 func _start_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int) -> void:
 	var node3d := gizmo.get_node_3d()
 	var map := node3d as DP_Map;
-	var solid := map.solids[subgizmo_id];
+	var solid_id = subgizmo_id & SELBIT_MASK_SOLID;
+	var solid := map.solids[solid_id];
 	
 	_is_transforming = true;
-	if _transform_start.size() <= subgizmo_id:
-		_transform_start.resize(subgizmo_id + 1);
+	#if _transform_start.size() <= subgizmo_id:
+	#	_transform_start.resize(subgizmo_id + 1);
 		
 	_transform_start[subgizmo_id] = StartingTransform.new();
 	_transform_start[subgizmo_id].transform = _get_subgizmo_transform(gizmo, subgizmo_id);
+	
 	_transform_start[subgizmo_id].points = solid.points.duplicate();
 	for i in _transform_start[subgizmo_id].points.size():
 		_transform_start[subgizmo_id].points[i] = MapVector3.new();
 		_transform_start[subgizmo_id].points[i].v3i = solid.points[i].v3i;
+	# Moving solid
+	#if subgizmo_id < SELECTION_MAX_VALUE:
+		#_transform_start[subgizmo_id].points = solid.points.duplicate();
+		#for i in _transform_start[subgizmo_id].points.size():
+			#_transform_start[subgizmo_id].points[i] = MapVector3.new();
+			#_transform_start[subgizmo_id].points[i].v3i = solid.points[i].v3i;
+	## Moving face
+	#elif (subgizmo_id & SELBIT_HAS_FACE) != 0:
+		#_transform_start[subgizmo_id].points = solid.points.duplicate();
+		#for i in _transform_start[subgizmo_id].points.size():
+			#_transform_start[subgizmo_id].points[i] = MapVector3.new();
+			#_transform_start[subgizmo_id].points[i].v3i = solid.points[i].v3i;
 	
 	pass
 	
@@ -308,19 +331,28 @@ func _set_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int, transfo
 	if not _is_transforming:
 		_start_subgizmo_transform(gizmo, subgizmo_id);
 	
-	print("set gizmo transform: %d" % subgizmo_id);
+	var solid_id = subgizmo_id & SELBIT_MASK_SOLID;
+	print("set gizmo transform: %d" % solid_id);
 	
 	var node3d := gizmo.get_node_3d()
 	var map := node3d as DP_Map;
 	
-	var solid := map.solids[subgizmo_id];
+	var solid := map.solids[solid_id];
 	var reference := _transform_start[subgizmo_id];
 	
 	var delta_position = DioptraInterface.get_grid_round_v3((reference.transform.inverse() * transform).origin);
 	
 	# Offset the points
-	for i in solid.points.size():
-		solid.points[i].v3 = reference.points[i].v3 + delta_position;
+	# Moving solid
+	if subgizmo_id < SELECTION_MAX_VALUE:
+		for i in solid.points.size():
+			solid.points[i].v3 = reference.points[i].v3 + delta_position;
+	# Moving face
+	elif (subgizmo_id & SELBIT_HAS_FACE) != 0:
+		var face_id = (subgizmo_id >> SELBIT_SHIFT_FACE) & SELBIT_MASK_FACE;
+		for i in solid.faces[face_id].corners.size():
+			var vert = solid.faces[face_id].corners[i];
+			solid.points[vert].v3 = reference.points[vert].v3 + delta_position;
 		
 	map.update_gizmos();
 		

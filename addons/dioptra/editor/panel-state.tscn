@@ -41,12 +41,14 @@ icon = ExtResource("3_a21wj")
 [node name="Edge" type="Button" parent="Box/Selection"]
 layout_mode = 2
 tooltip_text = "Select edges (3)"
+disabled = true
 toggle_mode = true
 icon = ExtResource("4_dfuey")
 
 [node name="Vertex" type="Button" parent="Box/Selection"]
 layout_mode = 2
 tooltip_text = "Select corners (4)"
+disabled = true
 toggle_mode = true
 icon = ExtResource("5_oiw7u")
 

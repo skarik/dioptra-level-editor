@@ -106,8 +106,10 @@ func update(viewport_camera : Camera3D) -> void:
 	
 	if show_size_labels:
 		# Labels:
-		_label_x = DPULabelPool.get_label(_last_valid_camera);
-		_label_z = DPULabelPool.get_label(_last_valid_camera);
+		if size.x > 0:
+			_label_x = DPULabelPool.get_label(_last_valid_camera);
+		if size.z > 0:
+			_label_z = DPULabelPool.get_label(_last_valid_camera);
 		if size.y > 0:
 			_label_y = DPULabelPool.get_label(_last_valid_camera);
 		_update_labels(_last_valid_camera);
