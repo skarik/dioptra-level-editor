@@ -5,6 +5,7 @@ var mEditorPlugin : DioptraEditorMainPlugin = null;
 var mUndoRedo : EditorUndoRedoManager = null;
 
 var _ghost_box : DPUBoxGhost = null;
+var _queue_selection_changed : bool = false;
 
 const SELECTION_MAX_VALUE : int = (1 << 15) - 1;
 const SELBIT_MASK_SOLID : int = 0x7FFF;
@@ -33,6 +34,11 @@ func _get_gizmo_name() -> String:
 	return "DP Map Test 1";
 	
 func _redraw(gizmo: EditorNode3DGizmo) -> void:
+	# If there's a selection, emit selection changed.
+	if _queue_selection_changed:
+		_queue_selection_changed = false;
+		EditorInterface.get_selection().selection_changed.emit();
+	
 	gizmo.clear()
 	_ghost_box.cleanup();
 
@@ -107,45 +113,8 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 			_ghost_box.box_end = max_p;
 			_ghost_box.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
 			
-	#for solid_index in range(0, map.solids.size()):
-		#var solid := map.solids[solid_index];
-		#if not solid:
-			#continue;
-		#
-		#for face in solid.faces:
-			#for corner_index in range(1, face.corners.size()):
-				#if gizmo.is_subgizmo_selected(solid_index):
-					#linesSelect.append(solid.points[face.corners[corner_index - 1]].v3);
-					#linesSelect.append(solid.points[face.corners[corner_index + 0]].v3);
-				#else:
-					##linesNormie.append(solid.points[face.corners[corner_index - 1]].v3);
-					##linesNormie.append(solid.points[face.corners[corner_index + 0]].v3);
-					#pass
-				#pass
-			#pass	
-		#
-		#if gizmo.is_subgizmo_selected(solid_index):
-			#var min_p := solid.points[0].v3;
-			#var max_p := solid.points[0].v3;
-			#for point in solid.points:
-				#min_p = min_p.min(point.v3);
-				#max_p = max_p.max(point.v3);
-			#_ghost_box.box_start = min_p;
-			#_ghost_box.box_end = max_p;
-			#_ghost_box.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
-#
-		#pass
-	
-	# Move this check to user????
-	#if gizmo.is_subgizmo_selected(map.solids.size()):
-		#for pair_index in range(0, _face_selection.size(), 2):
-			#var solid := map.solids[_face_selection[pair_index+0]];
-			#var face := solid.faces[_face_selection[pair_index+1]];
-			#
-			#for corner_index in range(1, face.corners.size()):
-				#linesSelect.append(solid.points[face.corners[corner_index - 1]].v3);
-				#linesSelect.append(solid.points[face.corners[corner_index + 0]].v3);
-		#pass
+	##linesNormie.append(solid.points[face.corners[corner_index - 1]].v3);
+	##linesNormie.append(solid.points[face.corners[corner_index + 0]].v3);
 	
 	# Add the solids now:
 	gizmo.add_lines(linesNormie, get_material("lines", gizmo), false, Color(0.8, 0.8, 0.1, 0.5));
@@ -242,6 +211,10 @@ func _subgizmos_intersect_ray(gizmo: EditorNode3DGizmo, camera: Camera3D, screen
 			pass # End check AABB
 		pass # End solids loop
 		
+	# If there's a selection, emit selection changed.
+	if closest_solid != -1:
+		_queue_selection_changed = true;
+		
 	if selection_mode == DioptraEditorMainPlugin.SelectMode.SOLID:
 		return closest_solid;
 	elif selection_mode == DioptraEditorMainPlugin.SelectMode.FACE:
@@ -252,12 +225,8 @@ func _subgizmos_intersect_ray(gizmo: EditorNode3DGizmo, camera: Camera3D, screen
 		pass
 	elif selection_mode == DioptraEditorMainPlugin.SelectMode.VERTEX:
 		pass
-		
-	
+
 	return closest_solid;
-	
-	
-	
 	
 func _begin_handle_action(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool) -> void:
 	print("action: %s" % ("true" if secondary else "false"));
@@ -334,7 +303,7 @@ func _set_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int, transfo
 	var solid_id = subgizmo_id & SELBIT_MASK_SOLID;
 	print("set gizmo transform: %d" % solid_id);
 	
-	var node3d := gizmo.get_node_3d()
+	var node3d := gizmo.get_node_3d();
 	var map := node3d as DP_Map;
 	
 	var solid := map.solids[solid_id];

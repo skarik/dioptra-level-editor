@@ -17,6 +17,13 @@ static func free_instance() -> void:
 
 #------------------------------------------------------------------------------#
 
+func _init():
+	print("DioptraInterface started");
+	init_settings();
+	pass
+
+#------------------------------------------------------------------------------#
+
 var _scale_dpunits_per : int = 128;
 var _scale_per_gdunits : int = 1;
 var _tscale_pixels_per : int = 32;
@@ -45,6 +52,18 @@ static func get_pixel_scale_div() -> int:
 
 const FutureSettingTrue : bool = true;
 const FutureSettingFalse : bool = false;
+
+# Load Project Settings
+func init_settings() -> void:
+	if ProjectSettings.has_setting("dioptra/grid/world_dp_units_per"):
+		_scale_dpunits_per = (int)(ProjectSettings.get_setting("dioptra/grid/world_dp_units_per", 128));
+	if ProjectSettings.has_setting("dioptra/grid/world_per_gd_units"):
+		_scale_per_gdunits = (int)(ProjectSettings.get_setting("dioptra/grid/world_per_gd_units", 1));
+	if ProjectSettings.has_setting("dioptra/grid/tex_pixels_per"):
+		_tscale_pixels_per = (int)(ProjectSettings.get_setting("dioptra/grid/tex_pixels_per", 32));
+	if ProjectSettings.has_setting("dioptra/grid/tex_per_gd_units"):
+		_tscale_per_gdunits = (int)(ProjectSettings.get_setting("dioptra/grid/tex_per_gd_units", 1));
+	pass
 
 #------------------------------------------------------------------------------#
 

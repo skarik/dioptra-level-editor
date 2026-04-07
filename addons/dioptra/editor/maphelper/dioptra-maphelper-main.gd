@@ -94,6 +94,8 @@ func _get_editor_plugin() -> DioptraEditorMainPlugin:
 #------------------------------------------------------------------------------#
 
 func _get_target_gizmo(editor : DioptraEditorMainPlugin, map : DP_Map) -> EditorNode3DGizmo:
+	if not map:
+		return null;
 	var gizmos := map.get_gizmos();
 	var target_gizmo : EditorNode3DGizmo = null;
 	for item : Node3DGizmo in gizmos:

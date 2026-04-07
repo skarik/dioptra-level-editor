@@ -48,7 +48,8 @@ class LabelNodeItem:
 		return _node;
 	## Releases the given node back to the pool
 	func release() -> void:
-		_node.set_visible(false);
+		if _node:
+			_node.set_visible(false);
 		_pool._release_item(self);
 	## Updates the given size with the camera
 	func process(camera : Camera3D) -> void:
