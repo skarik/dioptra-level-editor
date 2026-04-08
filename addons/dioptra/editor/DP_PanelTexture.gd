@@ -6,11 +6,19 @@ var _plugin : DioptraEditorMainPlugin = null;
 var _texture_button : Button = null;
 var _texture_label : Label = null;
 
+var _scale_spinbox_x : SpinBox = null;
+var _scale_spinbox_y : SpinBox = null;
+var _angle_spinbox : SpinBox = null;
+
 var _material_dialog : EditorFileDialog = null;
 
 func _ready() -> void:
 	_texture_button = $"Container Material Select/HFlowContainer/TextureButton";
 	_texture_label = $"Container Material Select/HFlowContainer/MaterialName";
+	
+	_scale_spinbox_x = $"Container UVs/VContainer/GridContainer/VBoxContainerScale/HBoxContainerX/SpinBoxX";
+	_scale_spinbox_y = $"Container UVs/VContainer/GridContainer/VBoxContainerScale/HBoxContainerY/SpinBoxY";
+	_angle_spinbox = $"Container UVs/VContainer/GridContainer/VBoxContainerRot/HBoxContainer2/SpinBoxRot";
 	pass
 	
 func setPlugin(plugin : DioptraEditorMainPlugin) -> void:
@@ -35,7 +43,10 @@ func _on_selection_changed() -> void:
 			last_selected_item = item;
 			break;
 	
-	var target_gizmo := _plugin._plugin_maphelper._get_target_gizmo(_plugin, last_selected_item as DP_Map);
+	# Grab map gizmo for the selection
+	var target_gizmo : EditorNode3DGizmo = null;
+	if _plugin and is_instance_valid(_plugin._plugin_maphelper):
+		target_gizmo = _plugin._plugin_maphelper._get_target_gizmo(_plugin, last_selected_item as DP_Map);
 	if target_gizmo:
 		var subgizmo_selection := target_gizmo.get_subgizmo_selection();
 		
@@ -59,6 +70,9 @@ func _on_selection_changed() -> void:
 	
 	pass
 	
+#------------------------------------------------------------------------------#
+# Texture providing:
+	
 # This is a hack for materials because I have no idea how to do drag and drop (_get_drag_data????)
 func _on_texture_button_pressed() -> void:
 	_material_dialog = EditorFileDialog.new();
@@ -73,15 +87,13 @@ func _on_texture_button_pressed() -> void:
 	
 	_material_dialog.set_meta("_created_by", self);
 	_material_dialog.popup_file_dialog();
-	
 	pass
 
 func _on_material_dialog_selected(filename : String) -> void:
 	var res : Resource = load(filename);
 	if res is Material:
 		var mat := res as Material;
-		_texture_label.text = mat.resource_path.get_basename().get_file();
-		EditorInterface.get_resource_previewer().queue_resource_preview(filename, self, "_on_material_dialog_preview_done", null);
+		update_ui_with_material(mat);
 		
 		# Apply the material to the map:
 		_plugin._plugin_maphelper.do_assign_material(mat);
@@ -92,13 +104,54 @@ func _on_material_dialog_preview_done(path : String, preview : Texture2D, thumbn
 	_texture_button.icon = preview;
 	pass
 
+## Updates the UI with the given material
+func update_ui_with_material(mat : Material) -> void:
+	_texture_label.text = mat.resource_path.get_basename().get_file();
+	EditorInterface.get_resource_previewer().queue_resource_preview(mat.resource_path, self, "_on_material_dialog_preview_done", null);
+	pass
+
+#------------------------------------------------------------------------------#
+
 ## Updates the UI with the input face's parameters.
 func update_with_face_info(map : DP_Map, face : DPMapFace) -> void:
 	var mat := map.materials[face.material];
 	
 	# Update the material thumbnail
-	_texture_label.text = mat.resource_path.get_basename().get_file();
-	EditorInterface.get_resource_previewer().queue_resource_preview(mat.resource_path, self, "_on_material_dialog_preview_done", null);
+	update_ui_with_material(mat);
 	
 	# TODO: Update the other items in the UI
 	pass
+	
+#------------------------------------------------------------------------------#
+# Texture transformation handlers
+
+func _on_flip_x() -> void:
+	_scale_spinbox_x.value *= -1.0;
+	
+func _on_flip_y() -> void:
+	_scale_spinbox_y.value *= -1.0;
+	
+func _on_scale_changed(_dummy : float) -> void:
+	var scale := Vector2(_scale_spinbox_x.value, _scale_spinbox_y.value);
+	_plugin._plugin_maphelper.do_assign_uv_scale(scale);
+
+
+func _on_rotate_180() -> void:
+	_angle_spinbox.value += 180;
+
+func _on_rotate_90() -> void:
+	_angle_spinbox.value += 90;
+	
+func _on_rotate_N90() -> void:
+	_angle_spinbox.value -= 90;
+	
+func _on_rotate_45() -> void:
+	_angle_spinbox.value += 45;
+	
+func _on_angle_changed(_dummy : float) -> void:
+	var angle := wrapf(_angle_spinbox.value, -360, 360);
+	_angle_spinbox.set_value_no_signal(angle);
+	_plugin._plugin_maphelper.do_assign_uv_angle(angle);
+	
+	
+	

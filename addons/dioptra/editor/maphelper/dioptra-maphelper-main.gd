@@ -157,9 +157,32 @@ func _action_assign_material_to_selected_solids(editor : DioptraEditorMainPlugin
 	
 	return false;
 
+func _action_assign_uv_properties(editor : DioptraEditorMainPlugin, map : DP_Map, scale : Vector2, offset : Vector2, angle : float) -> void:
+	pass
+func _action_assign_uv_scale(editor : DioptraEditorMainPlugin, map : DP_Map, scale : Vector2) -> void:
+	pass
+func _action_assign_uv_offset(editor : DioptraEditorMainPlugin, map : DP_Map, offset : Vector2) -> void:
+	pass
+func _action_assign_uv_angle(editor : DioptraEditorMainPlugin, map : DP_Map, angle : float) -> void:
+	pass
+
 func do_assign_material(mat : Material) -> void:
 	var editor := _get_editor_plugin();
 	var map := editor.get_last_edited_map();
 	_action_assign_material_to_selected_solids(editor, map, mat);
 	
+func do_assign_uv_scale(scale : Vector2) -> void:
+	var editor := _get_editor_plugin();
+	var map := editor.get_last_edited_map();
+	_action_assign_uv_scale(editor, map, scale);
+	
+func do_assign_uv_offset(offset : Vector2) -> void:
+	var editor := _get_editor_plugin();
+	var map := editor.get_last_edited_map();
+	_action_assign_uv_offset(editor, map, offset);
+	
+func do_assign_uv_angle(angle : float) -> void:
+	var editor := _get_editor_plugin();
+	var map := editor.get_last_edited_map();
+	_action_assign_uv_angle(editor, map, angle);
 	
