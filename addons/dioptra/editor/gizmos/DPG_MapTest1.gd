@@ -7,9 +7,12 @@ var mUndoRedo : EditorUndoRedoManager = null;
 var _ghost_box : DPUBoxGhost = null;
 var _queue_selection_changed : bool = false;
 
+const cGlowSize = 8.0;
+
 
 func _init(editorPlugin : DioptraEditorMainPlugin, undoredo : EditorUndoRedoManager):
 	create_material("lines", Color(1.0, 1.0, 1.0), false, true, true);
+	create_material("geo", Color(1.0, 1.0, 1.0, 0.5), false, false, true);
 	_ghost_box = DPUBoxGhost.new();
 
 	mEditorPlugin = editorPlugin;
@@ -34,27 +37,33 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 	var node3d := gizmo.get_node_3d()
 	var map := node3d as DP_Map;
 	
+	var color_sel : Color = EditorInterface.get_editor_theme().get_color("warning_color", "Editor");
+
 	# Do all solids
 	var linesNormie := PackedVector3Array();
 	var linesSelect := PackedVector3Array();
+	var am := DPArrayMesher.new(DPArrayMesher.TypeFlags.VERTEX \
+			| DPArrayMesher.TypeFlags.NORMAL | DPArrayMesher.TypeFlags.TEX_UV \
+			| DPArrayMesher.TypeFlags.COLOR \
+			| DPArrayMesher.TypeFlags.INDEX);
 
 	# Get the selection
 	var selection_list := gizmo.get_subgizmo_selection();
 	for subgizmo_id in selection_list:
+		var selection := DPHelpers.get_selection(map, subgizmo_id);
+		
 		# Normal full selection item
-		if subgizmo_id < DPHelpers.SELECTION_MAX_VALUE:
-			var solid_id = subgizmo_id;
-			if solid_id >= map.solids.size():
-				continue;
-			var solid := map.solids[solid_id];
-			if not solid:
-				continue;
+		if selection.type == DPHelpers.SelectionType.SOLID:
+			var solid := selection.solid;
 				
 			# Add selection for the edges:
 			for face in solid.faces:
-				for corner_index in range(1, face.corners.size()):
-					linesSelect.append(solid.points[face.corners[corner_index - 1]].v3);
-					linesSelect.append(solid.points[face.corners[corner_index + 0]].v3);
+				var corner_count : int = face.corners.size();
+				for corner_index in corner_count:
+					var corner_0 := corner_index + 0;
+					var corner_1 := (corner_index + 1) % corner_count;
+					linesSelect.append(solid.points[face.corners[corner_0]].v3);
+					linesSelect.append(solid.points[face.corners[corner_1]].v3);
 				pass
 			
 			# Draw ghost box for the sizes (only one box so it'll work for the last selection)
@@ -67,29 +76,22 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 			_ghost_box.box_end = max_p;
 			_ghost_box.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
 			
-		elif (subgizmo_id & DPHelpers.SELBIT_HAS_FACE) != 0:
+		elif selection.type == DPHelpers.SelectionType.FACE:
 			print("face selection")
-			var solid_id = subgizmo_id & DPHelpers.SELBIT_MASK_SOLID;
-			print(solid_id)
-			if solid_id >= map.solids.size():
-				continue;
-			var solid := map.solids[solid_id];
-			if not solid:
-				continue;
+			var solid := selection.solid;
+			var face := selection.face;
+			var corner_count : int = face.corners.size();
 				
 			# Add selection for the edges:
-			var face_id = (subgizmo_id >> DPHelpers.SELBIT_SHIFT_FACE) & DPHelpers.SELBIT_MASK_FACE;
-			if face_id >= solid.faces.size():
-				continue;
-			var face = solid.faces[face_id];
 			var normal : Vector3 = -(solid.points[face.corners[1]].v3 - solid.points[face.corners[0]].v3).cross(
 				solid.points[face.corners[2]].v3 - solid.points[face.corners[0]].v3).normalized();
 			normal /= DioptraInterface.get_position_scale_top();
 			normal *= DioptraInterface.get_position_scale_div();
-			for corner_index in range(1, face.corners.size()):
-				# TODO: need elevated selection lines for this face 
-				linesSelect.append(solid.points[face.corners[corner_index - 1]].v3 + normal);
-				linesSelect.append(solid.points[face.corners[corner_index + 0]].v3 + normal);
+			for corner_index in range(corner_count):
+				var corner_0 := corner_index + 0;
+				var corner_1 := (corner_index + 1) % corner_count;
+				linesSelect.append(solid.points[face.corners[corner_0]].v3 + normal);
+				linesSelect.append(solid.points[face.corners[corner_1]].v3 + normal);
 			pass
 			
 			# Draw ghost box for the face size
@@ -102,12 +104,40 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 			_ghost_box.box_end = max_p;
 			_ghost_box.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
 			
-	##linesNormie.append(solid.points[face.corners[corner_index - 1]].v3);
-	##linesNormie.append(solid.points[face.corners[corner_index + 0]].v3);
+			# Add glow mesh around the face
+			var scale : float = DioptraInterface.get_position_scale_div() / float(DioptraInterface.get_position_scale_top());
+			for corner_index in range(corner_count):
+				var corner_0 := corner_index + 0;
+				var corner_1 := (corner_index + 1) % corner_count;
+				var corner_2 := (corner_index + 2) % corner_count;
+				var corner_3 := (corner_index + 3) % corner_count;
+				var point_0 := solid.points[face.corners[corner_0]].v3;
+				var point_1 := solid.points[face.corners[corner_1]].v3;
+				var point_2 := solid.points[face.corners[corner_2]].v3;
+				var point_3 := solid.points[face.corners[corner_3]].v3;
+				var d_12 = (point_2 - point_1).normalized() * scale * cGlowSize;
+				var d_01 = (point_1 - point_0).normalized() * scale * cGlowSize;
+				var d_23 = (point_3 - point_2).normalized() * scale * cGlowSize;
+				var vert0 := am.get_vertex_count();
+				am.point_add(point_1 + normal);
+				am.point_add(point_1 + normal + d_01 - d_12);
+				am.point_add(point_2 + normal);
+				am.point_add(point_2 + normal - d_23 + d_12);
+				am.tri_add_indicies(vert0 + 0, vert0 + 1, vert0 + 2);
+				am.tri_add_indicies(vert0 + 2, vert0 + 1, vert0 + 3);
+				am.get_surface_color()[vert0 + 0] = color_sel; 
+				am.get_surface_color()[vert0 + 2] = color_sel;
+				am.get_surface_color()[vert0 + 1] = color_sel * Color(1.0, 1.0, 1.0, 0.0);
+				am.get_surface_color()[vert0 + 3] = color_sel * Color(1.0, 1.0, 1.0, 0.0);
+			pass # End adding glowmesh
 	
 	# Add the solids now:
 	gizmo.add_lines(linesNormie, get_material("lines", gizmo), false, Color(0.8, 0.8, 0.1, 0.5));
 	gizmo.add_lines(linesSelect, get_material("lines", gizmo), false, Color(1.0, 1.0, 1.0, 1.0));
+	if am.get_index_count() > 0:
+		var local_mesh : ArrayMesh = ArrayMesh.new();
+		local_mesh.add_surface_from_arrays(am.get_primitive_type(), am.get_surface_array());
+		gizmo.add_mesh(local_mesh, get_material("geo", gizmo));
 	
 	pass
 	

@@ -34,38 +34,40 @@ enum SelectionType {
 }
 
 ## Given a subgizmo_id from editor gizmo, returns the type of selection it is
-static func get_selection_type(subgizmo_id : int) -> SelectionType:
+## If the selection is invalid for the given map, will return none
+static func get_selection_type(map : DP_Map, subgizmo_id : int) -> SelectionType:
 	if subgizmo_id >= 0:
-		if subgizmo_id < SELECTION_MAX_VALUE:
-			return SelectionType.SOLID;
-		elif (subgizmo_id & SELBIT_HAS_FACE) != 0:
-			return SelectionType.FACE;
-		elif (subgizmo_id & SELBIT_HAS_EDGE) != 0:
-			return SelectionType.EDGE;
-		elif (subgizmo_id & SELBIT_HAS_VERTEX) != 0:
-			return SelectionType.VERTEX;
+		if (subgizmo_id & SELBIT_MASK_SOLID) < map.solids.size():
+			if subgizmo_id < SELECTION_MAX_VALUE:
+				return SelectionType.SOLID;
+			elif (subgizmo_id & SELBIT_HAS_FACE) != 0:
+				var solid_id = subgizmo_id & SELBIT_MASK_SOLID;
+				var face_id = (subgizmo_id >> SELBIT_SHIFT_FACE) & SELBIT_MASK_FACE;
+				if face_id < map.solids[solid_id].faces.size():
+					return SelectionType.FACE;
+			elif (subgizmo_id & SELBIT_HAS_EDGE) != 0:
+				return SelectionType.EDGE;
+			elif (subgizmo_id & SELBIT_HAS_VERTEX) != 0:
+				return SelectionType.VERTEX;
 	return SelectionType.NONE;
 
 ## Given subgizmo_id, returns a dictionary referencing the actual DP_Map objects
-static func get_selection(map : DP_Map, subgizmo_id : int) -> Dictionary:
-	var selection_type = get_selection_type(subgizmo_id);
+static func get_selection(map : DP_Map, subgizmo_id : int) -> DPSelectionItem:
+	var selection_type = get_selection_type(map, subgizmo_id);
 	var solid_id = subgizmo_id & SELBIT_MASK_SOLID;
 	var face_id = (subgizmo_id >> SELBIT_SHIFT_FACE) & SELBIT_MASK_FACE;
 	var edge_id = (subgizmo_id >> SELBIT_SHIFT_EDGE) & SELBIT_MASK_EDGE;
 	var vertex_id = (subgizmo_id >> SELBIT_SHIFT_VERTEX) & SELBIT_MASK_VERTEX;
 	
+	var result = DPSelectionItem.new();
+	result.type = selection_type;
+	result.solid_id = solid_id;
+	result.face_id = face_id;
+	
 	if selection_type == SelectionType.SOLID:
-		return {
-			"solid": map.solids[solid_id],
-			"face": null,
-			};
+		result.solid = map.solids[solid_id];
 	elif selection_type == SelectionType.FACE:
-		return {
-			"solid": map.solids[solid_id], 
-			"face": map.solids[solid_id].faces[face_id],
-			};
-	return {
-		"solid": null,
-		"face": null,
-		};
+		result.solid = map.solids[solid_id];
+		result.face = map.solids[solid_id].faces[face_id];
+	return result;
 	

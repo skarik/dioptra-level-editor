@@ -178,8 +178,8 @@ func _action_assign_uv_scale(editor : DioptraEditorMainPlugin, map : DP_Map, sca
 		var last_solid = -1;
 		# Apply it to all items in selection
 		for subgizmo_id in subgizmo_selection:
-			var selection_type := DPHelpers.get_selection_type(subgizmo_id);
-			var selection = DPHelpers.get_selection(map, subgizmo_id);
+			var selection_type := DPHelpers.get_selection_type(map, subgizmo_id);
+			var selection := DPHelpers.get_selection(map, subgizmo_id);
 			var sel_solid := selection.solid as DPMapSolid;
 			var sel_face := selection.face as DPMapFace;
 			if selection_type == DPHelpers.SelectionType.SOLID:
@@ -206,8 +206,8 @@ func _action_assign_uv_offset(editor : DioptraEditorMainPlugin, map : DP_Map, of
 		var last_solid = -1;
 		# Apply it to all items in selection
 		for subgizmo_id in subgizmo_selection:
-			var selection_type := DPHelpers.get_selection_type(subgizmo_id);
-			var selection = DPHelpers.get_selection(map, subgizmo_id);
+			var selection_type := DPHelpers.get_selection_type(map, subgizmo_id);
+			var selection := DPHelpers.get_selection(map, subgizmo_id);
 			var sel_solid := selection.solid as DPMapSolid;
 			var sel_face := selection.face as DPMapFace;
 			if selection_type == DPHelpers.SelectionType.SOLID:
@@ -234,8 +234,8 @@ func _action_assign_uv_angle(editor : DioptraEditorMainPlugin, map : DP_Map, ang
 		var last_solid = -1;
 		# Apply it to all items in selection
 		for subgizmo_id in subgizmo_selection:
-			var selection_type := DPHelpers.get_selection_type(subgizmo_id);
-			var selection = DPHelpers.get_selection(map, subgizmo_id);
+			var selection_type := DPHelpers.get_selection_type(map, subgizmo_id);
+			var selection := DPHelpers.get_selection(map, subgizmo_id);
 			var sel_solid := selection.solid as DPMapSolid;
 			var sel_face := selection.face as DPMapFace;
 			if selection_type == DPHelpers.SelectionType.SOLID:
