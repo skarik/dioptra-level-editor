@@ -37,7 +37,13 @@ func _init():
 		
 	# Load Settings now that items initialized
 	init_settings();
+	
+	# Connect signals
+	ProjectSettings.settings_changed.connect(_on_settings_changed);
 	pass
+
+func _on_settings_changed() -> void:
+	init_settings();
 
 #------------------------------------------------------------------------------#
 
