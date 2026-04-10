@@ -159,12 +159,90 @@ func _action_assign_material_to_selected_solids(editor : DioptraEditorMainPlugin
 
 func _action_assign_uv_properties(editor : DioptraEditorMainPlugin, map : DP_Map, scale : Vector2, offset : Vector2, angle : float) -> void:
 	pass
-func _action_assign_uv_scale(editor : DioptraEditorMainPlugin, map : DP_Map, scale : Vector2) -> void:
-	pass
-func _action_assign_uv_offset(editor : DioptraEditorMainPlugin, map : DP_Map, offset : Vector2) -> void:
-	pass
-func _action_assign_uv_angle(editor : DioptraEditorMainPlugin, map : DP_Map, angle : float) -> void:
-	pass
+func _action_assign_uv_scale(editor : DioptraEditorMainPlugin, map : DP_Map, scale : Vector2) -> bool:
+	var target_gizmo := _get_target_gizmo(editor, map);
+	if target_gizmo:
+		var subgizmo_selection := target_gizmo.get_subgizmo_selection();
+		var last_solid = -1;
+		# Apply it to all items in selection
+		for subgizmo_id in subgizmo_selection:
+			var selection_type := DPHelpers.get_selection_type(subgizmo_id);
+			var selection = DPHelpers.get_selection(map, subgizmo_id);
+			var sel_solid := selection.solid as DPMapSolid;
+			var sel_face := selection.face as DPMapFace;
+			if selection_type == DPHelpers.SelectionType.SOLID:
+				for face in sel_solid.faces:
+					face.uv_scale = scale;
+			elif selection_type == DPHelpers.SelectionType.FACE:
+				sel_face.uv_scale = scale;
+				
+			last_solid = subgizmo_id & DPHelpers.SELBIT_MASK_SOLID;
+		pass # End selection loop
+		
+		# Rebuild the mesh with the new material
+		if not subgizmo_selection.is_empty():
+			if subgizmo_selection.size() > 1:
+				map.rebuild_editor_map();
+			else:
+				map.rebuild_editor_map(map.solids[last_solid]);
+			return true;
+	return false;
+func _action_assign_uv_offset(editor : DioptraEditorMainPlugin, map : DP_Map, offset : Vector2) -> bool:
+	var target_gizmo := _get_target_gizmo(editor, map);
+	if target_gizmo:
+		var subgizmo_selection := target_gizmo.get_subgizmo_selection();
+		var last_solid = -1;
+		# Apply it to all items in selection
+		for subgizmo_id in subgizmo_selection:
+			var selection_type := DPHelpers.get_selection_type(subgizmo_id);
+			var selection = DPHelpers.get_selection(map, subgizmo_id);
+			var sel_solid := selection.solid as DPMapSolid;
+			var sel_face := selection.face as DPMapFace;
+			if selection_type == DPHelpers.SelectionType.SOLID:
+				for face in sel_solid.faces:
+					face.uv_offset = offset;
+			elif selection_type == DPHelpers.SelectionType.FACE:
+				sel_face.uv_offset = offset;
+				
+			last_solid = subgizmo_id & DPHelpers.SELBIT_MASK_SOLID;
+		pass # End selection loop
+		
+		# Rebuild the mesh with the new material
+		if not subgizmo_selection.is_empty():
+			if subgizmo_selection.size() > 1:
+				map.rebuild_editor_map();
+			else:
+				map.rebuild_editor_map(map.solids[last_solid]);
+			return true;
+	return false;
+func _action_assign_uv_angle(editor : DioptraEditorMainPlugin, map : DP_Map, angle : float) -> bool:
+	var target_gizmo := _get_target_gizmo(editor, map);
+	if target_gizmo:
+		var subgizmo_selection := target_gizmo.get_subgizmo_selection();
+		var last_solid = -1;
+		# Apply it to all items in selection
+		for subgizmo_id in subgizmo_selection:
+			var selection_type := DPHelpers.get_selection_type(subgizmo_id);
+			var selection = DPHelpers.get_selection(map, subgizmo_id);
+			var sel_solid := selection.solid as DPMapSolid;
+			var sel_face := selection.face as DPMapFace;
+			if selection_type == DPHelpers.SelectionType.SOLID:
+				for face in sel_solid.faces:
+					face.uv_rotation = angle;
+			elif selection_type == DPHelpers.SelectionType.FACE:
+				sel_face.uv_rotation = angle;
+				
+			last_solid = subgizmo_id & DPHelpers.SELBIT_MASK_SOLID;
+		pass # End selection loop
+		
+		# Rebuild the mesh with the new material
+		if not subgizmo_selection.is_empty():
+			if subgizmo_selection.size() > 1:
+				map.rebuild_editor_map();
+			else:
+				map.rebuild_editor_map(map.solids[last_solid]);
+			return true;
+	return false;
 
 func do_assign_material(mat : Material) -> void:
 	var editor := _get_editor_plugin();

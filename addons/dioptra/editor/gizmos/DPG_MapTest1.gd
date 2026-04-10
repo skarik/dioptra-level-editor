@@ -7,17 +7,6 @@ var mUndoRedo : EditorUndoRedoManager = null;
 var _ghost_box : DPUBoxGhost = null;
 var _queue_selection_changed : bool = false;
 
-const SELECTION_MAX_VALUE : int = (1 << 15) - 1;
-const SELBIT_MASK_SOLID : int = 0x7FFF;
-const SELBIT_HAS_FACE : int = (1 << 15);
-const SELBIT_SHIFT_FACE : int = 16;
-const SELBIT_MASK_FACE : int = 0x3FF;
-const SELBIT_HAS_EDGE : int = (1 << 26);
-const SELBIT_SHIFT_EDGE : int = 27;
-const SELBIT_MASK_EDGE : int = 0x3FF;
-const SELBIT_HAS_VERTEX : int = (1 << 37);
-const SELBIT_SHIFT_VERTEX : int = 38;
-const SELBIT_MASK_VERTEX : int = 0x3FF;
 
 func _init(editorPlugin : DioptraEditorMainPlugin, undoredo : EditorUndoRedoManager):
 	create_material("lines", Color(1.0, 1.0, 1.0), false, true, true);
@@ -53,7 +42,7 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 	var selection_list := gizmo.get_subgizmo_selection();
 	for subgizmo_id in selection_list:
 		# Normal full selection item
-		if subgizmo_id < SELECTION_MAX_VALUE:
+		if subgizmo_id < DPHelpers.SELECTION_MAX_VALUE:
 			var solid_id = subgizmo_id;
 			if solid_id >= map.solids.size():
 				continue;
@@ -78,9 +67,9 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 			_ghost_box.box_end = max_p;
 			_ghost_box.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
 			
-		elif (subgizmo_id & SELBIT_HAS_FACE) != 0:
+		elif (subgizmo_id & DPHelpers.SELBIT_HAS_FACE) != 0:
 			print("face selection")
-			var solid_id = subgizmo_id & SELBIT_MASK_SOLID;
+			var solid_id = subgizmo_id & DPHelpers.SELBIT_MASK_SOLID;
 			print(solid_id)
 			if solid_id >= map.solids.size():
 				continue;
@@ -89,7 +78,7 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 				continue;
 				
 			# Add selection for the edges:
-			var face_id = (subgizmo_id >> SELBIT_SHIFT_FACE) & SELBIT_MASK_FACE;
+			var face_id = (subgizmo_id >> DPHelpers.SELBIT_SHIFT_FACE) & DPHelpers.SELBIT_MASK_FACE;
 			if face_id >= solid.faces.size():
 				continue;
 			var face = solid.faces[face_id];
@@ -219,7 +208,7 @@ func _subgizmos_intersect_ray(gizmo: EditorNode3DGizmo, camera: Camera3D, screen
 		return closest_solid;
 	elif selection_mode == DioptraEditorMainPlugin.SelectMode.FACE:
 		print("face: %d" % closest_face);
-		return closest_solid | SELBIT_HAS_FACE | (closest_face << SELBIT_SHIFT_FACE);
+		return closest_solid | DPHelpers.SELBIT_HAS_FACE | (closest_face << DPHelpers.SELBIT_SHIFT_FACE);
 	elif selection_mode == DioptraEditorMainPlugin.SelectMode.EDGE:
 		#return closest_solid | SELBIT_SHIFT_EDGE | (closest_face << SELBIT_SHIFT_EDGE);
 		pass
@@ -243,14 +232,14 @@ func _get_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int) -> Tran
 		#var selected_index := selection[0];
 		#t = t.translated(map.solids[selected_index].points[0].v3);
 		
-	var solid_id = subgizmo_id & SELBIT_MASK_SOLID;
+	var solid_id = subgizmo_id & DPHelpers.SELBIT_MASK_SOLID;
 	if solid_id >= 0 and solid_id < map.solids.size():
 		# Solid Corner
-		if subgizmo_id < SELECTION_MAX_VALUE:
+		if subgizmo_id < DPHelpers.SELECTION_MAX_VALUE:
 			t = t.translated(map.solids[solid_id].points[0].v3);
 		# Face Corner
-		elif (subgizmo_id & SELBIT_HAS_FACE) != 0:
-			var face_id = (subgizmo_id >> SELBIT_SHIFT_FACE) & SELBIT_MASK_FACE;
+		elif (subgizmo_id & DPHelpers.SELBIT_HAS_FACE) != 0:
+			var face_id = (subgizmo_id >> DPHelpers.SELBIT_SHIFT_FACE) & DPHelpers.SELBIT_MASK_FACE;
 			var solid := map.solids[solid_id];
 			if face_id < solid.faces.size():
 				t = t.translated(solid.points[solid.faces[face_id].corners[0]].v3);
@@ -266,7 +255,7 @@ var _transform_start : Dictionary[int, StartingTransform];
 func _start_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int) -> void:
 	var node3d := gizmo.get_node_3d()
 	var map := node3d as DP_Map;
-	var solid_id = subgizmo_id & SELBIT_MASK_SOLID;
+	var solid_id = subgizmo_id & DPHelpers.SELBIT_MASK_SOLID;
 	var solid := map.solids[solid_id];
 	
 	_is_transforming = true;
@@ -300,7 +289,7 @@ func _set_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int, transfo
 	if not _is_transforming:
 		_start_subgizmo_transform(gizmo, subgizmo_id);
 	
-	var solid_id = subgizmo_id & SELBIT_MASK_SOLID;
+	var solid_id = subgizmo_id & DPHelpers.SELBIT_MASK_SOLID;
 	print("set gizmo transform: %d" % solid_id);
 	
 	var node3d := gizmo.get_node_3d();
@@ -313,12 +302,12 @@ func _set_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int, transfo
 	
 	# Offset the points
 	# Moving solid
-	if subgizmo_id < SELECTION_MAX_VALUE:
+	if subgizmo_id < DPHelpers.SELECTION_MAX_VALUE:
 		for i in solid.points.size():
 			solid.points[i].v3 = reference.points[i].v3 + delta_position;
 	# Moving face
-	elif (subgizmo_id & SELBIT_HAS_FACE) != 0:
-		var face_id = (subgizmo_id >> SELBIT_SHIFT_FACE) & SELBIT_MASK_FACE;
+	elif (subgizmo_id & DPHelpers.SELBIT_HAS_FACE) != 0:
+		var face_id = (subgizmo_id >> DPHelpers.SELBIT_SHIFT_FACE) & DPHelpers.SELBIT_MASK_FACE;
 		for i in solid.faces[face_id].corners.size():
 			var vert = solid.faces[face_id].corners[i];
 			solid.points[vert].v3 = reference.points[vert].v3 + delta_position;

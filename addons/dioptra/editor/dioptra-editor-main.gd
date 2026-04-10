@@ -16,6 +16,12 @@ enum SelectMode {
 	VERTEX = 3,
 }
 
+enum UVModePer {
+	FACE = 0,
+	ISLAND = 1,
+	GROUP = 2,
+}
+
 #------------------------------------------------------------------------------#
 
 const cDPG_PathNode := preload("res://addons/dioptra/editor/gizmos/DPG_PathNode.gd");
@@ -112,6 +118,7 @@ var _last_material : int = -1;
 var _plugin_maphelper : DioptraEditorMaphelperPlugin = null;
 
 var _selectionMode : SelectMode = SelectMode.SOLID; # todo
+var _uvModePer : UVModePer = UVModePer.FACE;
 
 #------------------------------------------------------------------------------#
 

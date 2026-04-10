@@ -25,4 +25,4 @@ func onSelectionTypePressed(selectionType : int) -> void:
 	if child_main_button != null:
 		child_main_button.button_pressed = true;
 			
-	pass # Replace with function body.
+	pass

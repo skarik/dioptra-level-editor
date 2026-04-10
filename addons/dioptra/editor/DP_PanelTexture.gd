@@ -9,6 +9,8 @@ var _texture_label : Label = null;
 var _scale_spinbox_x : SpinBox = null;
 var _scale_spinbox_y : SpinBox = null;
 var _angle_spinbox : SpinBox = null;
+var _offset_spinbox_x : SpinBox = null;
+var _offset_spinbox_y : SpinBox = null;
 
 var _material_dialog : EditorFileDialog = null;
 
@@ -19,6 +21,8 @@ func _ready() -> void:
 	_scale_spinbox_x = $"Container UVs/VContainer/GridContainer/VBoxContainerScale/HBoxContainerX/SpinBoxX";
 	_scale_spinbox_y = $"Container UVs/VContainer/GridContainer/VBoxContainerScale/HBoxContainerY/SpinBoxY";
 	_angle_spinbox = $"Container UVs/VContainer/GridContainer/VBoxContainerRot/HBoxContainer2/SpinBoxRot";
+	_offset_spinbox_x = $"Container UVs/VContainer/GridContainer/VBoxContainerOffset/HBoxContainerX/SpinBoxX"
+	_offset_spinbox_y = $"Container UVs/VContainer/GridContainer/VBoxContainerOffset/HBoxContainerY/SpinBoxY"
 	pass
 	
 func setPlugin(plugin : DioptraEditorMainPlugin) -> void:
@@ -53,12 +57,12 @@ func _on_selection_changed() -> void:
 		if not subgizmo_selection.is_empty():
 			# Grab the first face we can get
 			var subgizmo_id := subgizmo_selection[subgizmo_selection.size() - 1];
-			var solid_id := subgizmo_id & _plugin.cDPG_MapTest1.SELBIT_MASK_SOLID;
+			var solid_id := subgizmo_id & DPHelpers.SELBIT_MASK_SOLID;
 			var face_id := 0;
-			if subgizmo_id < _plugin.cDPG_MapTest1.SELECTION_MAX_VALUE:
+			if subgizmo_id < DPHelpers.SELECTION_MAX_VALUE:
 				face_id = 0;
 			else:
-				face_id = (subgizmo_id >> _plugin.cDPG_MapTest1.SELBIT_SHIFT_FACE) & _plugin.cDPG_MapTest1.SELBIT_MASK_FACE;
+				face_id = (subgizmo_id >> DPHelpers.SELBIT_SHIFT_FACE) & DPHelpers.SELBIT_MASK_FACE;
 			
 			# Grab the face:
 			var map := last_selected_item as DP_Map;
@@ -120,6 +124,34 @@ func update_with_face_info(map : DP_Map, face : DPMapFace) -> void:
 	update_ui_with_material(mat);
 	
 	# TODO: Update the other items in the UI
+	
+	# Update scale
+	_scale_spinbox_x.set_value_no_signal(face.uv_scale.x);
+	_scale_spinbox_y.set_value_no_signal(face.uv_scale.y);
+	# Update rotation
+	_angle_spinbox.set_value_no_signal(face.uv_rotation);
+	# Update translation
+	_offset_spinbox_x.set_value_no_signal(face.uv_offset.x);
+	_offset_spinbox_y.set_value_no_signal(face.uv_offset.y);
+	
+	pass
+	
+#------------------------------------------------------------------------------#
+# Misc Handlers
+func _on_mode_selection_changed(modeType : int) -> void:
+	_plugin._uvModePer =  modeType as DioptraEditorMainPlugin.UVModePer;
+	print("UV Mode: %s" % _plugin.UVModePer.find_key(_plugin._uvModePer));
+
+	for child in $"Container UVs/VContainer/GridContainer/HBoxContainerMode".get_children():
+		var child_button := child as Button;
+		if child_button != null:
+			child_button.button_pressed = false;
+			
+	var child_main = $"Container UVs/VContainer/GridContainer/HBoxContainerMode".get_children()[modeType];
+	var child_main_button = child_main as Button;
+	if child_main_button != null:
+		child_main_button.button_pressed = true;
+
 	pass
 	
 #------------------------------------------------------------------------------#
@@ -132,9 +164,8 @@ func _on_flip_y() -> void:
 	_scale_spinbox_y.value *= -1.0;
 	
 func _on_scale_changed(_dummy : float) -> void:
-	var scale := Vector2(_scale_spinbox_x.value, _scale_spinbox_y.value);
-	_plugin._plugin_maphelper.do_assign_uv_scale(scale);
-
+	var uv_scale := Vector2(_scale_spinbox_x.value, _scale_spinbox_y.value);
+	_plugin._plugin_maphelper.do_assign_uv_scale(uv_scale);
 
 func _on_rotate_180() -> void:
 	_angle_spinbox.value += 180;
@@ -153,5 +184,8 @@ func _on_angle_changed(_dummy : float) -> void:
 	_angle_spinbox.set_value_no_signal(angle);
 	_plugin._plugin_maphelper.do_assign_uv_angle(angle);
 	
-	
+func _on_offset_changed(_dummy : float) -> void:
+	var uv_offset := Vector2(_offset_spinbox_x.value, _offset_spinbox_y.value);
+	_plugin._plugin_maphelper.do_assign_uv_offset(uv_offset);
+
 	

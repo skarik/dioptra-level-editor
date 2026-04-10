@@ -71,6 +71,7 @@ columns = 2
 [node name="LabelMapping" type="Label" parent="Container UVs/VContainer/GridContainer"]
 layout_mode = 2
 text = "Mapping"
+horizontal_alignment = 2
 
 [node name="OptionMapping" type="OptionButton" parent="Container UVs/VContainer/GridContainer"]
 layout_mode = 2
@@ -87,6 +88,7 @@ popup/item_2/disabled = true
 [node name="World-LabelAxis" type="Label" parent="Container UVs/VContainer/GridContainer"]
 layout_mode = 2
 text = "   Normal"
+horizontal_alignment = 2
 
 [node name="World-OptionAxis" type="OptionButton" parent="Container UVs/VContainer/GridContainer"]
 layout_mode = 2
@@ -101,10 +103,52 @@ popup/item_2/id = 2
 popup/item_3/text = "Z"
 popup/item_3/id = 4
 
+[node name="HBoxContainerActions" type="HBoxContainer" parent="Container UVs/VContainer/GridContainer"]
+layout_mode = 2
+
+[node name="ButtonFit" type="Button" parent="Container UVs/VContainer/GridContainer/HBoxContainerActions"]
+layout_mode = 2
+tooltip_text = "Fit"
+icon = ExtResource("3_hl7nd")
+icon_alignment = 1
+
+[node name="ButtonAutofit" type="Button" parent="Container UVs/VContainer/GridContainer/HBoxContainerActions"]
+layout_mode = 2
+tooltip_text = "Autofit (Rotates material to best fit)"
+icon = ExtResource("3_hl7nd")
+icon_alignment = 1
+
+[node name="HBoxContainerMode" type="HBoxContainer" parent="Container UVs/VContainer/GridContainer"]
+layout_mode = 2
+
+[node name="ButtonPerFace" type="Button" parent="Container UVs/VContainer/GridContainer/HBoxContainerMode"]
+layout_mode = 2
+tooltip_text = "Work per-face"
+toggle_mode = true
+button_pressed = true
+icon = ExtResource("3_hl7nd")
+icon_alignment = 1
+
+[node name="ButtonPerIsland" type="Button" parent="Container UVs/VContainer/GridContainer/HBoxContainerMode"]
+layout_mode = 2
+tooltip_text = "Work with islands: treating faces nearby each other as one face"
+disabled = true
+toggle_mode = true
+icon = ExtResource("3_hl7nd")
+icon_alignment = 1
+
+[node name="ButtonPerAll" type="Button" parent="Container UVs/VContainer/GridContainer/HBoxContainerMode"]
+layout_mode = 2
+tooltip_text = "Work treating all selected faces as one face"
+toggle_mode = true
+icon = ExtResource("3_hl7nd")
+icon_alignment = 1
+
 [node name="LabelScale" type="Label" parent="Container UVs/VContainer/GridContainer"]
 layout_mode = 2
 size_flags_vertical = 1
 text = "Scale"
+horizontal_alignment = 2
 
 [node name="VBoxContainerScale" type="VBoxContainer" parent="Container UVs/VContainer/GridContainer"]
 layout_mode = 2
@@ -163,6 +207,7 @@ allow_lesser = true
 layout_mode = 2
 size_flags_vertical = 1
 text = "Rotation"
+horizontal_alignment = 2
 
 [node name="VBoxContainerRot" type="VBoxContainer" parent="Container UVs/VContainer/GridContainer"]
 layout_mode = 2
@@ -209,6 +254,7 @@ suffix = "°"
 layout_mode = 2
 size_flags_vertical = 1
 text = "Offset"
+horizontal_alignment = 2
 
 [node name="VBoxContainerOffset" type="VBoxContainer" parent="Container UVs/VContainer/GridContainer"]
 layout_mode = 2
@@ -237,11 +283,11 @@ layout_mode = 2
 icon = ExtResource("8_8f21f")
 icon_alignment = 1
 
-[node name="HBoxContainer" type="HBoxContainer" parent="Container UVs/VContainer/GridContainer/VBoxContainerOffset"]
+[node name="HBoxContainerX" type="HBoxContainer" parent="Container UVs/VContainer/GridContainer/VBoxContainerOffset"]
 layout_mode = 2
 size_flags_horizontal = 8
 
-[node name="Label" type="Label" parent="Container UVs/VContainer/GridContainer/VBoxContainerOffset/HBoxContainer"]
+[node name="Label" type="Label" parent="Container UVs/VContainer/GridContainer/VBoxContainerOffset/HBoxContainerX"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.98, 0.6965, 0.575, 1)
 text = "x"
@@ -250,23 +296,23 @@ colors = {
 "font_color": "property_color_x"
 }
 
-[node name="ButtonCenter" type="Button" parent="Container UVs/VContainer/GridContainer/VBoxContainerOffset/HBoxContainer"]
+[node name="ButtonCenter" type="Button" parent="Container UVs/VContainer/GridContainer/VBoxContainerOffset/HBoxContainerX"]
 layout_mode = 2
 icon = ExtResource("5_j747c")
 icon_alignment = 1
 
-[node name="SpinBoxX" type="SpinBox" parent="Container UVs/VContainer/GridContainer/VBoxContainerOffset/HBoxContainer"]
+[node name="SpinBoxX" type="SpinBox" parent="Container UVs/VContainer/GridContainer/VBoxContainerOffset/HBoxContainerX"]
 layout_mode = 2
 min_value = -1024.0
 max_value = 1024.0
 allow_greater = true
 allow_lesser = true
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="Container UVs/VContainer/GridContainer/VBoxContainerOffset"]
+[node name="HBoxContainerY" type="HBoxContainer" parent="Container UVs/VContainer/GridContainer/VBoxContainerOffset"]
 layout_mode = 2
 size_flags_horizontal = 8
 
-[node name="Label" type="Label" parent="Container UVs/VContainer/GridContainer/VBoxContainerOffset/HBoxContainer2"]
+[node name="Label" type="Label" parent="Container UVs/VContainer/GridContainer/VBoxContainerOffset/HBoxContainerY"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.575, 0.98, 0.6965, 1)
 text = "y"
@@ -275,12 +321,12 @@ colors = {
 "font_color": "property_color_y"
 }
 
-[node name="ButtonCenter" type="Button" parent="Container UVs/VContainer/GridContainer/VBoxContainerOffset/HBoxContainer2"]
+[node name="ButtonCenter" type="Button" parent="Container UVs/VContainer/GridContainer/VBoxContainerOffset/HBoxContainerY"]
 layout_mode = 2
 icon = ExtResource("10_bqldj")
 icon_alignment = 1
 
-[node name="SpinBoxY" type="SpinBox" parent="Container UVs/VContainer/GridContainer/VBoxContainerOffset/HBoxContainer2"]
+[node name="SpinBoxY" type="SpinBox" parent="Container UVs/VContainer/GridContainer/VBoxContainerOffset/HBoxContainerY"]
 layout_mode = 2
 min_value = -1024.0
 max_value = 1024.0
@@ -288,6 +334,9 @@ allow_greater = true
 allow_lesser = true
 
 [connection signal="pressed" from="Container Material Select/HFlowContainer/TextureButton" to="." method="_on_texture_button_pressed"]
+[connection signal="pressed" from="Container UVs/VContainer/GridContainer/HBoxContainerMode/ButtonPerFace" to="." method="_on_mode_selection_changed" binds= [0]]
+[connection signal="pressed" from="Container UVs/VContainer/GridContainer/HBoxContainerMode/ButtonPerIsland" to="." method="_on_mode_selection_changed" binds= [1]]
+[connection signal="pressed" from="Container UVs/VContainer/GridContainer/HBoxContainerMode/ButtonPerAll" to="." method="_on_mode_selection_changed" binds= [2]]
 [connection signal="pressed" from="Container UVs/VContainer/GridContainer/VBoxContainerScale/HBoxContainerX/Button" to="." method="_on_flip_x"]
 [connection signal="value_changed" from="Container UVs/VContainer/GridContainer/VBoxContainerScale/HBoxContainerX/SpinBoxX" to="." method="_on_scale_changed"]
 [connection signal="pressed" from="Container UVs/VContainer/GridContainer/VBoxContainerScale/HBoxContainerY/Button" to="." method="_on_flip_y"]
@@ -297,3 +346,5 @@ allow_lesser = true
 [connection signal="pressed" from="Container UVs/VContainer/GridContainer/VBoxContainerRot/HBoxContainer/ButtonN90" to="." method="_on_rotate_N90"]
 [connection signal="pressed" from="Container UVs/VContainer/GridContainer/VBoxContainerRot/HBoxContainer/Button45" to="." method="_on_rotate_45"]
 [connection signal="value_changed" from="Container UVs/VContainer/GridContainer/VBoxContainerRot/HBoxContainer2/SpinBoxRot" to="." method="_on_angle_changed"]
+[connection signal="value_changed" from="Container UVs/VContainer/GridContainer/VBoxContainerOffset/HBoxContainerX/SpinBoxX" to="." method="_on_offset_changed"]
+[connection signal="value_changed" from="Container UVs/VContainer/GridContainer/VBoxContainerOffset/HBoxContainerY/SpinBoxY" to="." method="_on_offset_changed"]

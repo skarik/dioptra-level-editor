@@ -151,17 +151,18 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 					var positions := am.get_surface_vertex();
 					var uvs := am.get_surface_tex_uv();
 					var texture_scale1d := DioptraInterface.get_pixel_scale_top() * float(DioptraInterface.get_pixel_scale_div());
-					var texture_scale2d := Vector2(texture_scale1d, texture_scale1d) / Vector2(DPHelpers.get_material_primary_texture_size(material));
+					var texture_scale2d := (Vector2(texture_scale1d, texture_scale1d) * face.uv_scale) / Vector2(DPHelpers.get_material_primary_texture_size(material));
+					var texture_offset = (face.uv_offset / texture_scale1d);
 					# Apply the world-mode UVs depending on the flag:
 					if face.uv_subflags & DPMapFace.UV_WORLD_FLAG_X:
 						for i_vertex in range(v0, am.get_vertex_count()):
-							uvs[i_vertex] = Vector2(-positions[i_vertex].z, -positions[i_vertex].y) * texture_scale2d;
+							uvs[i_vertex] = ((Vector2(-positions[i_vertex].z, -positions[i_vertex].y)).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
 					elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Y:
 						for i_vertex in range(v0, am.get_vertex_count()):
-							uvs[i_vertex] = Vector2(positions[i_vertex].x, positions[i_vertex].z) * texture_scale2d;
+							uvs[i_vertex] = ((Vector2(positions[i_vertex].x, positions[i_vertex].z)).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
 					elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Z:
 						for i_vertex in range(v0, am.get_vertex_count()):
-							uvs[i_vertex] = Vector2(positions[i_vertex].x, -positions[i_vertex].y) * texture_scale2d;
+							uvs[i_vertex] = ((Vector2(positions[i_vertex].x, -positions[i_vertex].y)).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
 					pass # End UVMode.WORLD
 				#
 				pass # End face.material != -1;
