@@ -8,8 +8,6 @@ func _ready() -> void:
 	
 func setPlugin(plugin : DioptraEditorMainPlugin) -> void:
 	_plugin = plugin;
-	
-
 
 func onSelectionTypePressed(selectionType : int) -> void:
 	_plugin._selectionMode =  selectionType as DioptraEditorMainPlugin.SelectMode;
@@ -26,3 +24,9 @@ func onSelectionTypePressed(selectionType : int) -> void:
 		child_main_button.button_pressed = true;
 			
 	pass
+
+#func _input(event: InputEvent) -> void:
+	#if DioptraInterface._get_instance().shortcut_select_solids.matches_event(event) && event.is_pressed() and not event.is_echo():
+		#onSelectionTypePressed(DioptraEditorMainPlugin.SelectMode.SOLID);
+	#if DioptraInterface._get_instance().shortcut_select_faces.matches_event(event) && event.is_pressed() and not event.is_echo():
+		#onSelectionTypePressed(DioptraEditorMainPlugin.SelectMode.FACE);

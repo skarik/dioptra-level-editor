@@ -13,6 +13,8 @@ class_name DioptraEditorMaphelperPlugin
 
 var _editor_plugin : DioptraEditorMainPlugin = null; #circular is OK here because they're nodes
 
+const cScript_State := preload("res://addons/dioptra/editor/DP_PanelState.gd");
+
 #------------------------------------------------------------------------------#
 
 func _enter_tree() -> void:
@@ -73,6 +75,16 @@ func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 				if _action_delete_selected_solids(editor, map):
 					return EditorPlugin.AFTER_GUI_INPUT_STOP;
 		pass
+		
+	# Forward shortcuts to the state panel
+	if DioptraInterface._get_instance().shortcut_select_solids.matches_event(event) && event.is_pressed() and not event.is_echo():
+		var state := _editor_plugin.DPDock_State as cScript_State;
+		state.onSelectionTypePressed(DioptraEditorMainPlugin.SelectMode.SOLID);
+		return EditorPlugin.AFTER_GUI_INPUT_STOP;
+	if DioptraInterface._get_instance().shortcut_select_faces.matches_event(event) && event.is_pressed() and not event.is_echo():
+		var state := _editor_plugin.DPDock_State as cScript_State;
+		state.onSelectionTypePressed(DioptraEditorMainPlugin.SelectMode.FACE);
+		return EditorPlugin.AFTER_GUI_INPUT_STOP;
 	
 	return EditorPlugin.AFTER_GUI_INPUT_PASS;
 	

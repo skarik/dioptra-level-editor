@@ -1,3 +1,4 @@
+@tool
 extends RefCounted
 class_name DioptraInterface
 
@@ -17,8 +18,24 @@ static func free_instance() -> void:
 
 #------------------------------------------------------------------------------#
 
+var shortcut_select_solids : Shortcut = null;
+var shortcut_select_faces : Shortcut = null;
+
 func _init():
 	print("DioptraInterface started");
+	
+	if true:
+		var key_event := InputEventKey.new();
+		key_event.keycode = KEY_1;
+		shortcut_select_solids = Shortcut.new();
+		shortcut_select_solids.events = [key_event];
+	if true:
+		var key_event := InputEventKey.new();
+		key_event.keycode = KEY_2;
+		shortcut_select_faces = Shortcut.new();
+		shortcut_select_faces.events = [key_event];
+		
+	# Load Settings now that items initialized
 	init_settings();
 	pass
 
@@ -53,8 +70,10 @@ static func get_pixel_scale_div() -> int:
 const FutureSettingTrue : bool = true;
 const FutureSettingFalse : bool = false;
 
-# Load Project Settings
+## Load Project Settings
+## todo: also call this when settings change
 func init_settings() -> void:
+	# Project Settings
 	if ProjectSettings.has_setting("dioptra/grid/world_dp_units_per"):
 		_scale_dpunits_per = (int)(ProjectSettings.get_setting("dioptra/grid/world_dp_units_per", 128));
 	if ProjectSettings.has_setting("dioptra/grid/world_per_gd_units"):
@@ -63,7 +82,24 @@ func init_settings() -> void:
 		_tscale_pixels_per = (int)(ProjectSettings.get_setting("dioptra/grid/tex_pixels_per", 32));
 	if ProjectSettings.has_setting("dioptra/grid/tex_per_gd_units"):
 		_tscale_per_gdunits = (int)(ProjectSettings.get_setting("dioptra/grid/tex_per_gd_units", 1));
-	pass
+	
+	# Editor Settings
+	if Engine.is_editor_hint():
+		var editor_settings := EditorInterface.get_editor_settings();
+		if editor_settings:
+			# Set up shortcuts
+			if editor_settings.has_method("has_shortcut"):
+				# Hotkey info
+				if !editor_settings.has_shortcut("dioptra/select_solids"):
+					editor_settings.add_shortcut("dioptra/select_solids", shortcut_select_solids);
+				shortcut_select_solids = editor_settings.get_shortcut("dioptra/select_solids");
+				if !editor_settings.has_shortcut("dioptra/select_faces"):
+					editor_settings.add_shortcut("dioptra/select_faces", shortcut_select_faces);
+				shortcut_select_faces = editor_settings.get_shortcut("dioptra/select_faces");
+			pass # End editor settings
+		pass # End editor-only info
+		
+	pass # end init_settings()
 
 #------------------------------------------------------------------------------#
 
