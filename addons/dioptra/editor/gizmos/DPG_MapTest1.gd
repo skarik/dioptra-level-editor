@@ -58,12 +58,16 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 				
 			# Add selection for the edges:
 			for face in solid.faces:
+				var normal : Vector3 = -(solid.points[face.corners[1]].v3 - solid.points[face.corners[0]].v3).cross(
+					solid.points[face.corners[2]].v3 - solid.points[face.corners[0]].v3).normalized();
+				normal /= DioptraInterface.get_position_scale_top();
+				normal *= DioptraInterface.get_position_scale_div();
 				var corner_count : int = face.corners.size();
 				for corner_index in corner_count:
 					var corner_0 := corner_index + 0;
 					var corner_1 := (corner_index + 1) % corner_count;
-					linesSelect.append(solid.points[face.corners[corner_0]].v3);
-					linesSelect.append(solid.points[face.corners[corner_1]].v3);
+					linesSelect.append(solid.points[face.corners[corner_0]].v3 + normal);
+					linesSelect.append(solid.points[face.corners[corner_1]].v3 + normal);
 				pass
 			
 			# Draw ghost box for the sizes (only one box so it'll work for the last selection)
