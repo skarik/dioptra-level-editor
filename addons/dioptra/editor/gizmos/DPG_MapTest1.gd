@@ -285,14 +285,16 @@ class StartingTransform:
 	
 var _is_transforming : bool = false;
 var _transform_start : Dictionary[int, StartingTransform];
+var _transforming_reference_subgizmo : int = -1;
 
-func _start_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int) -> void:
+func _start_subgizmo_transform_get_ref(gizmo: EditorNode3DGizmo, subgizmo_id: int, set_main_reference: bool) -> void:
 	var node3d := gizmo.get_node_3d()
 	var map := node3d as DP_Map;
 	var solid_id = subgizmo_id & DPHelpers.SELBIT_MASK_SOLID;
 	var solid := map.solids[solid_id];
 	
-	_is_transforming = true;
+	if set_main_reference:
+		_is_transforming = true;
 	#if _transform_start.size() <= subgizmo_id:
 	#	_transform_start.resize(subgizmo_id + 1);
 		
@@ -316,7 +318,12 @@ func _start_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int) -> vo
 			#_transform_start[subgizmo_id].points[i] = MapVector3.new();
 			#_transform_start[subgizmo_id].points[i].v3i = solid.points[i].v3i;
 	
+	if set_main_reference:
+		_transforming_reference_subgizmo = subgizmo_id;
 	pass
+	
+func _start_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int) -> void:
+	_start_subgizmo_transform_get_ref(gizmo, subgizmo_id, true);
 	
 func _set_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int, transform: Transform3D) -> void:
 	# if we're beginning then mark a start with the current transform start
@@ -330,8 +337,19 @@ func _set_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int, transfo
 	var map := node3d as DP_Map;
 	
 	var solid := map.solids[solid_id];
+	
+	# Grab reference
+	if not _transform_start.has(subgizmo_id):
+		_start_subgizmo_transform_get_ref(gizmo, subgizmo_id, false);
 	var reference := _transform_start[subgizmo_id];
 	
+	# Generate the delta
+	var reference_gizmo_id = _transforming_reference_subgizmo;# if (_transforming_reference_subgizmo != -1) else subgizmo_id;
+	#if not _transform_start.has(reference_gizmo_id):
+	#	push_warning("Missing start transform for subgizmo %d, solid %d" % [subgizmo_id, solid_id]);
+	#	return;
+	#var delta_reference := _transform_start[reference_gizmo_id];
+	#var delta_position = DioptraInterface.get_grid_round_v3((delta_reference.transform.inverse() * transform).origin);
 	var delta_position = DioptraInterface.get_grid_round_v3((reference.transform.inverse() * transform).origin);
 	
 	# Offset the points
@@ -360,6 +378,10 @@ func _commit_subgizmos(gizmo: EditorNode3DGizmo, ids: PackedInt32Array, restores
 	map.rebuild_editor_map(); #todo, grab a Solid from the map
 	
 	map.update_gizmos();
+	
+	# Clear off the transform start state
+	_transform_start.clear();
+	_transforming_reference_subgizmo = -1;
 	
 	pass
 	
