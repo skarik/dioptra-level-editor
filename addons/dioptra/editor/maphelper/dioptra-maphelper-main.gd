@@ -155,10 +155,16 @@ func _action_assign_material_to_selected_solids(editor : DioptraEditorMainPlugin
 	if target_gizmo:
 		var subgizmo_selection := target_gizmo.get_subgizmo_selection();
 		# Apply it to all items in selection
-		for selection in subgizmo_selection:
-			# Apply it to all faces in selection
-			for face in map.solids[selection].faces:
-				face.material = material_index;
+		for subgizmo_id in subgizmo_selection:
+			var selection_type := DPHelpers.get_selection_type(map, subgizmo_id);
+			var selection := DPHelpers.get_selection(map, subgizmo_id);
+			var sel_solid := selection.solid as DPMapSolid;
+			var sel_face := selection.face as DPMapFace;
+			if selection_type == DPHelpers.SelectionType.SOLID:
+				for face in sel_solid.faces:
+					face.material = material_index;
+			elif selection_type == DPHelpers.SelectionType.FACE:
+				sel_face.material = material_index;
 		# Rebuild the mesh with the new material
 		if not subgizmo_selection.is_empty():
 			if subgizmo_selection.size() > 1:
