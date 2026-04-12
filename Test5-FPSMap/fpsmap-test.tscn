@@ -1,10 +1,22 @@
-[gd_scene load_steps=6 format=3 uid="uid://bpowa1m52cdxo"]
+[gd_scene load_steps=10 format=3 uid="uid://bpowa1m52cdxo"]
 
 [ext_resource type="Script" uid="uid://b1o8seedypiyh" path="res://addons/dioptra/node-types/DP_Map.gd" id="1_2bx53"]
 [ext_resource type="Script" uid="uid://ddjlh0744b23n" path="res://addons/dioptra/node-types/internal/DP_Map_Solids.gd" id="2_wdejr"]
 [ext_resource type="Material" uid="uid://b7a4t37h1pk6n" path="res://asset/dev/devmat_a64x64c.tres" id="3_uf1yd"]
 [ext_resource type="Material" uid="uid://b7pcpeyrtnj3u" path="res://asset/dev/devmat_a64x64.tres" id="4_wdejr"]
 [ext_resource type="Material" uid="uid://dngyhj2qae4nm" path="res://asset/dev/devmat_a256x256.tres" id="5_uf1yd"]
+[ext_resource type="Texture2D" uid="uid://dgcndo07si00m" path="res://asset/dev/devtex64x64c.png" id="6_etp26"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_etp26"]
+albedo_texture = ExtResource("6_etp26")
+uv1_scale = Vector3(0.5, 0.5, 0.5)
+uv1_triplanar = true
+uv1_world_triplanar = true
+texture_filter = 0
+
+[sub_resource type="BoxMesh" id="BoxMesh_baiak"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_vj76c"]
 
 [node name="Fpsmap-test" type="Node3D"]
 
@@ -280,3 +292,15 @@ transform = Transform3D(0.90689, -0.0763688, 0.41439, -0.0181006, 0.97547, 0.219
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.950451, -0.128152, 0.283232, -0.263119, 0.153609, 0.952456, -0.165566, -0.979786, 0.112278, 0, 4.99635, 0)
 shadow_enabled = true
+
+[node name="StaticBody3D2" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -1, -8.74228e-08, 0, 8.74228e-08, -1, -0.205753, 4.68371, -1.93136)
+
+[node name="Box" type="MeshInstance3D" parent="StaticBody3D2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.38419e-07, 0)
+material_override = SubResource("StandardMaterial3D_etp26")
+mesh = SubResource("BoxMesh_baiak")
+skeleton = NodePath("../../Static World/Box")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D2"]
+shape = SubResource("BoxShape3D_vj76c")

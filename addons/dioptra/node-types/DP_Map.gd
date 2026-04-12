@@ -40,6 +40,7 @@ func _ready() -> void:
 		## TODO: this should just load whatever is baked but for now we just use the editor map
 		rebuild_editor_mesh_groups();
 		rebuild_editor_map();
+		rebuild_editor_map_collision();
 
 #------------------------------------------------------------------------------#
 
@@ -225,6 +226,35 @@ func _editor_get_mesh_instance(group_index : int) -> MeshInstance3D:
 		_editor_mesh_instances[group_index] = mesh_renderer;
 		
 	return _editor_mesh_instances[group_index];
+
+## Rebuilds the static mesh collision for the map using the editor collision
+func rebuild_editor_map_collision() -> void:
+	for mesh_instance in _editor_mesh_instances:
+		if mesh_instance.mesh != null:
+			var static_body := StaticBody3D.new();
+			mesh_instance.add_child(static_body, false);
+			static_body.owner = mesh_instance;
+			
+			# Add in all the mesh back in
+			# TODO: this can be the convex solids, cubes if prims
+			var poly_shape := ConcavePolygonShape3D.new();
+			var triangles := PackedVector3Array();
+			for surface_id in mesh_instance.mesh.get_surface_count():
+				var arrays := mesh_instance.mesh.surface_get_arrays(surface_id);
+				var indicies := arrays[Mesh.ARRAY_INDEX] as PackedInt32Array;
+				var positions := arrays[Mesh.ARRAY_VERTEX] as PackedVector3Array;
+				for tri_base in range(0, indicies.size(), 3):
+					triangles.push_back(positions[indicies[tri_base + 0]]);
+					triangles.push_back(positions[indicies[tri_base + 1]]);
+					triangles.push_back(positions[indicies[tri_base + 2]]);
+			poly_shape.set_faces(triangles);
+			
+			var collision_shape := CollisionShape3D.new();
+			collision_shape.shape = poly_shape;
+			static_body.add_child(collision_shape, false);
+			collision_shape.owner = static_body;
+	pass
+
 
 ## Adds the given solid to the map
 func editor_add_solid(solid : DPMapSolid) -> void:
