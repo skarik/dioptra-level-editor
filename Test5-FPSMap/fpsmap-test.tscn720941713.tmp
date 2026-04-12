@@ -273,10 +273,3 @@ solids = Array[ExtResource("2_wdejr")]([Object(RefCounted,"script":ExtResource("
 ]))
 ])
 materials = Array[Material]([ExtResource("3_uf1yd"), ExtResource("4_wdejr"), ExtResource("5_uf1yd")])
-
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.90689, -0.0763688, 0.41439, -0.0181006, 0.97547, 0.219385, -0.420979, -0.206458, 0.883262, 1.11657, 2.84328, 5.52433)
-
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.950451, -0.128152, 0.283232, -0.263119, 0.153609, 0.952456, -0.165566, -0.979786, 0.112278, 0, 4.99635, 0)
-shadow_enabled = true

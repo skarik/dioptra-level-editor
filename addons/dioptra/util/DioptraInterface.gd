@@ -10,6 +10,9 @@ static func _get_instance() -> DioptraInterface:
 	assert(_Instance != null);
 	return _Instance;
 
+static func _has_instance() -> bool:
+	return is_instance_valid(_Instance);
+
 static func init_instance() -> void:
 	_Instance = DioptraInterface.new();
 	
@@ -55,19 +58,23 @@ var _tscale_per_gdunits : int = 1;
 ## Returns the integer numerator of how many units are in one Godot unit. 
 ## If you have a MapVector3, divide by this value to get Godot meters.
 static func get_position_scale_top() -> int:
+	if not _has_instance(): return 128;
 	return _get_instance()._scale_dpunits_per;
 	
 ## Returns the integer divisor of how many units are in one Godot unit. 
 ## If you have a MapVector3, multiply by this value to get Godot meters.
 static func get_position_scale_div() -> int:
+	if not _has_instance(): return 1;
 	return _get_instance()._scale_per_gdunits;
 	
 ## Returns the integer numerator of how many pixels are in one Godot unit.
 static func get_pixel_scale_top() -> int:
+	if not _has_instance(): return 32;
 	return _get_instance()._tscale_pixels_per;
 
 ## Returns the integer divisor of how many pixels are in one Godot unit.
 static func get_pixel_scale_div() -> int:
+	if not _has_instance(): return 1;
 	return _get_instance()._tscale_per_gdunits;
 
 ## TODO	

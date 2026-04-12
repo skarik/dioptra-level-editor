@@ -24,8 +24,20 @@ var baked_geoemtry : Resource = null; # TODO
 
 #------------------------------------------------------------------------------#
 
+func _enter_tree() -> void:
+	if not Engine.is_editor_hint():
+		# Start up DP internals & settings if not there yet
+		if not DioptraInterface._has_instance():
+			DioptraInterface.init_instance();
+	pass
+	
 func _ready() -> void:
 	if Engine.is_editor_hint():
+		rebuild_editor_mesh_groups();
+		rebuild_editor_map();
+	else:
+		# Rebuild the map:
+		## TODO: this should just load whatever is baked but for now we just use the editor map
 		rebuild_editor_mesh_groups();
 		rebuild_editor_map();
 
