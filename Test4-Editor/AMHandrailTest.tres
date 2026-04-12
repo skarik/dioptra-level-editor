@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="DPR_Automesh" load_steps=2 format=3 uid="uid://c2rsl01p3771"]
+
+[ext_resource type="Script" uid="uid://dde8sco00kgx8" path="res://addons/dioptra/resource-types/DPR_Automesh.gd" id="1_xy6i7"]
+
+[resource]
+script = ExtResource("1_xy6i7")
+meshes = Array[Mesh]([])
+offset_positions = Array[Vector3]([])
+offset_rotations = Array[Vector3]([])
+metadata/_custom_type_script = "uid://dde8sco00kgx8"

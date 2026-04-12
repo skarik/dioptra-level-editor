@@ -1,0 +1,8 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://dngyhj2qae4nm"]
+
+[ext_resource type="Texture2D" uid="uid://1uj5yfm8j075" path="res://asset/dev/devtex256x256.png" id="1_dewtp"]
+
+[resource]
+albedo_texture = ExtResource("1_dewtp")
+uv1_world_triplanar = true
+texture_filter = 0
