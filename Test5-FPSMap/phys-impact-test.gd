@@ -11,7 +11,7 @@ func _init() -> void:
 	#body_entered.connect(_on_body_entered);
 	contact_entered.connect(_on_contact);
 
-func _on_contact(body : Node, normal : Vector3, impulse : Vector3, position : Vector3) -> void:
+func _on_contact(body : Node, _normal : Vector3, impulse : Vector3, hit_position : Vector3) -> void:
 	var other_velocity := Vector3.ZERO;
 	var other_rigidbody := body as RigidBody3D;
 	if other_rigidbody:
@@ -21,10 +21,11 @@ func _on_contact(body : Node, normal : Vector3, impulse : Vector3, position : Ve
 	var impulse_size := impulse.length();
 	
 	if impulse_size > 0.3:
-		print("%s hit with %f at %f <%s>" % [body.name, impulse_size, velocity_delta_size, velocity_delta]);
+		#print("%s hit with %f at %f <%s>" % [body.name, impulse_size, velocity_delta_size, velocity_delta]);
+		pass 
 		
 	if impulse_size > 3.5:
-		print("Plonk");
+		#print("Plonk");
 		if impact_sfx != null:
 			var sfx_node := AudioStreamPlayer3D.new();
 			get_parent().add_child(sfx_node) # probably bad
@@ -32,7 +33,7 @@ func _on_contact(body : Node, normal : Vector3, impulse : Vector3, position : Ve
 			sfx_node.pitch_scale = randf_range(0.6, 0.8) * (1.0 + log(1.0 + impulse_size - 3.5) * 1.3);
 			sfx_node.volume_db = (impulse_size - 3.5) * 20.0 - 30.0;
 			sfx_node.max_db = 10.0;
-			sfx_node.global_position = position;
+			sfx_node.global_position = hit_position;
 			sfx_node.play();
 		
 	pass

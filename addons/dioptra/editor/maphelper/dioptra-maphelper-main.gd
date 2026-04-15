@@ -33,6 +33,9 @@ func _disable_plugin() -> void:
 	
 func _ready() -> void:
 	_get_editor_plugin();
+	# Plugins done? Update overlays to set up the systems
+	set_force_draw_over_forwarding_enabled();
+	update_overlays();
 	
 func _process(delta: float) -> void:
 	# TODO: Does not work
@@ -282,3 +285,25 @@ func do_assign_uv_angle(angle : float) -> void:
 	var map := editor.get_last_edited_map();
 	_action_assign_uv_angle(editor, map, angle);
 	
+#------------------------------------------------------------------------------#
+
+#drag n drop hack test
+var vp_control : Control = null;
+func _forward_3d_draw_over_viewport(viewport_control: Control) -> void:
+	vp_control = viewport_control;
+	vp_control.set_drag_forwarding(Callable(), can_drop_func, Callable())
+	pass
+		
+func _forward_3d_force_draw_over_viewport(viewport_control: Control) -> void:
+	vp_control = viewport_control;
+	vp_control.set_drag_forwarding(Callable(), can_drop_func, Callable())
+	pass
+	
+func can_drop_func(at_position: Vector2, data: Variant) -> bool:
+	print(at_position)
+	if vp_control:
+		# See Node3DEditorViewport::can_drop_data_fw in node_3d_editor_plugin.cpp. There's a lot of functionality we need to fall back to.
+		#return vp_control.get_parent_control()._can_drop_data(at_position, data);
+		#return vp_control.get_parent_control().can_drop_data_fw(at_position, data, self);
+		pass
+	return true;

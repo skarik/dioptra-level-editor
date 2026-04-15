@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://bpowa1m52cdxo"]
+[gd_scene load_steps=18 format=3 uid="uid://bpowa1m52cdxo"]
 
 [ext_resource type="Script" uid="uid://b1o8seedypiyh" path="res://addons/dioptra/node-types/DP_Map.gd" id="1_2bx53"]
 [ext_resource type="Script" uid="uid://ddjlh0744b23n" path="res://addons/dioptra/node-types/internal/DP_Map_Solids.gd" id="2_wdejr"]
@@ -8,14 +8,23 @@
 [ext_resource type="Script" uid="uid://wbig6jx200tq" path="res://Test5-FPSMap/phys-impact-test.gd" id="6_baiak"]
 [ext_resource type="Material" uid="uid://mlajf23isuf5" path="res://asset/dev/devmat_gutz.tres" id="6_etp26"]
 [ext_resource type="AudioStream" uid="uid://b2jbocmte460w" path="res://asset/audio/donk1.wav" id="7_od74r"]
+[ext_resource type="Script" uid="uid://ch4mqmu0xnvrw" path="res://Test1-Camera/Proto_PlayerTest.gd" id="9_1v4h5"]
+[ext_resource type="PackedScene" uid="uid://brqwtcim30lp2" path="res://Test1-Camera/test1-visdev.tscn" id="10_8qjxl"]
+[ext_resource type="PackedScene" uid="uid://cnvnvvdipw4p4" path="res://Test1-Camera/glass-dash.tscn" id="11_815mh"]
+[ext_resource type="PackedScene" uid="uid://difrrmau7asa4" path="res://Test3-SkinnedMesh/alana_lowpoly_skinned.tscn" id="12_qgjii"]
+[ext_resource type="Script" uid="uid://c0r5rt7sfmcj1" path="res://Test1-Camera/test-scripts/player_test8_model_obj.gd" id="13_sp18w"]
+[ext_resource type="Script" uid="uid://barqdgg8ycbe3" path="res://Test5-FPSMap/test-scripts/player-test-fps.gd" id="14_8qjxl"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_baiak"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_vj76c"]
 
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_bpfwy"]
+height = 1.62
+
 [node name="Fpsmap-test" type="Node3D"]
 
-[node name="@Node3D@25848" type="Node3D" parent="."]
+[node name="_Node3D_25848" type="Node3D" parent="."]
 script = ExtResource("1_2bx53")
 solids = Array[ExtResource("2_wdejr")]([Object(RefCounted,"script":ExtResource("2_wdejr"),"points":Array[Resource("res://addons/dioptra/util/MapVector3.gd")]([Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-1024, -256, -1024),"v3":Vector3(-8, -2, -8),"v3i":Vector3i(-1024, -256, -1024),"value":Vector3i(-1024, -256, -1024))
 , Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(1024, -256, -1024),"v3":Vector3(8, -2, -8),"v3i":Vector3i(1024, -256, -1024),"value":Vector3i(1024, -256, -1024))
@@ -280,11 +289,15 @@ solids = Array[ExtResource("2_wdejr")]([Object(RefCounted,"script":ExtResource("
 ]))
 ])
 materials = Array[Material]([ExtResource("3_uf1yd"), ExtResource("4_wdejr"), ExtResource("5_uf1yd")])
+metadata/_edit_group_ = true
 
 [node name="Camera3D" type="Camera3D" parent="."]
+process_mode = 4
 transform = Transform3D(0.90689, -0.0763688, 0.41439, -0.0181006, 0.97547, 0.219385, -0.420979, -0.206458, 0.883262, 1.11657, 2.84328, 5.52433)
+visible = false
 
 [node name="AudioListener3D" type="AudioListener3D" parent="Camera3D"]
+visible = false
 current = true
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
@@ -292,7 +305,7 @@ transform = Transform3D(0.950451, -0.128152, 0.283232, -0.263119, 0.153609, 0.95
 shadow_enabled = true
 
 [node name="StaticBody3D2" type="RigidBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -1, -8.74228e-08, 0, 8.74228e-08, -1, -0.205753, 4.68371, -1.93136)
+transform = Transform3D(1, 0, 0, 0, -1, -8.74228e-08, 0, 8.74228e-08, -1, -0.205753, 4.68371, -2.28261)
 script = ExtResource("6_baiak")
 impact_sfx = ExtResource("7_od74r")
 
@@ -303,3 +316,41 @@ mesh = SubResource("BoxMesh_baiak")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D2"]
 shape = SubResource("BoxShape3D_vj76c")
+
+[node name="PlayerTest" type="CharacterBody3D" parent="."]
+process_mode = 4
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.22272, 0, 0)
+visible = false
+script = ExtResource("9_1v4h5")
+mAssetJuice = ExtResource("10_8qjxl")
+mAssetJuiceDash = ExtResource("11_815mh")
+
+[node name="CharacterModel" parent="PlayerTest" instance=ExtResource("12_qgjii")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+visible = false
+script = ExtResource("13_sp18w")
+
+[node name="Camera3D" type="Camera3D" parent="PlayerTest"]
+transform = Transform3D(1, 0, 0, 0, 0.985592, 0.169143, 0, -0.169143, 0.985592, 0, 2.35517, 2.92341)
+visible = false
+current = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PlayerTest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+visible = false
+shape = SubResource("CylinderShape3D_bpfwy")
+
+[node name="CharacterBody3D" type="CharacterBody3D" parent="."]
+script = ExtResource("14_8qjxl")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CharacterBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.81, 0)
+shape = SubResource("CylinderShape3D_bpfwy")
+
+[node name="CharacterModel" parent="CharacterBody3D" instance=ExtResource("12_qgjii")]
+transform = Transform3D(-3.54062e-08, 0, 0.81, 0, 0.81, 0, -0.81, 0, -3.54062e-08, 0, 0, 0)
+script = ExtResource("13_sp18w")
+
+[node name="Camera3D" type="Camera3D" parent="CharacterBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.49769, -0.134298)
+current = true
