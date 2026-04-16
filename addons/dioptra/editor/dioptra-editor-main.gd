@@ -7,6 +7,7 @@ class_name DioptraEditorMainPlugin
 enum ToolMode {
 	SELECT = 0,
 	BOX_TEST = 1,
+	DECAL = 2,
 }
 
 enum SelectMode {
@@ -153,7 +154,10 @@ func onToolSelect(tool : ToolMode) -> void:
 	elif tool == ToolMode.BOX_TEST:
 		if not (_currentTool is DPUTool_BoxTest):
 			newTool = DPUTool_BoxTest.new(self);
-	
+	elif tool == ToolMode.DECAL:
+		if not (_currentTool is DPUTool_Decal):
+			newTool = DPUTool_Decal.new(self);
+			
 	# Switch to the new tool after cleaning up
 	if newTool != null:
 		if _currentTool != null:

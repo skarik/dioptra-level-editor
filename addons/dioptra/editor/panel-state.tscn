@@ -18,7 +18,7 @@ script = ExtResource("2_tp8tb")
 [node name="Box" type="HBoxContainer" parent="."]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Box"]
+[node name="Label_Select" type="Label" parent="Box"]
 layout_mode = 2
 text = "Select:"
 
@@ -52,14 +52,14 @@ disabled = true
 toggle_mode = true
 icon = ExtResource("5_oiw7u")
 
-[node name="Label2" type="Label" parent="Box"]
+[node name="Label_Editor" type="Label" parent="Box"]
 layout_mode = 2
 text = "Editor:"
 
 [node name="Editor" type="HBoxContainer" parent="Box"]
 layout_mode = 2
 
-[node name="Button4" type="Button" parent="Box/Editor"]
+[node name="TextureLock" type="Button" parent="Box/Editor"]
 layout_mode = 2
 tooltip_text = "Texture Lock.
 When moving solids, the editor will attempt to lock the texture by changing the offset and the rotation."
@@ -84,9 +84,16 @@ value = 16.0
 rounded = true
 alignment = 1
 
-[node name="Label3" type="Label" parent="Box"]
+[node name="Label_View" type="Label" parent="Box"]
 layout_mode = 2
 text = "View:"
+
+[node name="View" type="HBoxContainer" parent="Box"]
+layout_mode = 2
+
+[node name="Wireframe" type="Button" parent="Box/View"]
+layout_mode = 2
+icon = ExtResource("5_oiw7u")
 
 [connection signal="pressed" from="Box/Selection/Solid" to="." method="onSelectionTypePressed" binds= [0]]
 [connection signal="pressed" from="Box/Selection/Face" to="." method="onSelectionTypePressed" binds= [1]]

@@ -36,8 +36,6 @@ func setPlugin(plugin : DioptraEditorMainPlugin) -> void:
 	
 # When selection changes we want to update the entire UI
 func _on_selection_changed() -> void:
-	print("New Selection");
-	
 	# we want to grab the last Editor object in the selection
 	var last_selected_item : Node = null;
 	var editor_selection := EditorInterface.get_selection();

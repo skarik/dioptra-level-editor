@@ -20,5 +20,12 @@ tooltip_text = "Make Box"
 toggle_mode = true
 icon = ExtResource("3_wko21")
 
+[node name="Decal" type="Button" parent="."]
+layout_mode = 2
+tooltip_text = "Make Decals"
+toggle_mode = true
+icon = ExtResource("3_wko21")
+
 [connection signal="pressed" from="Selection" to="." method="onSelect_Select"]
 [connection signal="pressed" from="Box" to="." method="onSelect_BoxTest"]
+[connection signal="pressed" from="Decal" to="." method="onSelect_Decal"]

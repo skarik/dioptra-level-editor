@@ -9,13 +9,20 @@ class_name DP_Map
 #------------------------------------------------------------------------------#
 
 ## The solids that make up the map
-#@export_storage
 @export_custom(PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR)
 var solids : Array[DPMapSolid] = [];
+
 ## The materials that make up the map, referenced by the solids
-#@export_storage
 @export_custom(PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR)
 var materials : Array[Material] = [];
+## The materials that make up the map, referenced by the non-solids.
+## Split for editor and locality use. Items in materials will typically not be duplicated here.
+@export_custom(PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR)
+var material_objects : Array[Material] = [];
+
+## The decals in the map
+@export_custom(PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR)
+var decals : Array[DPMapDecal] = [];
 
 #------------------------------------------------------------------------------#
 
@@ -32,6 +39,7 @@ func _enter_tree() -> void:
 	pass
 	
 func _ready() -> void:
+	fix_member_valid_values();
 	if Engine.is_editor_hint():
 		rebuild_editor_mesh_groups();
 		rebuild_editor_map();
@@ -41,6 +49,16 @@ func _ready() -> void:
 		rebuild_editor_mesh_groups();
 		rebuild_editor_map();
 		rebuild_editor_map_collision();
+
+#------------------------------------------------------------------------------#
+
+func fix_member_valid_values() -> void:
+	if solids == null: solids = [];
+	if materials == null: materials = [];
+	if material_objects == null: material_objects = [];
+	if decals == null: decals = [];
+	# TODO: mark as undoable action here.
+	pass
 
 #------------------------------------------------------------------------------#
 
@@ -60,8 +78,8 @@ var _editor_mesh_instances : Array[MeshInstance3D] = [];
 
 ## Rebuilds the mesh groups:
 func rebuild_editor_mesh_groups() -> void:
+	fix_member_valid_values();
 	_editor_mesh_groups = [];
-	#for solid in solids:
 	
 	# Now, make it part of an editor group
 	var mesh_group : EditorMeshGroup = null;
@@ -281,6 +299,7 @@ func editor_add_solid(solid : DPMapSolid) -> void:
 
 ## Adds the given material to the array, or finds it. Returns material index in the map.
 func get_or_add_material(mat : Material) -> int:
+	fix_member_valid_values();
 	var existing_index = materials.find(mat);
 	if existing_index == -1:
 		existing_index = materials.size();

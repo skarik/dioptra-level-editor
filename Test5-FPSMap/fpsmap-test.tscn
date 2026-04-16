@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://bpowa1m52cdxo"]
+[gd_scene load_steps=20 format=3 uid="uid://bpowa1m52cdxo"]
 
 [ext_resource type="Script" uid="uid://b1o8seedypiyh" path="res://addons/dioptra/node-types/DP_Map.gd" id="1_2bx53"]
 [ext_resource type="Script" uid="uid://ddjlh0744b23n" path="res://addons/dioptra/node-types/internal/DP_Map_Solids.gd" id="2_wdejr"]
@@ -8,12 +8,14 @@
 [ext_resource type="Script" uid="uid://wbig6jx200tq" path="res://Test5-FPSMap/phys-impact-test.gd" id="6_baiak"]
 [ext_resource type="Material" uid="uid://mlajf23isuf5" path="res://asset/dev/devmat_gutz.tres" id="6_etp26"]
 [ext_resource type="AudioStream" uid="uid://b2jbocmte460w" path="res://asset/audio/donk1.wav" id="7_od74r"]
+[ext_resource type="Material" uid="uid://whnjn4e3ou0" path="res://asset/decal/test.tres" id="7_qgjii"]
 [ext_resource type="Script" uid="uid://ch4mqmu0xnvrw" path="res://Test1-Camera/Proto_PlayerTest.gd" id="9_1v4h5"]
 [ext_resource type="PackedScene" uid="uid://brqwtcim30lp2" path="res://Test1-Camera/test1-visdev.tscn" id="10_8qjxl"]
 [ext_resource type="PackedScene" uid="uid://cnvnvvdipw4p4" path="res://Test1-Camera/glass-dash.tscn" id="11_815mh"]
 [ext_resource type="PackedScene" uid="uid://difrrmau7asa4" path="res://Test3-SkinnedMesh/alana_lowpoly_skinned.tscn" id="12_qgjii"]
 [ext_resource type="Script" uid="uid://c0r5rt7sfmcj1" path="res://Test1-Camera/test-scripts/player_test8_model_obj.gd" id="13_sp18w"]
 [ext_resource type="Script" uid="uid://barqdgg8ycbe3" path="res://Test5-FPSMap/test-scripts/player-test-fps.gd" id="14_8qjxl"]
+[ext_resource type="Texture2D" uid="uid://dryevs13spedu" path="res://asset/decal/test.png" id="16_sp18w"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_baiak"]
 
@@ -27,12 +29,12 @@ height = 1.62
 [node name="_Node3D_25848" type="Node3D" parent="."]
 script = ExtResource("1_2bx53")
 solids = Array[ExtResource("2_wdejr")]([Object(RefCounted,"script":ExtResource("2_wdejr"),"points":Array[Resource("res://addons/dioptra/util/MapVector3.gd")]([Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-1024, -256, -1024),"v3":Vector3(-8, -2, -8),"v3i":Vector3i(-1024, -256, -1024),"value":Vector3i(-1024, -256, -1024))
-, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(1024, -256, -1024),"v3":Vector3(8, -2, -8),"v3i":Vector3i(1024, -256, -1024),"value":Vector3i(1024, -256, -1024))
-, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(1024, 0, -1024),"v3":Vector3(8, 0, -8),"v3i":Vector3i(1024, 0, -1024),"value":Vector3i(1024, 0, -1024))
+, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(2048, -256, -1024),"v3":Vector3(16, -2, -8),"v3i":Vector3i(2048, -256, -1024),"value":Vector3i(2048, -256, -1024))
+, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(2048, 0, -1024),"v3":Vector3(16, 0, -8),"v3i":Vector3i(2048, 0, -1024),"value":Vector3i(2048, 0, -1024))
 , Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-1024, 0, -1024),"v3":Vector3(-8, 0, -8),"v3i":Vector3i(-1024, 0, -1024),"value":Vector3i(-1024, 0, -1024))
 , Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-1024, -256, 1024),"v3":Vector3(-8, -2, 8),"v3i":Vector3i(-1024, -256, 1024),"value":Vector3i(-1024, -256, 1024))
-, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(1024, -256, 1024),"v3":Vector3(8, -2, 8),"v3i":Vector3i(1024, -256, 1024),"value":Vector3i(1024, -256, 1024))
-, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(1024, 0, 1024),"v3":Vector3(8, 0, 8),"v3i":Vector3i(1024, 0, 1024),"value":Vector3i(1024, 0, 1024))
+, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(2048, -256, 1024),"v3":Vector3(16, -2, 8),"v3i":Vector3i(2048, -256, 1024),"value":Vector3i(2048, -256, 1024))
+, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(2048, 0, 1024),"v3":Vector3(16, 0, 8),"v3i":Vector3i(2048, 0, 1024),"value":Vector3i(2048, 0, 1024))
 , Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-1024, 0, 1024),"v3":Vector3(-8, 0, 8),"v3i":Vector3i(-1024, 0, 1024),"value":Vector3i(-1024, 0, 1024))
 ]),"faces":Array[Resource("res://addons/dioptra/node-types/internal/DP_Map_Solids_Face.gd")]([Object(RefCounted,"script":Resource("res://addons/dioptra/node-types/internal/DP_Map_Solids_Face.gd"),"corners":PackedInt32Array(0, 1, 2, 3),"material":2,"uv_mode":0,"uv_subflags":12,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0,"corners":PackedInt32Array(0, 1, 2, 3),"material":2,"uv_mode":0,"uv_subflags":12,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0)
 , Object(RefCounted,"script":Resource("res://addons/dioptra/node-types/internal/DP_Map_Solids_Face.gd"),"corners":PackedInt32Array(4, 7, 6, 5),"material":2,"uv_mode":0,"uv_subflags":12,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0,"corners":PackedInt32Array(4, 7, 6, 5),"material":2,"uv_mode":0,"uv_subflags":12,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0)
@@ -41,12 +43,12 @@ solids = Array[ExtResource("2_wdejr")]([Object(RefCounted,"script":ExtResource("
 , Object(RefCounted,"script":Resource("res://addons/dioptra/node-types/internal/DP_Map_Solids_Face.gd"),"corners":PackedInt32Array(0, 3, 7, 4),"material":2,"uv_mode":0,"uv_subflags":9,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0,"corners":PackedInt32Array(0, 3, 7, 4),"material":2,"uv_mode":0,"uv_subflags":9,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0)
 , Object(RefCounted,"script":Resource("res://addons/dioptra/node-types/internal/DP_Map_Solids_Face.gd"),"corners":PackedInt32Array(1, 5, 6, 2),"material":2,"uv_mode":0,"uv_subflags":9,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0,"corners":PackedInt32Array(1, 5, 6, 2),"material":2,"uv_mode":0,"uv_subflags":9,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0)
 ]),"points":Array[Resource("res://addons/dioptra/util/MapVector3.gd")]([Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-1024, -256, -1024),"v3":Vector3(-8, -2, -8),"v3i":Vector3i(-1024, -256, -1024),"value":Vector3i(-1024, -256, -1024))
-, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(1024, -256, -1024),"v3":Vector3(8, -2, -8),"v3i":Vector3i(1024, -256, -1024),"value":Vector3i(1024, -256, -1024))
-, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(1024, 0, -1024),"v3":Vector3(8, 0, -8),"v3i":Vector3i(1024, 0, -1024),"value":Vector3i(1024, 0, -1024))
+, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(2048, -256, -1024),"v3":Vector3(16, -2, -8),"v3i":Vector3i(2048, -256, -1024),"value":Vector3i(2048, -256, -1024))
+, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(2048, 0, -1024),"v3":Vector3(16, 0, -8),"v3i":Vector3i(2048, 0, -1024),"value":Vector3i(2048, 0, -1024))
 , Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-1024, 0, -1024),"v3":Vector3(-8, 0, -8),"v3i":Vector3i(-1024, 0, -1024),"value":Vector3i(-1024, 0, -1024))
 , Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-1024, -256, 1024),"v3":Vector3(-8, -2, 8),"v3i":Vector3i(-1024, -256, 1024),"value":Vector3i(-1024, -256, 1024))
-, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(1024, -256, 1024),"v3":Vector3(8, -2, 8),"v3i":Vector3i(1024, -256, 1024),"value":Vector3i(1024, -256, 1024))
-, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(1024, 0, 1024),"v3":Vector3(8, 0, 8),"v3i":Vector3i(1024, 0, 1024),"value":Vector3i(1024, 0, 1024))
+, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(2048, -256, 1024),"v3":Vector3(16, -2, 8),"v3i":Vector3i(2048, -256, 1024),"value":Vector3i(2048, -256, 1024))
+, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(2048, 0, 1024),"v3":Vector3(16, 0, 8),"v3i":Vector3i(2048, 0, 1024),"value":Vector3i(2048, 0, 1024))
 , Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-1024, 0, 1024),"v3":Vector3(-8, 0, 8),"v3i":Vector3i(-1024, 0, 1024),"value":Vector3i(-1024, 0, 1024))
 ]),"faces":Array[Resource("res://addons/dioptra/node-types/internal/DP_Map_Solids_Face.gd")]([Object(RefCounted,"script":Resource("res://addons/dioptra/node-types/internal/DP_Map_Solids_Face.gd"),"corners":PackedInt32Array(0, 1, 2, 3),"material":2,"uv_mode":0,"uv_subflags":12,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0,"corners":PackedInt32Array(0, 1, 2, 3),"material":2,"uv_mode":0,"uv_subflags":12,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0)
 , Object(RefCounted,"script":Resource("res://addons/dioptra/node-types/internal/DP_Map_Solids_Face.gd"),"corners":PackedInt32Array(4, 7, 6, 5),"material":2,"uv_mode":0,"uv_subflags":12,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0,"corners":PackedInt32Array(4, 7, 6, 5),"material":2,"uv_mode":0,"uv_subflags":12,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0)
@@ -56,12 +58,12 @@ solids = Array[ExtResource("2_wdejr")]([Object(RefCounted,"script":ExtResource("
 , Object(RefCounted,"script":Resource("res://addons/dioptra/node-types/internal/DP_Map_Solids_Face.gd"),"corners":PackedInt32Array(1, 5, 6, 2),"material":2,"uv_mode":0,"uv_subflags":9,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0,"corners":PackedInt32Array(1, 5, 6, 2),"material":2,"uv_mode":0,"uv_subflags":9,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0)
 ]))
 , Object(RefCounted,"script":ExtResource("2_wdejr"),"points":Array[Resource("res://addons/dioptra/util/MapVector3.gd")]([Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(0, 0, -512),"v3":Vector3(0, 0, -4),"v3i":Vector3i(0, 0, -512),"value":Vector3i(0, 0, -512))
-, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(512, 0, -512),"v3":Vector3(4, 0, -4),"v3i":Vector3i(512, 0, -512),"value":Vector3i(512, 0, -512))
-, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(512, 320, -512),"v3":Vector3(4, 2.5, -4),"v3i":Vector3i(512, 320, -512),"value":Vector3i(512, 320, -512))
+, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(768, 0, -512),"v3":Vector3(6, 0, -4),"v3i":Vector3i(768, 0, -512),"value":Vector3i(768, 0, -512))
+, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(768, 320, -512),"v3":Vector3(6, 2.5, -4),"v3i":Vector3i(768, 320, -512),"value":Vector3i(768, 320, -512))
 , Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(0, 320, -512),"v3":Vector3(0, 2.5, -4),"v3i":Vector3i(0, 320, -512),"value":Vector3i(0, 320, -512))
 , Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(0, 0, -256),"v3":Vector3(0, 0, -2),"v3i":Vector3i(0, 0, -256),"value":Vector3i(0, 0, -256))
-, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(512, 0, -256),"v3":Vector3(4, 0, -2),"v3i":Vector3i(512, 0, -256),"value":Vector3i(512, 0, -256))
-, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(512, 320, -256),"v3":Vector3(4, 2.5, -2),"v3i":Vector3i(512, 320, -256),"value":Vector3i(512, 320, -256))
+, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(768, 0, -256),"v3":Vector3(6, 0, -2),"v3i":Vector3i(768, 0, -256),"value":Vector3i(768, 0, -256))
+, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(768, 320, -256),"v3":Vector3(6, 2.5, -2),"v3i":Vector3i(768, 320, -256),"value":Vector3i(768, 320, -256))
 , Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(0, 320, -256),"v3":Vector3(0, 2.5, -2),"v3i":Vector3i(0, 320, -256),"value":Vector3i(0, 320, -256))
 ]),"faces":Array[Resource("res://addons/dioptra/node-types/internal/DP_Map_Solids_Face.gd")]([Object(RefCounted,"script":Resource("res://addons/dioptra/node-types/internal/DP_Map_Solids_Face.gd"),"corners":PackedInt32Array(0, 1, 2, 3),"material":0,"uv_mode":0,"uv_subflags":12,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0,"corners":PackedInt32Array(0, 1, 2, 3),"material":0,"uv_mode":0,"uv_subflags":12,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0)
 , Object(RefCounted,"script":Resource("res://addons/dioptra/node-types/internal/DP_Map_Solids_Face.gd"),"corners":PackedInt32Array(4, 7, 6, 5),"material":0,"uv_mode":0,"uv_subflags":12,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0,"corners":PackedInt32Array(4, 7, 6, 5),"material":0,"uv_mode":0,"uv_subflags":12,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0)
@@ -70,12 +72,12 @@ solids = Array[ExtResource("2_wdejr")]([Object(RefCounted,"script":ExtResource("
 , Object(RefCounted,"script":Resource("res://addons/dioptra/node-types/internal/DP_Map_Solids_Face.gd"),"corners":PackedInt32Array(0, 3, 7, 4),"material":0,"uv_mode":0,"uv_subflags":9,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0,"corners":PackedInt32Array(0, 3, 7, 4),"material":0,"uv_mode":0,"uv_subflags":9,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0)
 , Object(RefCounted,"script":Resource("res://addons/dioptra/node-types/internal/DP_Map_Solids_Face.gd"),"corners":PackedInt32Array(1, 5, 6, 2),"material":0,"uv_mode":0,"uv_subflags":9,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0,"corners":PackedInt32Array(1, 5, 6, 2),"material":0,"uv_mode":0,"uv_subflags":9,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0)
 ]),"points":Array[Resource("res://addons/dioptra/util/MapVector3.gd")]([Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(0, 0, -512),"v3":Vector3(0, 0, -4),"v3i":Vector3i(0, 0, -512),"value":Vector3i(0, 0, -512))
-, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(512, 0, -512),"v3":Vector3(4, 0, -4),"v3i":Vector3i(512, 0, -512),"value":Vector3i(512, 0, -512))
-, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(512, 320, -512),"v3":Vector3(4, 2.5, -4),"v3i":Vector3i(512, 320, -512),"value":Vector3i(512, 320, -512))
+, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(768, 0, -512),"v3":Vector3(6, 0, -4),"v3i":Vector3i(768, 0, -512),"value":Vector3i(768, 0, -512))
+, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(768, 320, -512),"v3":Vector3(6, 2.5, -4),"v3i":Vector3i(768, 320, -512),"value":Vector3i(768, 320, -512))
 , Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(0, 320, -512),"v3":Vector3(0, 2.5, -4),"v3i":Vector3i(0, 320, -512),"value":Vector3i(0, 320, -512))
 , Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(0, 0, -256),"v3":Vector3(0, 0, -2),"v3i":Vector3i(0, 0, -256),"value":Vector3i(0, 0, -256))
-, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(512, 0, -256),"v3":Vector3(4, 0, -2),"v3i":Vector3i(512, 0, -256),"value":Vector3i(512, 0, -256))
-, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(512, 320, -256),"v3":Vector3(4, 2.5, -2),"v3i":Vector3i(512, 320, -256),"value":Vector3i(512, 320, -256))
+, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(768, 0, -256),"v3":Vector3(6, 0, -2),"v3i":Vector3i(768, 0, -256),"value":Vector3i(768, 0, -256))
+, Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(768, 320, -256),"v3":Vector3(6, 2.5, -2),"v3i":Vector3i(768, 320, -256),"value":Vector3i(768, 320, -256))
 , Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(0, 320, -256),"v3":Vector3(0, 2.5, -2),"v3i":Vector3i(0, 320, -256),"value":Vector3i(0, 320, -256))
 ]),"faces":Array[Resource("res://addons/dioptra/node-types/internal/DP_Map_Solids_Face.gd")]([Object(RefCounted,"script":Resource("res://addons/dioptra/node-types/internal/DP_Map_Solids_Face.gd"),"corners":PackedInt32Array(0, 1, 2, 3),"material":0,"uv_mode":0,"uv_subflags":12,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0,"corners":PackedInt32Array(0, 1, 2, 3),"material":0,"uv_mode":0,"uv_subflags":12,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0)
 , Object(RefCounted,"script":Resource("res://addons/dioptra/node-types/internal/DP_Map_Solids_Face.gd"),"corners":PackedInt32Array(4, 7, 6, 5),"material":0,"uv_mode":0,"uv_subflags":12,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0,"corners":PackedInt32Array(4, 7, 6, 5),"material":0,"uv_mode":0,"uv_subflags":12,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0)
@@ -288,7 +290,9 @@ solids = Array[ExtResource("2_wdejr")]([Object(RefCounted,"script":ExtResource("
 , Object(RefCounted,"script":Resource("res://addons/dioptra/node-types/internal/DP_Map_Solids_Face.gd"),"corners":PackedInt32Array(1, 5, 6, 2),"material":1,"uv_mode":0,"uv_subflags":9,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0,"corners":PackedInt32Array(1, 5, 6, 2),"material":1,"uv_mode":0,"uv_subflags":9,"uv_scale":Vector2(1, 1),"uv_offset":Vector2(0, 0),"uv_rotation":0.0)
 ]))
 ])
-materials = Array[Material]([ExtResource("3_uf1yd"), ExtResource("4_wdejr"), ExtResource("5_uf1yd")])
+materials = Array[Material]([ExtResource("3_uf1yd"), ExtResource("4_wdejr"), ExtResource("5_uf1yd"), ExtResource("6_etp26"), ExtResource("7_qgjii")])
+material_objects = null
+decals = null
 metadata/_edit_group_ = true
 
 [node name="Camera3D" type="Camera3D" parent="."]
@@ -354,3 +358,7 @@ script = ExtResource("13_sp18w")
 [node name="Camera3D" type="Camera3D" parent="CharacterBody3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.49769, -0.134298)
 current = true
+
+[node name="Decal" type="Decal" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 4.87633, 1.46767, -2)
+texture_albedo = ExtResource("16_sp18w")

@@ -13,6 +13,8 @@ func onSelect_Select() -> void:
 	return onToolSelect(DioptraEditorMainPlugin.ToolMode.SELECT, $Selection);
 func onSelect_BoxTest() -> void:
 	return onToolSelect(DioptraEditorMainPlugin.ToolMode.BOX_TEST, $Box);
+func onSelect_Decal() -> void:
+	return onToolSelect(DioptraEditorMainPlugin.ToolMode.DECAL, $Decal);
 	
 func onToolSelect(tool : DioptraEditorMainPlugin.ToolMode, button : Button) -> void:
 	# Untoggle all the tools
