@@ -72,6 +72,21 @@ func _on_selection_changed() -> void:
 	
 	pass
 	
+func _can_drop_data(at_position: Vector2, data: Variant) -> bool:
+	var dict = data as Dictionary;
+	if dict["type"] == "files":
+		var filename = dict["files"][0];
+		var res : Resource = load(filename);
+		if res is Material:
+			return true;
+	return false;
+	
+func _drop_data(at_position: Vector2, data: Variant) -> void:
+	var dict = data as Dictionary;
+	var filename = dict["files"][0];
+	_on_material_dialog_selected(filename);
+	
+	
 #------------------------------------------------------------------------------#
 # Texture providing:
 	

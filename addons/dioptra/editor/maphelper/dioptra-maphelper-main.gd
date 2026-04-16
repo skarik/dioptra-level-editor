@@ -300,7 +300,6 @@ func _forward_3d_force_draw_over_viewport(viewport_control: Control) -> void:
 	pass
 	
 func can_drop_func(at_position: Vector2, data: Variant) -> bool:
-	print(at_position)
 	if vp_control:
 		# See Node3DEditorViewport::can_drop_data_fw in node_3d_editor_plugin.cpp. There's a lot of functionality we need to fall back to.
 		#return vp_control.get_parent_control()._can_drop_data(at_position, data);

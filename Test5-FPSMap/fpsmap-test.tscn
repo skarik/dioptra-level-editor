@@ -291,8 +291,6 @@ solids = Array[ExtResource("2_wdejr")]([Object(RefCounted,"script":ExtResource("
 ]))
 ])
 materials = Array[Material]([ExtResource("3_uf1yd"), ExtResource("4_wdejr"), ExtResource("5_uf1yd"), ExtResource("6_etp26"), ExtResource("7_qgjii")])
-material_objects = null
-decals = null
 metadata/_edit_group_ = true
 
 [node name="Camera3D" type="Camera3D" parent="."]
