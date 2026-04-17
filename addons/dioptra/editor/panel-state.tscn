@@ -93,6 +93,7 @@ layout_mode = 2
 
 [node name="Wireframe" type="Button" parent="Box/View"]
 layout_mode = 2
+toggle_mode = true
 icon = ExtResource("5_oiw7u")
 
 [connection signal="pressed" from="Box/Selection/Solid" to="." method="onSelectionTypePressed" binds= [0]]

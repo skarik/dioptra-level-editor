@@ -31,6 +31,9 @@ var DPGizmoPlugin_PathNode : EditorNode3DGizmoPlugin = null;
 const cDPG_ToolCube := preload("res://addons/dioptra/editor/gizmos/DPG_ToolCube.gd");
 var DPGizmoPlugin_ToolCube : EditorNode3DGizmoPlugin = null;
 
+const cDPG_FaceHover := preload("res://addons/dioptra/editor/gizmos/DPG_FaceHover.gd");
+var DPGizmoPlugin_FaceHover : EditorNode3DGizmoPlugin = null;
+
 const cDPG_MapTest1 := preload("res://addons/dioptra/editor/gizmos/DPG_MapTest1.gd");
 var DPGizmoPlugin_MapTest1 : EditorNode3DGizmoPlugin = null;
 
@@ -65,6 +68,7 @@ func stop_gizmo_plugin(item : EditorNode3DGizmoPlugin) -> void:
 func _enter_tree() -> void:
 	DPGizmoPlugin_PathNode = start_gizmo_plugin(DPGizmoPlugin_PathNode, func(): return cDPG_PathNode.new(get_undo_redo()) );
 	DPGizmoPlugin_ToolCube = start_gizmo_plugin(DPGizmoPlugin_ToolCube, func(): return cDPG_ToolCube.new(get_undo_redo()) );
+	DPGizmoPlugin_FaceHover = start_gizmo_plugin(DPGizmoPlugin_FaceHover, func(): return cDPG_FaceHover.new(self) );
 	DPGizmoPlugin_MapTest1 = start_gizmo_plugin(DPGizmoPlugin_MapTest1, func(): return cDPG_MapTest1.new(self, get_undo_redo()) );
 	
 	if DPDock_Tools == null:
@@ -94,6 +98,8 @@ func _exit_tree() -> void:
 	DPGizmoPlugin_PathNode = null;
 	stop_gizmo_plugin(DPGizmoPlugin_ToolCube);
 	DPGizmoPlugin_ToolCube = null;
+	stop_gizmo_plugin(DPGizmoPlugin_FaceHover);
+	DPGizmoPlugin_FaceHover = null;
 	stop_gizmo_plugin(DPGizmoPlugin_MapTest1);
 	DPGizmoPlugin_MapTest1 = null;
 	

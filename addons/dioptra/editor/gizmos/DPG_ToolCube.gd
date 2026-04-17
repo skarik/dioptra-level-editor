@@ -5,6 +5,7 @@ extends EditorNode3DGizmoPlugin
 var enabled : bool = false;
 var box_start : Vector3 = Vector3.ZERO;
 var box_end : Vector3 = Vector3.ZERO;
+var force_show_dims : bool = false;
 
 var _label_x : DPULabelPool.LabelNodeItem = null;
 var _label_y : DPULabelPool.LabelNodeItem = null;
@@ -46,7 +47,7 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 	var color_w : Color = EditorInterface.get_editor_theme().get_color("property_color_w", "Editor");
 	
 	var local_mesh : ArrayMesh = ArrayMesh.new();
-	if true:
+	if signi(size.x) + signi(size.y) + signi(size.z) >= 2: # If we're more than an edge, draw box
 		var mesher_color := Color(color_w, color_w.a * 0.1);
 		var am := DPArrayMesher.new(DPArrayMesher.TypeFlags.VERTEX \
 			| DPArrayMesher.TypeFlags.NORMAL | DPArrayMesher.TypeFlags.TEX_UV \
@@ -69,18 +70,19 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 	gizmo.add_mesh(local_mesh, get_material("geo", gizmo));
 	#gizmo.add_collision_triangles(local_mesh.generate_triangle_mesh());
 	
+	if size.x > 0:
+		_label_x = DPULabelPool.get_label(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
+		var lbl_x : Label3D = _label_x.get_node();
+		lbl_x.text = "%.1fm\n%dpx" % [size.x, int(size.x * 64.0)];
+		lbl_x.global_position = center + Vector3(0, -halfsize.y, halfsize.z);
+		lbl_x.modulate = color_x;
 	
-	_label_x = DPULabelPool.get_label(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
-	var lbl_x : Label3D = _label_x.get_node();
-	lbl_x.text = "%.1fm\n%dpx" % [size.x, int(size.x * 64.0)];
-	lbl_x.global_position = center + Vector3(0, -halfsize.y, halfsize.z);
-	lbl_x.modulate = color_x;
-	
-	_label_z = DPULabelPool.get_label(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
-	var lbl_z : Label3D = _label_z.get_node();
-	lbl_z.text = "%.1fm\n%dpx" % [size.z, int(size.z * 64.0)];
-	lbl_z.global_position = center + Vector3(halfsize.x, -halfsize.y, 0);
-	lbl_z.modulate = color_z;
+	if size.z > 0:
+		_label_z = DPULabelPool.get_label(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
+		var lbl_z : Label3D = _label_z.get_node();
+		lbl_z.text = "%.1fm\n%dpx" % [size.z, int(size.z * 64.0)];
+		lbl_z.global_position = center + Vector3(halfsize.x, -halfsize.y, 0);
+		lbl_z.modulate = color_z;
 	
 	if size.y > 0:
 		_label_y = DPULabelPool.get_label(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
@@ -94,16 +96,19 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 	var edge_y := PackedVector3Array();
 	var edge_z := PackedVector3Array();
 	
-	edge_x.append(center + Vector3(-halfsize.x, -halfsize.y, halfsize.z));
-	edge_x.append(center + Vector3( halfsize.x, -halfsize.y, halfsize.z));
-	gizmo.add_lines(edge_x, get_material("edges", gizmo), true, EditorInterface.get_editor_theme().get_color("axis_x_color", "Editor"));
+	if size.x > 0 or force_show_dims:
+		edge_x.append(center + Vector3(-halfsize.x, -halfsize.y, halfsize.z));
+		edge_x.append(center + Vector3( halfsize.x, -halfsize.y, halfsize.z));
+		gizmo.add_lines(edge_x, get_material("edges", gizmo), true, EditorInterface.get_editor_theme().get_color("axis_x_color", "Editor"));
 	
-	edge_y.append(center + Vector3(halfsize.x, -halfsize.y, halfsize.z));
-	edge_y.append(center + Vector3(halfsize.x, halfsize.y, halfsize.z));
-	gizmo.add_lines(edge_y, get_material("edges", gizmo), true, EditorInterface.get_editor_theme().get_color("axis_y_color", "Editor"));
+	if size.y > 0 or force_show_dims:
+		edge_y.append(center + Vector3(halfsize.x, -halfsize.y, halfsize.z));
+		edge_y.append(center + Vector3(halfsize.x, halfsize.y, halfsize.z));
+		gizmo.add_lines(edge_y, get_material("edges", gizmo), true, EditorInterface.get_editor_theme().get_color("axis_y_color", "Editor"));
 	
-	edge_z.append(center + Vector3(halfsize.x, -halfsize.y, -halfsize.z));
-	edge_z.append(center + Vector3(halfsize.x, -halfsize.y, halfsize.z));
-	gizmo.add_lines(edge_z, get_material("edges", gizmo), true, EditorInterface.get_editor_theme().get_color("axis_z_color", "Editor"));
+	if size.z > 0 or force_show_dims:
+		edge_z.append(center + Vector3(halfsize.x, -halfsize.y, -halfsize.z));
+		edge_z.append(center + Vector3(halfsize.x, -halfsize.y, halfsize.z));
+		gizmo.add_lines(edge_z, get_material("edges", gizmo), true, EditorInterface.get_editor_theme().get_color("axis_z_color", "Editor"));
 
 	pass

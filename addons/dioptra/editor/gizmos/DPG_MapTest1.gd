@@ -135,6 +135,16 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 				am.get_surface_color()[vert0 + 3] = color_sel * Color(1.0, 1.0, 1.0, 0.0);
 			pass # End adding glowmesh
 	
+	# Add boxes around all decals
+	for decal in map.decals:
+		var pos := decal.position.v3;
+		linesSelect.append(pos + Vector3.UP);
+		linesSelect.append(pos - Vector3.UP);
+		linesSelect.append(pos + Vector3.FORWARD);
+		linesSelect.append(pos - Vector3.FORWARD);
+		linesSelect.append(pos + Vector3.LEFT);
+		linesSelect.append(pos - Vector3.LEFT);
+	
 	# Add the solids now:
 	gizmo.add_lines(linesNormie, get_material("lines", gizmo), false, Color(0.8, 0.8, 0.1, 0.5));
 	gizmo.add_lines(linesSelect, get_material("lines", gizmo), false, Color(1.0, 1.0, 1.0, 1.0));
@@ -150,7 +160,7 @@ func _subgizmos_intersect_ray(gizmo: EditorNode3DGizmo, camera: Camera3D, screen
 	var ray_pos := camera.project_ray_origin(screen_pos);
 	var ray_dir := camera.project_ray_normal(screen_pos);
 	
-	var node3d := gizmo.get_node_3d()
+	var node3d := gizmo.get_node_3d();
 	var map := node3d as DP_Map;
 	
 	var closest_solid := -1; # No selection
