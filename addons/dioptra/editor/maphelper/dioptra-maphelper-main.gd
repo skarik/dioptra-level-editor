@@ -151,7 +151,7 @@ func _action_assign_material_to_selected_solids(editor : DioptraEditorMainPlugin
 	# TODO: assert we're in solid selection mode
 	# Add material to the map
 	var material_index := map.get_or_add_material(mat);
-	editor._last_material = material_index;
+	editor._last_material = mat;
 	
 	# Apply the material to all faces
 	var target_gizmo := _get_target_gizmo(editor, map);

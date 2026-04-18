@@ -18,20 +18,64 @@ class_name DPMapDecal
 @export_storage var material : int = 0;
 ## Color offset for the base decal in OklabLCH offset (light, chroma, hue)
 @export_storage var color_lch_offset : Vector3 = Vector3.ZERO;
+## Project this decal also the backside or not
+@export_storage var project_two_sided : bool = false;
+## Project this decal onto co-linear faces that stretch it infinity or not
+@export_storage var project_colinear : bool = false;
+
+# Serialization interface
+func _get_property_list() -> Array[Dictionary]:
+	var properties : Array[Dictionary] = [];
+	properties.append({ "name" : "position", "type" : TYPE_VECTOR3I });
+	properties.append({ "name" : "rotation", "type" : TYPE_VECTOR3 });
+	properties.append({ "name" : "scale", "type" : TYPE_VECTOR2 });
+	properties.append({ "name" : "near_clip", "type" : TYPE_FLOAT });
+	properties.append({ "name" : "far_clip", "type" : TYPE_FLOAT });
+	properties.append({ "name" : "far_scale", "type" : TYPE_VECTOR2 });
+	properties.append({ "name" : "material", "type" : TYPE_INT });
+	properties.append({ "name" : "color_lch_offset", "type" : TYPE_VECTOR3 });
+	properties.append({ "name" : "project_two_sided", "type" : TYPE_BOOL });
+	properties.append({ "name" : "project_colinear", "type" : TYPE_BOOL });
+	return properties;
+func _set(property: StringName, value: Variant) -> bool:
+	if property == "position": position.v3i = value; return true;
+	elif property == "rotation": rotation = value; return true;
+	elif property == "scale": scale = value; return true;
+	elif property == "near_clip": near_clip = value; return true;
+	elif property == "far_clip": far_clip = value; return true;
+	elif property == "far_scale": far_scale = value; return true;
+	elif property == "material": material = value; return true;
+	elif property == "color_lch_offset": color_lch_offset = value; return true;
+	elif property == "project_two_sided": project_two_sided = value; return true;
+	elif property == "project_colinear": project_colinear = value; return true;
+	return false;
+func _get(property: StringName) -> Variant:
+	if property == "position": return position.v3i;
+	elif property == "rotation": return rotation;
+	elif property == "scale": return scale;
+	elif property == "near_clip": return near_clip;
+	elif property == "far_clip": return far_clip;
+	elif property == "far_scale": return far_scale;
+	elif property == "material": return material;
+	elif property == "color_lch_offset": return color_lch_offset;
+	elif property == "project_two_sided": return project_two_sided;
+	elif property == "project_colinear": return project_colinear;
+	return null;
+
 
 # TODO: move to map. this needs material info to work.
-func get_plane(plane : Projection.Planes) -> Plane:
-	var quat : Quaternion = Quaternion.from_euler(rotation);
-	
-	var up : Vector3 = Vector3.UP * quat;
-	var forward : Vector3 = Vector3.FORWARD * quat;
-	var left : Vector3 = Vector3.LEFT * quat;
-	
-	var from_dp_to_world : float = DioptraInterface.get_position_scale_div() / float(DioptraInterface.get_position_scale_top());
-	
-	if plane == Projection.Planes.PLANE_NEAR:
-		return Plane(forward, position.v3 + forward * near_clip * from_dp_to_world);
-	elif plane == Projection.Planes.PLANE_FAR:
-		return Plane(-forward, position.v3 + forward * far_clip * from_dp_to_world);
-		
-	return Plane();
+#func get_plane(plane : Projection.Planes) -> Plane:
+	#var quat : Quaternion = Quaternion.from_euler(rotation);
+	#
+	#var up : Vector3 = Vector3.UP * quat;
+	#var forward : Vector3 = Vector3.FORWARD * quat;
+	#var left : Vector3 = Vector3.LEFT * quat;
+	#
+	#var from_dp_to_world : float = DioptraInterface.get_position_scale_div() / float(DioptraInterface.get_position_scale_top());
+	#
+	#if plane == Projection.Planes.PLANE_NEAR:
+		#return Plane(forward, position.v3 + forward * near_clip * from_dp_to_world);
+	#elif plane == Projection.Planes.PLANE_FAR:
+		#return Plane(-forward, position.v3 + forward * far_clip * from_dp_to_world);
+		#
+	#return Plane();

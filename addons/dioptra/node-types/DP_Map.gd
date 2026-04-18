@@ -43,11 +43,13 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		rebuild_editor_mesh_groups();
 		rebuild_editor_map();
+		rebuild_editor_decals();
 	else:
 		# Rebuild the map:
 		## TODO: this should just load whatever is baked but for now we just use the editor map
 		rebuild_editor_mesh_groups();
 		rebuild_editor_map();
+		rebuild_editor_decals();
 		rebuild_editor_map_collision();
 
 #------------------------------------------------------------------------------#
@@ -75,8 +77,12 @@ class EditorMeshGroup:
 
 var _editor_mesh_groups : Array[EditorMeshGroup] = [];
 var _editor_mesh_instances : Array[MeshInstance3D] = [];
+var _editor_mesh_instances_decals : MeshInstance3D = null;
 
-## Rebuilds the mesh groups:
+## Rebuilds the mesh groups.
+##
+## Editor mesh groups are the spatial groups of the editor solids, used to limit
+## the amount of meshes that need to be rebuilt with a change.
 func rebuild_editor_mesh_groups() -> void:
 	fix_member_valid_values();
 	_editor_mesh_groups = [];
@@ -245,7 +251,7 @@ func _editor_get_mesh_instance(group_index : int) -> MeshInstance3D:
 		
 	return _editor_mesh_instances[group_index];
 
-## Rebuilds the static mesh collision for the map using the editor collision
+## Rebuilds the static mesh collision for the map using the editor meshes
 func rebuild_editor_map_collision() -> void:
 	for mesh_instance in _editor_mesh_instances:
 		if mesh_instance.mesh != null:
@@ -272,7 +278,75 @@ func rebuild_editor_map_collision() -> void:
 			static_body.add_child(collision_shape, false);
 			collision_shape.owner = static_body;
 	pass
+	
+## Rebuilds the decals static mesh for the map
+## If the decal is specified, only rebuilds part of the decals (fast!).
+## Otherwise, rebuilds the entire map (slow).
+## TODO: That entire optimization
+func rebuild_editor_decals(in_decal : DPMapDecal = null) -> void:
+	# Set up the mesh we have
+	var mesh_instance = _editor_get_mesh_instance_for_decals();
+	
+	# Maintain a dictionary of all the mats to array mesher
+	var mesher_list : Dictionary[int, DPArrayMesher] = {};
+	var get_mesher = func(material_index : int) -> DPArrayMesher:
+		if not mesher_list.has(material_index):
+			mesher_list[material_index] = DPArrayMesher.new(
+				DPArrayMesher.TypeFlags.VERTEX | DPArrayMesher.TypeFlags.NORMAL | DPArrayMesher.TypeFlags.TEX_UV
+				| DPArrayMesher.TypeFlags.BONES
+				| DPArrayMesher.TypeFlags.INDEX
+			);
+		return mesher_list[material_index];
+	
+	for decal in decals:
+		var am : DPArrayMesher = get_mesher.call(decal.material);
+		var v0 := am.get_vertex_count();
+		
+		# Grab all the info we need:
+		var material := material_objects[decal.material];
+		var pixels_per_gdunit := DioptraInterface.get_pixel_scale_top() * float(DioptraInterface.get_pixel_scale_div());
+		var decal_texel_size := DPHelpers.get_material_primary_texture_size(material);
+		
+		# Build the basis
+		var decal_rotation := Quaternion.from_euler(decal.rotation);
+		var normal = decal_rotation * -Vector3.FORWARD;
+		var up = decal_rotation * Vector3.UP;
+		var left = decal_rotation * Vector3.LEFT;
+		
+		# Build a quad
+		am.quad_add(decal.position.v3 + normal * 0.05, up, left);
+	
+	# Find the meshers and add the given meshes
+	var mesh := ArrayMesh.new();
+	var has_data := false;
+	for material_index in mesher_list:
+		var am : DPArrayMesher = mesher_list[material_index];
+		# Only update if there's geometry in the index count
+		if am.get_index_count() > 0:
+			var surface_index = mesh.get_surface_count();
+			mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, am.get_surface_array());
+			mesh.surface_set_material(surface_index, null if (material_index == -1) else material_objects[material_index]);
+			has_data = true; # Mark the mesh is valid
+		pass
+	
+	# Apply the mesh
+	mesh_instance.mesh = mesh if has_data else null;
+	
+	pass
 
+# Returns the mesh instance for the given group.
+# If it doesn't exist, it will be created
+func _editor_get_mesh_instance_for_decals() -> MeshInstance3D:
+	# fill in if null, instantiate a hidden child :)
+	if _editor_mesh_instances_decals == null:
+		var mesh_renderer := MeshInstance3D.new();
+		add_child(mesh_renderer, false, Node.INTERNAL_MODE_FRONT);
+		mesh_renderer.owner = self;
+		_editor_mesh_instances_decals = mesh_renderer;
+		
+	return _editor_mesh_instances_decals;
+
+#------------------------------------------------------------------------------#
 
 ## Adds the given solid to the map
 func editor_add_solid(solid : DPMapSolid) -> void:
@@ -294,16 +368,28 @@ func editor_add_solid(solid : DPMapSolid) -> void:
 	
 	# And it's added!
 	pass
+	
+	
+## Adds the given object to the map
+func editor_add_decal(decal : DPMapDecal) -> void:
+	assert(not decals.has(decal), "Decal that already exists in the editor attempted to be added");
+	
+	# Add it to the decals list
+	decals.append(decal);
+	
+	# That's it!
+	pass
 
 #------------------------------------------------------------------------------#
 
 ## Adds the given material to the array, or finds it. Returns material index in the map.
-func get_or_add_material(mat : Material) -> int:
+func get_or_add_material(mat : Material, for_objects : bool = false) -> int:
 	fix_member_valid_values();
-	var existing_index = materials.find(mat);
+	var mat_list = materials if not for_objects else material_objects;
+	var existing_index = mat_list.find(mat);
 	if existing_index == -1:
-		existing_index = materials.size();
-		materials.push_back(mat);
+		existing_index = mat_list.size();
+		mat_list.push_back(mat);
 	return existing_index;
 
 #------------------------------------------------------------------------------#

@@ -120,7 +120,7 @@ var _editorNode : EditorDP_InternalTool = null;
 var _currentTool : DPUTool = null;
 
 var _last_edited_map : DP_Map = null;
-var _last_material : int = -1;
+var _last_material : Material = null;
 
 var _plugin_maphelper : DioptraEditorMaphelperPlugin = null;
 
@@ -240,11 +240,19 @@ func add_new_solid(solid : DPMapSolid) -> void:
 	# Add it to the map. Map will handle partitioning
 	map.editor_add_solid(solid);
 	
-	# Set up face materials of the solid
-	for face in solid.faces:
-		face.material = _last_material;
-	
 	# Request a map rebuild
 	map.rebuild_editor_map(solid);
 	
 	pass
+	
+## Adds a new decal to the last edited map, or first map found.
+func add_new_decal(decal : DPMapDecal) -> void:
+	var map := _get_current_map();
+	
+	# Add it to the map.
+	map.editor_add_decal(decal);
+	
+	# Request a map rebuild
+	map.rebuild_editor_decals(decal);
+	
+	pass;

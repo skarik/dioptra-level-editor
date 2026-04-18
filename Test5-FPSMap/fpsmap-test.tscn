@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://bpowa1m52cdxo"]
+[gd_scene load_steps=21 format=3 uid="uid://bpowa1m52cdxo"]
 
 [ext_resource type="Script" uid="uid://b1o8seedypiyh" path="res://addons/dioptra/node-types/DP_Map.gd" id="1_2bx53"]
 [ext_resource type="Script" uid="uid://ddjlh0744b23n" path="res://addons/dioptra/node-types/internal/DP_Map_Solids.gd" id="2_wdejr"]
@@ -9,6 +9,7 @@
 [ext_resource type="Material" uid="uid://mlajf23isuf5" path="res://asset/dev/devmat_gutz.tres" id="6_etp26"]
 [ext_resource type="AudioStream" uid="uid://b2jbocmte460w" path="res://asset/audio/donk1.wav" id="7_od74r"]
 [ext_resource type="Material" uid="uid://whnjn4e3ou0" path="res://asset/decal/test.tres" id="7_qgjii"]
+[ext_resource type="Script" uid="uid://cdeo2d3svalx0" path="res://addons/dioptra/node-types/internal/DP_Map_Decals.gd" id="8_sp18w"]
 [ext_resource type="Script" uid="uid://ch4mqmu0xnvrw" path="res://Test1-Camera/Proto_PlayerTest.gd" id="9_1v4h5"]
 [ext_resource type="PackedScene" uid="uid://brqwtcim30lp2" path="res://Test1-Camera/test1-visdev.tscn" id="10_8qjxl"]
 [ext_resource type="PackedScene" uid="uid://cnvnvvdipw4p4" path="res://Test1-Camera/glass-dash.tscn" id="11_815mh"]
@@ -291,6 +292,38 @@ solids = Array[ExtResource("2_wdejr")]([Object(RefCounted,"script":ExtResource("
 ]))
 ])
 materials = Array[Material]([ExtResource("3_uf1yd"), ExtResource("4_wdejr"), ExtResource("5_uf1yd"), ExtResource("6_etp26"), ExtResource("7_qgjii")])
+material_objects = Array[Material]([ExtResource("7_qgjii"), null])
+decals = Array[ExtResource("8_sp18w")]([Object(RefCounted,"script":ExtResource("8_sp18w"),"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-384, 192, -256),"v3":Vector3(-3, 1.5, -2),"v3i":Vector3i(-384, 192, -256),"value":Vector3i(-384, 192, -256))
+,"rotation":Vector3(0, 0, 0),"scale":Vector2(1, 1),"near_clip":0.0,"far_clip":2.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false,"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-384, 192, -256),"v3":Vector3(-3, 1.5, -2),"v3i":Vector3i(-384, 192, -256),"value":Vector3i(-384, 192, -256))
+,"rotation":Vector3(0, 0, 0),"scale":Vector2(1, 1),"near_clip":0.0,"far_clip":2.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false)
+, Object(RefCounted,"script":ExtResource("8_sp18w"),"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(1120, 0, 272),"v3":Vector3(8.75, 0, 2.125),"v3i":Vector3i(1120, 0, 272),"value":Vector3i(1120, 0, 272))
+,"rotation":Vector3(-1.5708, 0, 0),"scale":Vector2(1, 1),"near_clip":0.0,"far_clip":2.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false,"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(1120, 0, 272),"v3":Vector3(8.75, 0, 2.125),"v3i":Vector3i(1120, 0, 272),"value":Vector3i(1120, 0, 272))
+,"rotation":Vector3(-1.5708, 0, 0),"scale":Vector2(1, 1),"near_clip":0.0,"far_clip":2.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false)
+, Object(RefCounted,"script":ExtResource("8_sp18w"),"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(320, 144, -256),"v3":Vector3(2.5, 1.125, -2),"v3i":Vector3i(320, 144, -256),"value":Vector3i(320, 144, -256))
+,"rotation":Vector3(0, 0, 0),"scale":Vector2(1, 1),"near_clip":0.0,"far_clip":2.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false,"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(320, 144, -256),"v3":Vector3(2.5, 1.125, -2),"v3i":Vector3i(320, 144, -256),"value":Vector3i(320, 144, -256))
+,"rotation":Vector3(0, 0, 0),"scale":Vector2(1, 1),"near_clip":0.0,"far_clip":2.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false)
+, Object(RefCounted,"script":ExtResource("8_sp18w"),"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-688, 208, 0),"v3":Vector3(-5.375, 1.625, 0),"v3i":Vector3i(-688, 208, 0),"value":Vector3i(-688, 208, 0))
+,"rotation":Vector3(-1.17601, 0, 0),"scale":Vector2(1, 1),"near_clip":0.0,"far_clip":2.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false,"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-688, 208, 0),"v3":Vector3(-5.375, 1.625, 0),"v3i":Vector3i(-688, 208, 0),"value":Vector3i(-688, 208, 0))
+,"rotation":Vector3(-1.17601, 0, 0),"scale":Vector2(1, 1),"near_clip":0.0,"far_clip":2.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false)
+, Object(RefCounted,"script":ExtResource("8_sp18w"),"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-208, 0, 784),"v3":Vector3(-1.625, 0, 6.125),"v3i":Vector3i(-208, 0, 784),"value":Vector3i(-208, 0, 784))
+,"rotation":Vector3(-1.5708, 0, 0),"scale":Vector2(1, 1),"near_clip":0.0,"far_clip":2.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false,"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-208, 0, 784),"v3":Vector3(-1.625, 0, 6.125),"v3i":Vector3i(-208, 0, 784),"value":Vector3i(-208, 0, 784))
+,"rotation":Vector3(-1.5708, 0, 0),"scale":Vector2(1, 1),"near_clip":0.0,"far_clip":2.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false)
+, Object(RefCounted,"script":ExtResource("8_sp18w"),"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-592, 320, -448),"v3":Vector3(-4.625, 2.5, -3.5),"v3i":Vector3i(-592, 320, -448),"value":Vector3i(-592, 320, -448))
+,"rotation":Vector3(-1.5708, 0, 0),"scale":Vector2(1, 1),"near_clip":0.0,"far_clip":2.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false,"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-592, 320, -448),"v3":Vector3(-4.625, 2.5, -3.5),"v3i":Vector3i(-592, 320, -448),"value":Vector3i(-592, 320, -448))
+,"rotation":Vector3(-1.5708, 0, 0),"scale":Vector2(1, 1),"near_clip":0.0,"far_clip":2.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false)
+, Object(RefCounted,"script":ExtResource("8_sp18w"),"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-208, 0, -832),"v3":Vector3(-1.625, 0, -6.5),"v3i":Vector3i(-208, 0, -832),"value":Vector3i(-208, 0, -832))
+,"rotation":Vector3(-1.5708, 0, 0),"scale":Vector2(1, 1),"near_clip":0.0,"far_clip":2.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false,"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-208, 0, -832),"v3":Vector3(-1.625, 0, -6.5),"v3i":Vector3i(-208, 0, -832),"value":Vector3i(-208, 0, -832))
+,"rotation":Vector3(-1.5708, 0, 0),"scale":Vector2(1, 1),"near_clip":0.0,"far_clip":2.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false)
+, Object(RefCounted,"script":ExtResource("8_sp18w"),"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(592, 0, -608),"v3":Vector3(4.625, 0, -4.75),"v3i":Vector3i(592, 0, -608),"value":Vector3i(592, 0, -608))
+,"rotation":Vector3(-1.5708, 0, 0),"scale":Vector2(1, 1),"near_clip":0.0,"far_clip":2.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false,"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(592, 0, -608),"v3":Vector3(4.625, 0, -4.75),"v3i":Vector3i(592, 0, -608),"value":Vector3i(592, 0, -608))
+,"rotation":Vector3(-1.5708, 0, 0),"scale":Vector2(1, 1),"near_clip":0.0,"far_clip":2.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false)
+, Object(RefCounted,"script":ExtResource("8_sp18w"),"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(768, 192, -480),"v3":Vector3(6, 1.5, -3.75),"v3i":Vector3i(768, 192, -480),"value":Vector3i(768, 192, -480))
+,"rotation":Vector3(0, 1.5708, 0),"scale":Vector2(1, 1),"near_clip":0.0,"far_clip":2.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false,"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(768, 192, -480),"v3":Vector3(6, 1.5, -3.75),"v3i":Vector3i(768, 192, -480),"value":Vector3i(768, 192, -480))
+,"rotation":Vector3(0, 1.5708, 0),"scale":Vector2(1, 1),"near_clip":0.0,"far_clip":2.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false)
+, Object(RefCounted,"script":ExtResource("8_sp18w"),"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(624, 0, 208),"v3":Vector3(4.875, 0, 1.625),"v3i":Vector3i(624, 0, 208),"value":Vector3i(624, 0, 208))
+,"rotation":Vector3(-1.5708, 0, 0),"scale":Vector2(1, 1),"near_clip":0.0,"far_clip":2.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false,"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(624, 0, 208),"v3":Vector3(4.875, 0, 1.625),"v3i":Vector3i(624, 0, 208),"value":Vector3i(624, 0, 208))
+,"rotation":Vector3(-1.5708, 0, 0),"scale":Vector2(1, 1),"near_clip":0.0,"far_clip":2.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false)
+])
 metadata/_edit_group_ = true
 
 [node name="Camera3D" type="Camera3D" parent="."]
@@ -358,5 +391,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.49769, -0.134298)
 current = true
 
 [node name="Decal" type="Decal" parent="."]
+process_mode = 4
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 4.87633, 1.46767, -2)
+visible = false
 texture_albedo = ExtResource("16_sp18w")

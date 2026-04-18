@@ -178,6 +178,7 @@ func has_uv2() -> bool:
 ## Adds a quad to the positions.
 ##
 ## Adds a quad to the vertex positions, with normal if enabled. UVs added defaults to a 0,0 -> 1,1 cube.
+## Will also add indicies.
 func quad_add(position : Vector3, up : Vector3, right : Vector3) -> void:
 	assert(has_indicies(), "Array mesher missing Indicies's.");
 	_FuncQuads.quad_add(self, position, up, right);

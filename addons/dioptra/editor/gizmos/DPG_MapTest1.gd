@@ -138,12 +138,18 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 	# Add boxes around all decals
 	for decal in map.decals:
 		var pos := decal.position.v3;
-		linesSelect.append(pos + Vector3.UP);
-		linesSelect.append(pos - Vector3.UP);
-		linesSelect.append(pos + Vector3.FORWARD);
-		linesSelect.append(pos - Vector3.FORWARD);
-		linesSelect.append(pos + Vector3.LEFT);
-		linesSelect.append(pos - Vector3.LEFT);
+		linesSelect.append(pos + Vector3.UP * 0.5);
+		linesSelect.append(pos - Vector3.UP * 0.5);
+		linesSelect.append(pos + Vector3.FORWARD * 0.5);
+		linesSelect.append(pos - Vector3.FORWARD * 0.5);
+		linesSelect.append(pos + Vector3.LEFT * 0.5);
+		linesSelect.append(pos - Vector3.LEFT * 0.5);
+		var normal = Quaternion.from_euler(decal.rotation) * -Vector3.FORWARD;
+		var up = Quaternion.from_euler(decal.rotation) * Vector3.UP;
+		linesSelect.append(pos);
+		linesSelect.append(pos + normal * 2);
+		linesSelect.append(pos);
+		linesSelect.append(pos + up * 2);
 	
 	# Add the solids now:
 	gizmo.add_lines(linesNormie, get_material("lines", gizmo), false, Color(0.8, 0.8, 0.1, 0.5));
@@ -251,7 +257,7 @@ func _subgizmos_intersect_ray(gizmo: EditorNode3DGizmo, camera: Camera3D, screen
 	if selection_mode == DioptraEditorMainPlugin.SelectMode.SOLID:
 		return closest_solid;
 	elif selection_mode == DioptraEditorMainPlugin.SelectMode.FACE:
-		print("face: %d" % closest_face);
+		#print("face: %d" % closest_face);
 		return closest_solid | DPHelpers.SELBIT_HAS_FACE | (closest_face << DPHelpers.SELBIT_SHIFT_FACE);
 	elif selection_mode == DioptraEditorMainPlugin.SelectMode.EDGE:
 		#return closest_solid | SELBIT_SHIFT_EDGE | (closest_face << SELBIT_SHIFT_EDGE);
@@ -386,6 +392,7 @@ func _commit_subgizmos(gizmo: EditorNode3DGizmo, ids: PackedInt32Array, restores
 	var node3d := gizmo.get_node_3d()
 	var map := node3d as DP_Map;
 	map.rebuild_editor_map(); #todo, grab a Solid from the map
+	map.rebuild_editor_decals(); # TODO: only rebuild the decals attached to the given solid
 	
 	map.update_gizmos();
 	
