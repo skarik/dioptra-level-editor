@@ -304,7 +304,7 @@ func rebuild_editor_decals(in_decal : DPMapDecal = null) -> void:
 		
 		# Grab all the info we need:
 		var material := material_objects[decal.material];
-		var pixels_per_gdunit := DioptraInterface.get_pixel_scale_top() * float(DioptraInterface.get_pixel_scale_div());
+		var pixels_per_gdunit := DioptraInterface.get_pixel_scale_top() / float(DioptraInterface.get_pixel_scale_div());
 		var decal_texel_size := DPHelpers.get_material_primary_texture_size(material);
 		
 		# Build the basis

@@ -137,19 +137,34 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 	
 	# Add boxes around all decals
 	for decal in map.decals:
+		# Grab properties
 		var pos := decal.position.v3;
-		linesSelect.append(pos + Vector3.UP * 0.5);
-		linesSelect.append(pos - Vector3.UP * 0.5);
-		linesSelect.append(pos + Vector3.FORWARD * 0.5);
-		linesSelect.append(pos - Vector3.FORWARD * 0.5);
-		linesSelect.append(pos + Vector3.LEFT * 0.5);
-		linesSelect.append(pos - Vector3.LEFT * 0.5);
-		var normal = Quaternion.from_euler(decal.rotation) * -Vector3.FORWARD;
-		var up = Quaternion.from_euler(decal.rotation) * Vector3.UP;
-		linesSelect.append(pos);
-		linesSelect.append(pos + normal * 2);
-		linesSelect.append(pos);
-		linesSelect.append(pos + up * 2);
+		var material := map.material_objects[decal.material];
+		var pixels_per_gdunit := DioptraInterface.get_pixel_scale_top() / float(DioptraInterface.get_pixel_scale_div());
+		var gdunit_per_dpunit := DioptraInterface.get_position_scale_div() / float(DioptraInterface.get_position_scale_top());
+		var decal_texel_size := DPHelpers.get_material_primary_texture_size(material);
+		
+		# Build the basis
+		var decal_rotation := Quaternion.from_euler(decal.rotation);
+		var normal = decal_rotation * -Vector3.FORWARD;
+		var up = decal_rotation * Vector3.UP;
+		var left = decal_rotation * Vector3.LEFT;
+		
+		# Get corners
+		var corners : Array[Vector3] = [
+				pos + up + left,
+				pos + up - left,
+				pos - up - left,
+				pos - up + left,
+		];
+		for corner_index in corners.size():
+			linesNormie.append(normal * gdunit_per_dpunit + corners[(corner_index + 0)]);
+			linesNormie.append(normal * gdunit_per_dpunit + corners[(corner_index + 1) % 4]);
+		
+		#linesSelect.append(pos);
+		#linesSelect.append(pos + normal * 2);
+		#linesSelect.append(pos);
+		#linesSelect.append(pos + up * 2);
 	
 	# Add the solids now:
 	gizmo.add_lines(linesNormie, get_material("lines", gizmo), false, Color(0.8, 0.8, 0.1, 0.5));
