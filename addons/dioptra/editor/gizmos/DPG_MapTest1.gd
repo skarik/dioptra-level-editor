@@ -143,19 +143,23 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 		var pixels_per_gdunit := DioptraInterface.get_pixel_scale_top() / float(DioptraInterface.get_pixel_scale_div());
 		var gdunit_per_dpunit := DioptraInterface.get_position_scale_div() / float(DioptraInterface.get_position_scale_top());
 		var decal_texel_size := DPHelpers.get_material_primary_texture_size(material);
+		var decal_size := decal_texel_size / pixels_per_gdunit;
+
 		
 		# Build the basis
 		var decal_rotation := Quaternion.from_euler(decal.rotation);
-		var normal = decal_rotation * -Vector3.FORWARD;
-		var up = decal_rotation * Vector3.UP;
-		var left = decal_rotation * Vector3.LEFT;
+		var normal := decal_rotation * -Vector3.FORWARD;
+		var up := decal_rotation * Vector3.UP;
+		var left := decal_rotation * Vector3.LEFT;
 		
 		# Get corners
-		var corners : Array[Vector3] = [
-				pos + up + left,
-				pos + up - left,
-				pos - up - left,
-				pos - up + left,
+		var w_up := up * decal_size.y * 0.5;
+		var w_left := left * decal_size.x * 0.5;
+		var corners : PackedVector3Array = [
+				pos + w_up + w_left,
+				pos + w_up - w_left,
+				pos - w_up - w_left,
+				pos - w_up + w_left,
 		];
 		for corner_index in corners.size():
 			linesNormie.append(normal * gdunit_per_dpunit + corners[(corner_index + 0)]);
@@ -355,6 +359,7 @@ func _start_subgizmo_transform_get_ref(gizmo: EditorNode3DGizmo, subgizmo_id: in
 	
 func _start_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int) -> void:
 	_start_subgizmo_transform_get_ref(gizmo, subgizmo_id, true);
+	print("start gizmo transform: %d" % subgizmo_id);
 	
 func _set_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int, transform: Transform3D) -> void:
 	# if we're beginning then mark a start with the current transform start
@@ -362,7 +367,7 @@ func _set_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int, transfo
 		_start_subgizmo_transform(gizmo, subgizmo_id);
 	
 	var solid_id = subgizmo_id & DPHelpers.SELBIT_MASK_SOLID;
-	print("set gizmo transform: %d" % solid_id);
+	#print("set gizmo transform: %d" % solid_id);
 	
 	var node3d := gizmo.get_node_3d();
 	var map := node3d as DP_Map;

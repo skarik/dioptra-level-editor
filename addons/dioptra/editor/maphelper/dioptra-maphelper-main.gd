@@ -173,7 +173,8 @@ func _action_assign_material_to_selected_solids(editor : DioptraEditorMainPlugin
 			if subgizmo_selection.size() > 1:
 				map.rebuild_editor_map();
 			else:
-				map.rebuild_editor_map(map.solids[subgizmo_selection[0]]);
+				var selection := DPHelpers.get_selection(map, subgizmo_selection[0]);
+				map.rebuild_editor_map(selection.solid);
 			return true;
 	
 	return false;

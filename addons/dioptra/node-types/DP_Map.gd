@@ -300,21 +300,118 @@ func rebuild_editor_decals(in_decal : DPMapDecal = null) -> void:
 	
 	for decal in decals:
 		var am : DPArrayMesher = get_mesher.call(decal.material);
-		var v0 := am.get_vertex_count();
+		#var v0 := am.get_vertex_count();
 		
 		# Grab all the info we need:
 		var material := material_objects[decal.material];
 		var pixels_per_gdunit := DioptraInterface.get_pixel_scale_top() / float(DioptraInterface.get_pixel_scale_div());
+		var gdunit_per_dpunit := DioptraInterface.get_position_scale_div() / float(DioptraInterface.get_position_scale_top());
 		var decal_texel_size := DPHelpers.get_material_primary_texture_size(material);
+		var decal_size := decal_texel_size / pixels_per_gdunit;
 		
 		# Build the basis
 		var decal_rotation := Quaternion.from_euler(decal.rotation);
-		var normal = decal_rotation * -Vector3.FORWARD;
-		var up = decal_rotation * Vector3.UP;
-		var left = decal_rotation * Vector3.LEFT;
+		var normal := decal_rotation * -Vector3.FORWARD;
+		var up := decal_rotation * Vector3.UP;
+		var left := decal_rotation * Vector3.LEFT;
+		var decal_position := decal.position.v3;
 		
 		# Build a quad
-		am.quad_add(decal.position.v3 + normal * 0.05, up, left);
+		#am.quad_add(decal.position.v3 + normal * 0.05, up, left);
+		
+		# Generate decal projection corners
+		var w_up := up * decal_size.y * 0.5;
+		var w_left := left * decal_size.x * 0.5;
+		var decal_corners : PackedVector3Array = [
+			decal_position - w_up - w_left + normal * decal.near_clip * gdunit_per_dpunit,
+			decal_position - w_up + w_left + normal * decal.near_clip * gdunit_per_dpunit,
+			decal_position + w_up + w_left + normal * decal.near_clip * gdunit_per_dpunit,
+			decal_position + w_up - w_left + normal * decal.near_clip * gdunit_per_dpunit,
+			
+			decal_position - w_up - w_left + normal * decal.far_clip * gdunit_per_dpunit,
+			decal_position - w_up + w_left + normal * decal.far_clip * gdunit_per_dpunit,
+			decal_position + w_up + w_left + normal * decal.far_clip * gdunit_per_dpunit,
+			decal_position + w_up - w_left + normal * decal.far_clip * gdunit_per_dpunit,
+		];
+		var decal_min := decal_corners[0];
+		var decal_max := decal_corners[0];
+		for i in range(1, 8):
+			decal_min = decal_min.min(decal_corners[i]);
+			decal_max = decal_max.max(decal_corners[i]);
+		var decal_bbox := AABB(decal_min, decal_max - decal_min);
+		
+		# Build the planes
+		var decal_planes : Array[Plane] = [
+			Plane(normal, decal_position - normal * decal.near_clip * gdunit_per_dpunit),
+			Plane(-normal, decal_position - normal * decal.far_clip * gdunit_per_dpunit),
+			Plane( left, decal_position + w_left),
+			Plane(-left, decal_position - w_left),
+			Plane( up, decal_position + w_up),
+			Plane(-up, decal_position - w_up),
+		];
+		
+		var polygons : Array[PackedVector3Array] = [];
+		
+		# Get all the intersecting solids
+		for solid in solids:
+			# TODO: Cache the AABBs
+			var min_p := solid.points[0].v3;
+			var max_p := solid.points[0].v3;
+			for point in solid.points:
+				min_p = min_p.min(point.v3);
+				max_p = max_p.max(point.v3);
+			var solid_bbox := AABB(min_p, max_p - min_p); 
+			# Hit against the AABB
+			if decal_bbox.intersects(decal_bbox):
+				# Check faces!
+				# Build AABB against each face
+				for face in solid.faces:
+					var corners : PackedVector3Array;
+					corners.resize(face.corners.size());
+					for corner_index in face.corners.size():
+						corners[corner_index] = solid.points[face.corners[corner_index]].v3;
+				
+					# If the face is inside, then start clipping based on the planes
+					for plane in decal_planes:
+						corners = Geometry3D.clip_polygon(corners, plane);
+						if corners.is_empty():
+							break;
+					#corners = Geometry3D.clip_polygon(corners, decal_planes[4]);
+					#corners = Geometry3D.clip_polygon(corners, decal_planes[3]);
+							
+					# If there's corners left let's add a polygon!
+					if corners.size() > 2:
+						polygons.push_back(corners);
+				pass
+		
+		# If there's polygons add em
+		if not polygons.is_empty():
+			for polygon in polygons:
+				var v0 := am.get_vertex_count();
+				am.points_add(polygon);
+				
+				# Get a normal for the face
+				for i_vertex in range(v0, am.get_vertex_count()):
+					am.get_surface_normal()[i_vertex] = normal;
+					
+				# Build UVs for the face
+				var positions := am.get_surface_vertex();
+				var uvs := am.get_surface_tex_uv();
+				for i_vertex in range(v0, am.get_vertex_count()):
+					var position_2d_rot := (positions[i_vertex] - decal_position) * decal_rotation;
+					var position_2d := Vector2(position_2d_rot.x, -position_2d_rot.y) / decal_size;
+					uvs[i_vertex] = position_2d + Vector2(0.5, 0.5);
+					
+				# Push out positions by normal
+				var polygon_normal : Vector3 = -((polygon[1] - polygon[0]).cross(polygon[2] - polygon[0])).normalized();
+				for i_vertex in range(v0, am.get_vertex_count()):
+					positions[i_vertex] += polygon_normal * gdunit_per_dpunit * 0.25;
+					
+				# Fill in the indicies
+				for i_corner in range(1, polygon.size() - 1):
+					am.tri_add_indicies(v0, v0 + i_corner + 0, v0 + i_corner + 1);
+		
+		pass # Per decal loop
 	
 	# Find the meshers and add the given meshes
 	var mesh := ArrayMesh.new();

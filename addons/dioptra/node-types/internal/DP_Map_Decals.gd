@@ -9,9 +9,9 @@ class_name DPMapDecal
 # Scale of the decal before projection
 @export_storage var scale : Vector2 = Vector2.ONE;
 # Distance of the start frustum, in DP units
-@export_storage var near_clip : float = 0.0;
+@export_storage var near_clip : float = -1.0;
 # Distance of the far end of the frustum, in DP units
-@export_storage var far_clip : float = 2.0;
+@export_storage var far_clip : float = 1.0;
 # Scale of the far end of the frustum in refernce to the main scale
 @export_storage var far_scale : Vector2 = Vector2.ONE;
 ## Reference to a material index in the containing map
