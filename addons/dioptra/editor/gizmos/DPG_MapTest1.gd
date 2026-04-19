@@ -13,6 +13,7 @@ const cGlowSize = 8.0;
 func _init(editorPlugin : DioptraEditorMainPlugin, undoredo : EditorUndoRedoManager):
 	create_material("lines", Color(1.0, 1.0, 1.0), false, true, true);
 	create_material("geo", Color(1.0, 1.0, 1.0, 0.5), false, false, true);
+	create_handle_material("handles");
 	_ghost_box = DPUBoxGhost.new();
 
 	mEditorPlugin = editorPlugin;
@@ -42,6 +43,7 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 	# Do all solids
 	var linesNormie := PackedVector3Array();
 	var linesSelect := PackedVector3Array();
+	var handles := PackedVector3Array();
 	var am := DPArrayMesher.new(DPArrayMesher.TypeFlags.VERTEX \
 			| DPArrayMesher.TypeFlags.NORMAL | DPArrayMesher.TypeFlags.TEX_UV \
 			| DPArrayMesher.TypeFlags.COLOR \
@@ -81,7 +83,6 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 			_ghost_box.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
 			
 		elif selection.type == DPHelpers.SelectionType.FACE:
-			print("face selection")
 			var solid := selection.solid;
 			var face := selection.face;
 			var corner_count : int = face.corners.size();
@@ -135,6 +136,11 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 				am.get_surface_color()[vert0 + 3] = color_sel * Color(1.0, 1.0, 1.0, 0.0);
 			pass # End adding glowmesh
 	
+		elif selection.type == DPHelpers.SelectionType.DECAL:
+			var decal := selection.decal;
+			handles.push_back(decal.position.v3);
+			pass
+	
 	# Add boxes around all decals
 	for decal in map.decals:
 		# Grab properties
@@ -144,7 +150,6 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 		var gdunit_per_dpunit := DioptraInterface.get_position_scale_div() / float(DioptraInterface.get_position_scale_top());
 		var decal_texel_size := DPHelpers.get_material_primary_texture_size(material);
 		var decal_size := decal_texel_size / pixels_per_gdunit;
-
 		
 		# Build the basis
 		var decal_rotation := Quaternion.from_euler(decal.rotation);
@@ -171,12 +176,16 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 		#linesSelect.append(pos + up * 2);
 	
 	# Add the solids now:
-	gizmo.add_lines(linesNormie, get_material("lines", gizmo), false, Color(0.8, 0.8, 0.1, 0.5));
-	gizmo.add_lines(linesSelect, get_material("lines", gizmo), false, Color(1.0, 1.0, 1.0, 1.0));
+	if not linesNormie.is_empty():
+		gizmo.add_lines(linesNormie, get_material("lines", gizmo), false, Color(0.8, 0.8, 0.1, 0.5));
+	if not linesSelect.is_empty():
+		gizmo.add_lines(linesSelect, get_material("lines", gizmo), false, Color(1.0, 1.0, 1.0, 1.0));
 	if am.get_index_count() > 0:
 		var local_mesh : ArrayMesh = ArrayMesh.new();
 		local_mesh.add_surface_from_arrays(am.get_primitive_type(), am.get_surface_array());
 		gizmo.add_mesh(local_mesh, get_material("geo", gizmo));
+	if not handles.is_empty():
+		gizmo.add_handles(handles, get_material("handles", gizmo), []);
 	
 	pass
 	
@@ -189,10 +198,12 @@ func _subgizmos_intersect_ray(gizmo: EditorNode3DGizmo, camera: Camera3D, screen
 	var map := node3d as DP_Map;
 	
 	var closest_solid := -1; # No selection
-	var closest_solid_distance := 0.0;
+	var closest_distance := 0.0;
 	var closest_face := -1;
 	var closest_vertex_proc2 := -1;
 	var closest_position : Vector3;
+	var closest_type := DPHelpers.SelectionType.NONE;
+	var closest_decal := -1;
 	
 	# Get selection mode from the plugin:
 	var selection_mode := mEditorPlugin.get_selection_mode();
@@ -241,7 +252,7 @@ func _subgizmos_intersect_ray(gizmo: EditorNode3DGizmo, camera: Camera3D, screen
 		if hit_result == null:
 			continue;
 		var dist_sqr : float = ray_pos.distance_squared_to(hit_result as Vector3);
-		if closest_solid == -1 or dist_sqr < closest_solid_distance:
+		if closest_type == DPHelpers.SelectionType.NONE or dist_sqr < closest_distance:
 			# If this one has been clicked, now we do the more expensive check per-triangle
 			# Loop through each face in the group
 			for i_face in solid.faces.size():
@@ -257,42 +268,68 @@ func _subgizmos_intersect_ray(gizmo: EditorNode3DGizmo, camera: Camera3D, screen
 						continue
 					# With out-hit result, check if it's valid:
 					dist_sqr = ray_pos.distance_squared_to(hit_result_hd as Vector3);
-					if closest_solid == -1 or dist_sqr < closest_solid_distance:
+					if closest_solid == -1 or dist_sqr < closest_distance:
 						# If it's the closest one, update the clicked item
 						closest_solid = solid_index;
 						closest_face = i_face;
 						closest_vertex_proc2 = i_corner;
-						closest_solid_distance = dist_sqr;
+						closest_distance = dist_sqr;
 						closest_position = hit_result_hd as Vector3;
+						closest_type = DPHelpers.SelectionType.SOLID;
 					pass # End corner loop
 				pass # End faces loop
 			pass # End check AABB
 		pass # End solids loop
 		
+	# TODO: is there a better way to check objects
+	for decal_index in map.decals.size():
+		# Build a tiny AABB for the decal
+		var decal := map.decals[decal_index];
+		if not decal:
+			continue;
+		# TODO
+		const bbox_halfsize : float = 0.1;
+		var decal_bbox := AABB(decal.position.v3 - Vector3.ONE * bbox_halfsize, Vector3.ONE * bbox_halfsize * 2.0); 
+		# Hit against the AABB
+		var hit_result = decal_bbox.intersects_ray(ray_pos, ray_dir);
+		if hit_result == null:
+			continue;
+		var dist_sqr : float = ray_pos.distance_squared_to(hit_result as Vector3);
+		if closest_type == DPHelpers.SelectionType.NONE or dist_sqr < closest_distance:
+			dist_sqr = closest_distance;
+			closest_type = DPHelpers.SelectionType.DECAL;
+			closest_decal = decal_index;
+			pass
+		
 	# If there's a selection, emit selection changed.
-	if closest_solid != -1:
+	if closest_type != DPHelpers.SelectionType.NONE:
 		_queue_selection_changed = true;
 		
 	var selection := DPSelectionItem.new();
 		
-	if selection_mode == DioptraEditorMainPlugin.SelectMode.SOLID:
-		selection.type = DPHelpers.SelectionType.SOLID;
-		selection.solid_id = closest_solid;
-	elif selection_mode == DioptraEditorMainPlugin.SelectMode.FACE:
-		selection.type = DPHelpers.SelectionType.FACE;
-		selection.solid_id = closest_solid;
-		selection.face_id = closest_face;
-	elif selection_mode == DioptraEditorMainPlugin.SelectMode.EDGE:
-		selection.type = DPHelpers.SelectionType.EDGE;
-		selection.solid_id = closest_solid;
-		selection.face_id = closest_face;
-		#selection.edge_id = closest_edge;
-	elif selection_mode == DioptraEditorMainPlugin.SelectMode.VERTEX:
-		selection.type = DPHelpers.SelectionType.VERTEX;
-		selection.solid_id = closest_solid;
-		selection.face_id = closest_face;
-		#selection.edge_id = closest_edge;
-		#selection.vertex_id = closest_vertex;
+	if closest_type == DPHelpers.SelectionType.SOLID:
+		if selection_mode == DioptraEditorMainPlugin.SelectMode.SOLID:
+			selection.type = DPHelpers.SelectionType.SOLID;
+			selection.solid_id = closest_solid;
+		elif selection_mode == DioptraEditorMainPlugin.SelectMode.FACE:
+			selection.type = DPHelpers.SelectionType.FACE;
+			selection.solid_id = closest_solid;
+			selection.face_id = closest_face;
+		elif selection_mode == DioptraEditorMainPlugin.SelectMode.EDGE:
+			selection.type = DPHelpers.SelectionType.EDGE;
+			selection.solid_id = closest_solid;
+			selection.face_id = closest_face;
+			#selection.edge_id = closest_edge;
+		elif selection_mode == DioptraEditorMainPlugin.SelectMode.VERTEX:
+			selection.type = DPHelpers.SelectionType.VERTEX;
+			selection.solid_id = closest_solid;
+			selection.face_id = closest_face;
+			#selection.edge_id = closest_edge;
+			#selection.vertex_id = closest_vertex;
+			pass
+	elif closest_type == DPHelpers.SelectionType.DECAL:
+		selection.type = DPHelpers.SelectionType.DECAL;
+		selection.decal_id = closest_decal;
 		pass
 		
 	# TODO: Add decals here
