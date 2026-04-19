@@ -273,18 +273,32 @@ func _subgizmos_intersect_ray(gizmo: EditorNode3DGizmo, camera: Camera3D, screen
 	if closest_solid != -1:
 		_queue_selection_changed = true;
 		
+	var selection := DPSelectionItem.new();
+		
 	if selection_mode == DioptraEditorMainPlugin.SelectMode.SOLID:
-		return closest_solid;
+		selection.type = DPHelpers.SelectionType.SOLID;
+		selection.solid_id = closest_solid;
 	elif selection_mode == DioptraEditorMainPlugin.SelectMode.FACE:
-		#print("face: %d" % closest_face);
-		return closest_solid | DPHelpers.SELBIT_HAS_FACE | (closest_face << DPHelpers.SELBIT_SHIFT_FACE);
+		selection.type = DPHelpers.SelectionType.FACE;
+		selection.solid_id = closest_solid;
+		selection.face_id = closest_face;
 	elif selection_mode == DioptraEditorMainPlugin.SelectMode.EDGE:
-		#return closest_solid | SELBIT_SHIFT_EDGE | (closest_face << SELBIT_SHIFT_EDGE);
-		pass
+		selection.type = DPHelpers.SelectionType.EDGE;
+		selection.solid_id = closest_solid;
+		selection.face_id = closest_face;
+		#selection.edge_id = closest_edge;
 	elif selection_mode == DioptraEditorMainPlugin.SelectMode.VERTEX:
+		selection.type = DPHelpers.SelectionType.VERTEX;
+		selection.solid_id = closest_solid;
+		selection.face_id = closest_face;
+		#selection.edge_id = closest_edge;
+		#selection.vertex_id = closest_vertex;
 		pass
+		
+	# TODO: Add decals here
 
-	return closest_solid;
+	var subgizmo_selected := DPHelpers.get_subgizmo(selection);
+	return subgizmo_selected;
 	
 func _begin_handle_action(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool) -> void:
 	print("action: %s" % ("true" if secondary else "false"));

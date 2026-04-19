@@ -13,61 +13,96 @@ static func get_material_primary_texture_size(mat : Material) -> Vector2i:
 #------------------------------------------------------------------------------#
 # Selection System
 
-const SELECTION_MAX_VALUE : int = (1 << 15) - 1;
-const SELBIT_MASK_SOLID : int = 0x7FFF;
-const SELBIT_HAS_FACE : int = (1 << 15);
-const SELBIT_SHIFT_FACE : int = 16;
-const SELBIT_MASK_FACE : int = 0x3FF;
-const SELBIT_HAS_EDGE : int = (1 << 26);
-const SELBIT_SHIFT_EDGE : int = 27;
-const SELBIT_MASK_EDGE : int = 0x3FF;
-const SELBIT_HAS_VERTEX : int = (1 << 37);
-const SELBIT_SHIFT_VERTEX : int = 38;
-const SELBIT_MASK_VERTEX : int = 0x3FF;
-
 enum SelectionType {
-	NONE = -1,
+	NONE = 0x7,
 	SOLID = 0,
 	FACE = 1,
 	EDGE = 2,
 	VERTEX = 3,
-}
+	
+	OBJECT = 4,
+	DECAL = 5,
+};
+
+const SELECTION_MAX_VALUE : int = (1 << 15) - 1;
+const SELBIT_INDEX_MASK : int = 0x7FFF;
+const SELBIT_TYPE_MASK : int = 0x7;
+const SELBIT_TYPE_SHIFT : int = 15;
+const SELBIT_FACE_MASK : int = 0x3FF;
+const SELBIT_FACE_SHIFT : int = 18;
+const SELBIT_EDGE_MASK : int = 0x3FF;
+const SELBIT_EDGE_SHIFT : int = 28;
+const SELBIT_VERTEX_MASK : int = 0x3FF;
+const SELBIT_VERTEX_SHIFT : int = 38;
+
+## Gets the encoded subgizmo ID for the given selection item
+static func get_subgizmo(selection : DPSelectionItem) -> int:
+	var subgizmo_id = -1;
+	
+	if selection.type <= SelectionType.VERTEX:
+		subgizmo_id = 0;
+		subgizmo_id |= selection.solid_id & SELBIT_INDEX_MASK;
+		subgizmo_id |= selection.type << SELBIT_TYPE_SHIFT;
+		subgizmo_id |= (selection.face_id & SELBIT_FACE_MASK) << SELBIT_FACE_SHIFT;
+	elif selection.type == SelectionType.DECAL:
+		subgizmo_id = 0;
+		subgizmo_id |= selection.decal_id & SELBIT_INDEX_MASK;
+		subgizmo_id |= selection.type << SELBIT_TYPE_SHIFT;
+	
+	return subgizmo_id;
 
 ## Given a subgizmo_id from editor gizmo, returns the type of selection it is
 ## If the selection is invalid for the given map, will return none
 static func get_selection_type(map : DP_Map, subgizmo_id : int) -> SelectionType:
 	if subgizmo_id >= 0:
-		if (subgizmo_id & SELBIT_MASK_SOLID) < map.solids.size():
-			if subgizmo_id < SELECTION_MAX_VALUE:
-				return SelectionType.SOLID;
-			elif (subgizmo_id & SELBIT_HAS_FACE) != 0:
-				var solid_id = subgizmo_id & SELBIT_MASK_SOLID;
-				var face_id = (subgizmo_id >> SELBIT_SHIFT_FACE) & SELBIT_MASK_FACE;
-				if face_id < map.solids[solid_id].faces.size():
-					return SelectionType.FACE;
-			elif (subgizmo_id & SELBIT_HAS_EDGE) != 0:
-				return SelectionType.EDGE;
-			elif (subgizmo_id & SELBIT_HAS_VERTEX) != 0:
-				return SelectionType.VERTEX;
+		var selection_type := (subgizmo_id >> SELBIT_TYPE_SHIFT) & SELBIT_TYPE_MASK;
+		if selection_type <= SelectionType.VERTEX:
+			var solid_id = subgizmo_id & SELBIT_INDEX_MASK;
+			if solid_id < map.solids.size():
+				if selection_type == SelectionType.SOLID:
+					return SelectionType.SOLID;
+				elif selection_type == SelectionType.FACE:
+					var face_id = (subgizmo_id >> SELBIT_FACE_SHIFT) & SELBIT_FACE_MASK;
+					if face_id < map.solids[solid_id].faces.size():
+						return SelectionType.FACE;
+				elif selection_type == SelectionType.EDGE:
+					return SelectionType.EDGE;
+				elif selection_type == SelectionType.VERTEX:
+					return SelectionType.VERTEX;
+		elif selection_type == SelectionType.DECAL:
+			var decal_id = subgizmo_id & SELBIT_INDEX_MASK;
+			if decal_id < map.decals.size():
+				return SelectionType.DECAL;
+		else:
+			return selection_type; # TODO
 	return SelectionType.NONE;
 
 ## Given subgizmo_id, returns a dictionary referencing the actual DP_Map objects
 static func get_selection(map : DP_Map, subgizmo_id : int) -> DPSelectionItem:
 	var selection_type = get_selection_type(map, subgizmo_id);
-	var solid_id = subgizmo_id & SELBIT_MASK_SOLID;
-	var face_id = (subgizmo_id >> SELBIT_SHIFT_FACE) & SELBIT_MASK_FACE;
-	var edge_id = (subgizmo_id >> SELBIT_SHIFT_EDGE) & SELBIT_MASK_EDGE;
-	var vertex_id = (subgizmo_id >> SELBIT_SHIFT_VERTEX) & SELBIT_MASK_VERTEX;
 	
 	var result = DPSelectionItem.new();
 	result.type = selection_type;
-	result.solid_id = solid_id;
-	result.face_id = face_id;
 	
-	if selection_type == SelectionType.SOLID:
-		result.solid = map.solids[solid_id];
-	elif selection_type == SelectionType.FACE:
-		result.solid = map.solids[solid_id];
-		result.face = map.solids[solid_id].faces[face_id];
+	if selection_type <= SelectionType.VERTEX:
+		var solid_id = subgizmo_id & SELBIT_INDEX_MASK;
+		var face_id = (subgizmo_id >> SELBIT_FACE_SHIFT) & SELBIT_FACE_MASK;
+		var edge_id = (subgizmo_id >> SELBIT_EDGE_SHIFT) & SELBIT_EDGE_MASK;
+		var vertex_id = (subgizmo_id >> SELBIT_VERTEX_SHIFT) & SELBIT_VERTEX_MASK;
+		
+		result.solid_id = solid_id;
+		result.face_id = face_id;
+		
+		if selection_type == SelectionType.SOLID:
+			result.solid = map.solids[solid_id];
+		elif selection_type == SelectionType.FACE:
+			result.solid = map.solids[solid_id];
+			result.face = map.solids[solid_id].faces[face_id];
+	elif selection_type == SelectionType.DECAL:
+		var decal_id = subgizmo_id & SELBIT_INDEX_MASK;
+		
+		result.decal_id = decal_id;
+		result.decal = map.decals[decal_id];
+		
 	return result;
 	

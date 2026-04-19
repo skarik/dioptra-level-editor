@@ -7,3 +7,6 @@ var solid : DPMapSolid = null;
 var solid_id : int = -1;
 var face : DPMapFace = null;
 var face_id : int = -1;
+
+var decal : DPMapDecal = null;
+var decal_id : int = -1;
