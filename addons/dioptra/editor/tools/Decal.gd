@@ -55,7 +55,7 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 			var collision := collision_plane.intersects_ray(viewport_camera.project_ray_origin(event.position), viewport_camera.project_ray_normal(event.position));
 			if collision != null:
 				var collision_point := collision as Vector3;
-				collision_point = DioptraInterface.get_grid_round_v3(collision_point);
+				#collision_point = DioptraInterface.get_grid_round_v3(collision_point);
 				_ghost_box.box_start = collision_point - Vector3.ONE * 0.2;
 				_ghost_box.box_end = collision_point + Vector3.ONE * 0.2;
 				_ghost_box.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());

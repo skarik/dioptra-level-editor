@@ -370,14 +370,24 @@ func rebuild_editor_decals(in_decal : DPMapDecal = null) -> void:
 					corners.resize(face.corners.size());
 					for corner_index in face.corners.size():
 						corners[corner_index] = solid.points[face.corners[corner_index]].v3;
-				
+					
+					if not decal.project_colinear or not decal.project_two_sided:
+						var face_normal := -((corners[1] - corners[0]).cross(corners[2] - corners[0])).normalized();
+						var face_angle = normal.dot(face_normal);
+						# Skip faces parallel
+						if not decal.project_colinear:
+							if absf(face_angle) < 0.01:
+								continue;
+						# Skip backfaces
+						if not decal.project_two_sided:
+							if face_angle < 0.0:
+								continue;
+					
 					# If the face is inside, then start clipping based on the planes
 					for plane in decal_planes:
 						corners = Geometry3D.clip_polygon(corners, plane);
 						if corners.is_empty():
 							break;
-					#corners = Geometry3D.clip_polygon(corners, decal_planes[4]);
-					#corners = Geometry3D.clip_polygon(corners, decal_planes[3]);
 							
 					# If there's corners left let's add a polygon!
 					if corners.size() > 2:

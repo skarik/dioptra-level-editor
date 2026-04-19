@@ -129,5 +129,3 @@ solids = Array[ExtResource("2_jkwqd")]([Object(RefCounted,"script":ExtResource("
 ]))
 ])
 materials = Array[Material]([ExtResource("3_jkwqd"), ExtResource("4_1wtqa"), ExtResource("5_0a13x")])
-material_objects = null
-decals = null
