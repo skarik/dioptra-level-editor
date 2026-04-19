@@ -44,26 +44,27 @@ func _on_selection_changed() -> void:
 		if item is DP_Map:
 			last_selected_item = item;
 			break;
+			
+	var map : DP_Map = last_selected_item as DP_Map;
 	
 	# Grab map gizmo for the selection
 	var target_gizmo : EditorNode3DGizmo = null;
 	if _plugin and is_instance_valid(_plugin._plugin_maphelper):
-		target_gizmo = _plugin._plugin_maphelper._get_target_gizmo(_plugin, last_selected_item as DP_Map);
+		target_gizmo = _plugin._plugin_maphelper._get_target_gizmo(_plugin, map);
 	if target_gizmo:
 		var subgizmo_selection := target_gizmo.get_subgizmo_selection();
 		
 		if not subgizmo_selection.is_empty():
 			# Grab the first face we can get
 			var subgizmo_id := subgizmo_selection[subgizmo_selection.size() - 1];
-			var solid_id := subgizmo_id & DPHelpers.SELBIT_MASK_SOLID;
+			var selection := DPHelpers.get_selection(map, subgizmo_id);
+			var solid_id := selection.solid_id;;
 			var face_id := 0;
-			if subgizmo_id < DPHelpers.SELECTION_MAX_VALUE:
+			if selection.type == DPHelpers.SelectionType.SOLID:
 				face_id = 0;
-			else:
-				face_id = (subgizmo_id >> DPHelpers.SELBIT_SHIFT_FACE) & DPHelpers.SELBIT_MASK_FACE;
-			
+			elif selection.type == DPHelpers.SelectionType.FACE:
+				face_id = selection.face_id;
 			# Grab the face:
-			var map := last_selected_item as DP_Map;
 			var solid := map.solids[solid_id];
 			var face := solid.faces[face_id];
 			

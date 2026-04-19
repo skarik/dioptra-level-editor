@@ -315,17 +315,20 @@ func _get_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int) -> Tran
 		#var selected_index := selection[0];
 		#t = t.translated(map.solids[selected_index].points[0].v3);
 		
-	var solid_id = subgizmo_id & DPHelpers.SELBIT_MASK_SOLID;
-	if solid_id >= 0 and solid_id < map.solids.size():
-		# Solid Corner
-		if subgizmo_id < DPHelpers.SELECTION_MAX_VALUE:
-			t = t.translated(map.solids[solid_id].points[0].v3);
-		# Face Corner
-		elif (subgizmo_id & DPHelpers.SELBIT_HAS_FACE) != 0:
-			var face_id = (subgizmo_id >> DPHelpers.SELBIT_SHIFT_FACE) & DPHelpers.SELBIT_MASK_FACE;
-			var solid := map.solids[solid_id];
-			if face_id < solid.faces.size():
-				t = t.translated(solid.points[solid.faces[face_id].corners[0]].v3);
+	var selection := DPHelpers.get_selection(map, subgizmo_id);
+	
+	if selection.type <= DPHelpers.SelectionType.VERTEX:
+		var solid_id = selection.solid_id;
+		if solid_id >= 0 and solid_id < map.solids.size():
+			# Solid Corner
+			if selection.type == DPHelpers.SelectionType.SOLID:
+				t = t.translated(map.solids[solid_id].points[0].v3);
+			# Face Corner
+			elif selection.type == DPHelpers.SelectionType.FACE:
+				var face_id = selection.face_id;
+				var solid := map.solids[solid_id];
+				if face_id < solid.faces.size():
+					t = t.translated(solid.points[solid.faces[face_id].corners[0]].v3);
 	return t;
 	
 class StartingTransform:
@@ -339,7 +342,8 @@ var _transforming_reference_subgizmo : int = -1;
 func _start_subgizmo_transform_get_ref(gizmo: EditorNode3DGizmo, subgizmo_id: int, set_main_reference: bool) -> void:
 	var node3d := gizmo.get_node_3d()
 	var map := node3d as DP_Map;
-	var solid_id = subgizmo_id & DPHelpers.SELBIT_MASK_SOLID;
+	var selection := DPHelpers.get_selection(map, subgizmo_id);
+	var solid_id = selection.solid_id;
 	var solid := map.solids[solid_id];
 	
 	if set_main_reference:
@@ -380,12 +384,15 @@ func _set_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int, transfo
 	if not _is_transforming:
 		_start_subgizmo_transform(gizmo, subgizmo_id);
 	
-	var solid_id = subgizmo_id & DPHelpers.SELBIT_MASK_SOLID;
+	#var solid_id = subgizmo_id & DPHelpers.SELBIT_MASK_SOLID;
 	#print("set gizmo transform: %d" % solid_id);
 	
 	var node3d := gizmo.get_node_3d();
 	var map := node3d as DP_Map;
 	
+	#var solid := map.solids[solid_id];
+	var selection := DPHelpers.get_selection(map, subgizmo_id);
+	var solid_id = selection.solid_id;
 	var solid := map.solids[solid_id];
 	
 	# Grab reference
@@ -404,12 +411,12 @@ func _set_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int, transfo
 	
 	# Offset the points
 	# Moving solid
-	if subgizmo_id < DPHelpers.SELECTION_MAX_VALUE:
+	if selection.type == DPHelpers.SelectionType.SOLID:
 		for i in solid.points.size():
 			solid.points[i].v3 = reference.points[i].v3 + delta_position;
 	# Moving face
-	elif (subgizmo_id & DPHelpers.SELBIT_HAS_FACE) != 0:
-		var face_id = (subgizmo_id >> DPHelpers.SELBIT_SHIFT_FACE) & DPHelpers.SELBIT_MASK_FACE;
+	elif selection.type == DPHelpers.SelectionType.FACE:
+		var face_id = selection.face_id;
 		for i in solid.faces[face_id].corners.size():
 			var vert = solid.faces[face_id].corners[i];
 			solid.points[vert].v3 = reference.points[vert].v3 + delta_position;

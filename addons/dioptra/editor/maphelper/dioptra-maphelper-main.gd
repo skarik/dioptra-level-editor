@@ -198,7 +198,7 @@ func _action_assign_uv_scale(editor : DioptraEditorMainPlugin, map : DP_Map, sca
 			elif selection_type == DPHelpers.SelectionType.FACE:
 				sel_face.uv_scale = scale;
 				
-			last_solid = subgizmo_id & DPHelpers.SELBIT_MASK_SOLID;
+			last_solid = selection.solid_id;
 		pass # End selection loop
 		
 		# Rebuild the mesh with the new material
@@ -226,7 +226,7 @@ func _action_assign_uv_offset(editor : DioptraEditorMainPlugin, map : DP_Map, of
 			elif selection_type == DPHelpers.SelectionType.FACE:
 				sel_face.uv_offset = offset;
 				
-			last_solid = subgizmo_id & DPHelpers.SELBIT_MASK_SOLID;
+			last_solid = selection.solid_id;
 		pass # End selection loop
 		
 		# Rebuild the mesh with the new material
@@ -254,7 +254,7 @@ func _action_assign_uv_angle(editor : DioptraEditorMainPlugin, map : DP_Map, ang
 			elif selection_type == DPHelpers.SelectionType.FACE:
 				sel_face.uv_rotation = angle;
 				
-			last_solid = subgizmo_id & DPHelpers.SELBIT_MASK_SOLID;
+			last_solid = selection.solid_id;
 		pass # End selection loop
 		
 		# Rebuild the mesh with the new material
