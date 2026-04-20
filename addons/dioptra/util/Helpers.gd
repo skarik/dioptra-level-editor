@@ -77,7 +77,8 @@ static func get_selection_type(map : DP_Map, subgizmo_id : int) -> SelectionType
 			return selection_type; # TODO
 	return SelectionType.NONE;
 
-## Given subgizmo_id, returns a dictionary referencing the actual DP_Map objects
+## Given subgizmo_id, returns an object referencing the actual DP_Map objects
+## All values are already error-checked, eliminating the need to excessively error-check
 static func get_selection(map : DP_Map, subgizmo_id : int) -> DPSelectionItem:
 	var selection_type = get_selection_type(map, subgizmo_id);
 	

@@ -70,6 +70,8 @@ func _on_selection_changed() -> void:
 			
 			# We can now update the editor with the face info:
 			update_with_face_info(map, face);
+			
+		# TODO: Update with decal
 	
 	pass
 	

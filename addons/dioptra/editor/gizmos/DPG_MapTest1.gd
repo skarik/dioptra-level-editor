@@ -214,36 +214,37 @@ func _get_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int) -> Tran
 	
 	var node3d := gizmo.get_node_3d()
 	var map := node3d as DP_Map;
-	
-	#var selection := gizmo.get_subgizmo_selection();
-	#if not selection.is_empty():
-		#var selected_index := selection[0];
-		#t = t.translated(map.solids[selected_index].points[0].v3);
 		
 	var selection := DPHelpers.get_selection(map, subgizmo_id);
 	
 	if selection.type <= DPHelpers.SelectionType.VERTEX:
-		var solid_id = selection.solid_id;
-		if solid_id >= 0 and solid_id < map.solids.size():
-			# Solid Corner
-			if selection.type == DPHelpers.SelectionType.SOLID:
-				t = t.translated(map.solids[solid_id].points[0].v3);
-			# Face Corner
-			elif selection.type == DPHelpers.SelectionType.FACE:
-				var face_id = selection.face_id;
-				var solid := map.solids[solid_id];
-				if face_id < solid.faces.size():
-					t = t.translated(solid.points[solid.faces[face_id].corners[0]].v3);
+		var solid := selection.solid;
+		# Solid Corner
+		if selection.type == DPHelpers.SelectionType.SOLID:
+			t = Transform3D(Basis.IDENTITY, solid.points[0].v3);
+		# Face Corner
+		elif selection.type == DPHelpers.SelectionType.FACE:
+			var face := selection.face;
+			t = Transform3D(Basis.IDENTITY, solid.points[face.corners[0]].v3);
+	elif selection.type == DPHelpers.SelectionType.DECAL:
+		var decal_id := selection.decal_id;
+		var decal := map.decals[decal_id];
+		t = Transform3D(Basis(Quaternion.from_euler(decal.rotation)), decal.position.v3);
+		
 	return t;
 	
+## Helper class for storing the starting transform of items
 class StartingTransform:
 	var transform : Transform3D;
-	var points : Array[MapVector3];
-	
+	var points : Array[Vector3i] = [];
+
 var _is_transforming : bool = false;
 var _transform_start : Dictionary[int, StartingTransform];
 var _transforming_reference_subgizmo : int = -1;
 
+## Gets the reference transform & points for the given subgizmo_id.
+## When [param set_main_reference] is true, will mark this sugbizmo as the main
+##   reference point for transforming.
 func _start_subgizmo_transform_get_ref(gizmo: EditorNode3DGizmo, subgizmo_id: int, set_main_reference: bool) -> void:
 	var node3d := gizmo.get_node_3d()
 	var map := node3d as DP_Map;
@@ -253,31 +254,19 @@ func _start_subgizmo_transform_get_ref(gizmo: EditorNode3DGizmo, subgizmo_id: in
 	
 	if set_main_reference:
 		_is_transforming = true;
-	#if _transform_start.size() <= subgizmo_id:
-	#	_transform_start.resize(subgizmo_id + 1);
 		
 	_transform_start[subgizmo_id] = StartingTransform.new();
 	_transform_start[subgizmo_id].transform = _get_subgizmo_transform(gizmo, subgizmo_id);
 	
-	_transform_start[subgizmo_id].points = solid.points.duplicate();
-	for i in _transform_start[subgizmo_id].points.size():
-		_transform_start[subgizmo_id].points[i] = MapVector3.new();
-		_transform_start[subgizmo_id].points[i].v3i = solid.points[i].v3i;
-	# Moving solid
-	#if subgizmo_id < SELECTION_MAX_VALUE:
-		#_transform_start[subgizmo_id].points = solid.points.duplicate();
-		#for i in _transform_start[subgizmo_id].points.size():
-			#_transform_start[subgizmo_id].points[i] = MapVector3.new();
-			#_transform_start[subgizmo_id].points[i].v3i = solid.points[i].v3i;
-	## Moving face
-	#elif (subgizmo_id & SELBIT_HAS_FACE) != 0:
-		#_transform_start[subgizmo_id].points = solid.points.duplicate();
-		#for i in _transform_start[subgizmo_id].points.size():
-			#_transform_start[subgizmo_id].points[i] = MapVector3.new();
-			#_transform_start[subgizmo_id].points[i].v3i = solid.points[i].v3i;
-	
+	# Save points:
+	if selection.type <= DPHelpers.SelectionType.VERTEX:
+		_transform_start[subgizmo_id].points.resize(solid.points.size());
+		for i in _transform_start[subgizmo_id].points.size():
+			_transform_start[subgizmo_id].points[i] = solid.points[i].v3i;
+			
 	if set_main_reference:
 		_transforming_reference_subgizmo = subgizmo_id;
+		
 	pass
 	
 func _start_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int) -> void:
@@ -295,39 +284,42 @@ func _set_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int, transfo
 	var node3d := gizmo.get_node_3d();
 	var map := node3d as DP_Map;
 	
-	#var solid := map.solids[solid_id];
 	var selection := DPHelpers.get_selection(map, subgizmo_id);
-	var solid_id = selection.solid_id;
-	var solid := map.solids[solid_id];
 	
 	# Grab reference
 	if not _transform_start.has(subgizmo_id):
+		# Above _start_subgizmo_transform will only work for the main selected
+		# item, not ALL items that need reference. So we get reference again
+		# here.
 		_start_subgizmo_transform_get_ref(gizmo, subgizmo_id, false);
 	var reference := _transform_start[subgizmo_id];
 	
 	# Generate the delta
-	var reference_gizmo_id = _transforming_reference_subgizmo;# if (_transforming_reference_subgizmo != -1) else subgizmo_id;
-	#if not _transform_start.has(reference_gizmo_id):
-	#	push_warning("Missing start transform for subgizmo %d, solid %d" % [subgizmo_id, solid_id]);
-	#	return;
-	#var delta_reference := _transform_start[reference_gizmo_id];
-	#var delta_position = DioptraInterface.get_grid_round_v3((delta_reference.transform.inverse() * transform).origin);
-	var delta_position = DioptraInterface.get_grid_round_v3((reference.transform.inverse() * transform).origin);
+	var reference_gizmo_id = _transforming_reference_subgizmo;
+	var delta_position = DioptraInterface.get_grid_round_v3((transform * reference.transform.inverse()).origin);
 	
 	# Offset the points
-	# Moving solid
+	# Transforming solid
 	if selection.type == DPHelpers.SelectionType.SOLID:
+		var solid := selection.solid;
 		for i in solid.points.size():
-			solid.points[i].v3 = reference.points[i].v3 + delta_position;
-	# Moving face
+			solid.points[i].v3i = reference.points[i];
+			solid.points[i].v3 += delta_position;
+	# Transforming face
 	elif selection.type == DPHelpers.SelectionType.FACE:
-		var face_id = selection.face_id;
-		for i in solid.faces[face_id].corners.size():
-			var vert = solid.faces[face_id].corners[i];
-			solid.points[vert].v3 = reference.points[vert].v3 + delta_position;
-		
+		var solid := selection.solid;
+		var face := selection.face;
+		for i in face.corners.size():
+			var vert = face.corners[i];
+			solid.points[vert].v3i = reference.points[vert];
+			solid.points[vert].v3 += delta_position;
+	# Transforming decal
+	elif selection.type == DPHelpers.SelectionType.DECAL:
+		var decal := selection.decal;
+		decal.position.v3 = reference.transform.origin + delta_position;
+			
+	# We did it! Update the gizmos so we can see what we're doing.
 	map.update_gizmos();
-		
 	pass
 
 func _commit_subgizmos(gizmo: EditorNode3DGizmo, ids: PackedInt32Array, restores: Array[Transform3D], cancel: bool) -> void:
