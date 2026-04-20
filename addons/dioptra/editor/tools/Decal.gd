@@ -22,15 +22,11 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 	# OR: wait for a material to be set in the material editor.
 	
 	var helper_plugin := _plugin._plugin_maphelper;
-	var map_gizmo_plugin := _plugin.DPGizmoPlugin_MapTest1;
 	var map := _plugin.get_last_edited_map();
 	var map_gizmo := helper_plugin._get_target_gizmo(_plugin, map);
 	
 	if event is InputEventMouseMotion:
-		var old_selection := _plugin._selectionMode;
-		_plugin._selectionMode = _plugin.SelectMode.FACE;
-		var subgizmo_id := map_gizmo_plugin._subgizmos_intersect_ray(map_gizmo, viewport_camera, event.position);
-		_plugin._selectionMode = old_selection;
+		var subgizmo_id := DPEditorSelection.subgizmo_intersect_ray(map, viewport_camera, event.position, DioptraEditorMainPlugin.SelectMode.FACE);
 		var selection_type := DPHelpers.get_selection_type(map, subgizmo_id);
 		var selection := DPHelpers.get_selection(map, subgizmo_id);
 		
