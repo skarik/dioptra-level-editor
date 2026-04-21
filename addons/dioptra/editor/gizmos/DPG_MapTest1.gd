@@ -37,6 +37,8 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 
 	var node3d := gizmo.get_node_3d()
 	var map := node3d as DP_Map;
+	var nodes = EditorInterface.get_selection().get_selected_nodes();
+	var map_selected : bool = nodes.has(node3d);
 	
 	var color_sel : Color = EditorInterface.get_editor_theme().get_color("warning_color", "Editor");
 
@@ -110,70 +112,98 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 			_ghost_box.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
 			
 			# Add glow mesh around the face
-			var scale : float = DioptraInterface.get_position_scale_div() / float(DioptraInterface.get_position_scale_top());
+			var face_polygon : PackedVector3Array = [];
+			face_polygon.resize(corner_count);
 			for corner_index in range(corner_count):
-				var corner_0 := corner_index + 0;
-				var corner_1 := (corner_index + 1) % corner_count;
-				var corner_2 := (corner_index + 2) % corner_count;
-				var corner_3 := (corner_index + 3) % corner_count;
-				var point_0 := solid.points[face.corners[corner_0]].v3;
-				var point_1 := solid.points[face.corners[corner_1]].v3;
-				var point_2 := solid.points[face.corners[corner_2]].v3;
-				var point_3 := solid.points[face.corners[corner_3]].v3;
-				var d_12 = (point_2 - point_1).normalized() * scale * cGlowSize;
-				var d_01 = (point_1 - point_0).normalized() * scale * cGlowSize;
-				var d_23 = (point_3 - point_2).normalized() * scale * cGlowSize;
-				var vert0 := am.get_vertex_count();
-				am.point_add(point_1 + normal);
-				am.point_add(point_1 + normal + d_01 - d_12);
-				am.point_add(point_2 + normal);
-				am.point_add(point_2 + normal - d_23 + d_12);
-				am.tri_add_indicies(vert0 + 0, vert0 + 1, vert0 + 2);
-				am.tri_add_indicies(vert0 + 2, vert0 + 1, vert0 + 3);
-				am.get_surface_color()[vert0 + 0] = color_sel; 
-				am.get_surface_color()[vert0 + 2] = color_sel;
-				am.get_surface_color()[vert0 + 1] = color_sel * Color(1.0, 1.0, 1.0, 0.0);
-				am.get_surface_color()[vert0 + 3] = color_sel * Color(1.0, 1.0, 1.0, 0.0);
-			pass # End adding glowmesh
-	
+				face_polygon[corner_index] = solid.points[face.corners[corner_index]].v3;
+			_redraw_add_glow_to_polygon(face_polygon, am, color_sel, normal);
+			
 		elif selection.type == DPHelpers.SelectionType.DECAL:
 			var decal := selection.decal;
-			handles.push_back(decal.position.v3);
+			var material := map.material_objects[decal.material];
+			var pixels_per_gdunit := DioptraInterface.get_pixel_scale_top() / float(DioptraInterface.get_pixel_scale_div());
+			var gdunit_per_dpunit := DioptraInterface.get_position_scale_div() / float(DioptraInterface.get_position_scale_top());
+			var decal_texel_size := DPHelpers.get_material_primary_texture_size(material);
+			var decal_size := decal_texel_size / pixels_per_gdunit;
+			
+			# Build the basis
+			var decal_rotation := Quaternion.from_euler(decal.rotation);
+			var normal := decal_rotation * -Vector3.FORWARD;
+			var up := decal_rotation * Vector3.UP;
+			var left := decal_rotation * Vector3.LEFT;
+			
+			# Get corner pieces
+			var w_up0 := up * decal_size.y * 0.5 * decal.scale.y;
+			var w_left0 := left * decal_size.x * 0.5 * decal.scale.x;
+			var w_up1 := w_up0 * decal.far_scale.y;
+			var w_left1 := w_left0 * decal.far_scale.x;
+			
+			# Get min and max frustum positions
+			var w_center0 := decal.position.v3 - normal * decal.near_clip * gdunit_per_dpunit;
+			var w_center1 := decal.position.v3 - normal * decal.far_clip * gdunit_per_dpunit;
+			
+			# Add glow mesh around the min and max frustum:
+			var min_face := PackedVector3Array();
+			var max_face := PackedVector3Array();
+			min_face = [
+				w_center0 + w_up0 + w_left0,
+				w_center0 + w_up0 - w_left0,
+				w_center0 - w_up0 - w_left0,
+				w_center0 - w_up0 + w_left0,
+			];
+			max_face = [
+				w_center1 + w_up1 + w_left1,
+				w_center1 + w_up1 - w_left1,
+				w_center1 - w_up1 - w_left1,
+				w_center1 - w_up1 + w_left1,
+			];
+			max_face.resize(4);
+			
+			_redraw_add_glow_to_polygon(min_face, am, color_sel);
+			_redraw_add_glow_to_polygon(max_face, am, color_sel);
+			
+			# Add the frustum forward & back handles
+			handles.push_back(w_center0 + normal * 0.2);
+			handles.push_back(w_center1 - normal * 0.2);
+			
+			# Add the scaling handles to backside
+			handles.push_back(w_center0 + w_up0);
+			handles.push_back(w_center0 + w_left0);
+			
+			# Add the rotation handle
+			handles.push_back(w_center0 + w_up0 + w_left0 + up * 0.1 + left * 0.1);
+			
 			pass
 	
-	# Add boxes around all decals
-	for decal in map.decals:
-		# Grab properties
-		var pos := decal.position.v3;
-		var material := map.material_objects[decal.material];
-		var pixels_per_gdunit := DioptraInterface.get_pixel_scale_top() / float(DioptraInterface.get_pixel_scale_div());
-		var gdunit_per_dpunit := DioptraInterface.get_position_scale_div() / float(DioptraInterface.get_position_scale_top());
-		var decal_texel_size := DPHelpers.get_material_primary_texture_size(material);
-		var decal_size := decal_texel_size / pixels_per_gdunit;
-		
-		# Build the basis
-		var decal_rotation := Quaternion.from_euler(decal.rotation);
-		var normal := decal_rotation * -Vector3.FORWARD;
-		var up := decal_rotation * Vector3.UP;
-		var left := decal_rotation * Vector3.LEFT;
-		
-		# Get corners
-		var w_up := up * decal_size.y * 0.5;
-		var w_left := left * decal_size.x * 0.5;
-		var corners : PackedVector3Array = [
-				pos + w_up + w_left,
-				pos + w_up - w_left,
-				pos - w_up - w_left,
-				pos - w_up + w_left,
-		];
-		for corner_index in corners.size():
-			linesNormie.append(normal * gdunit_per_dpunit + corners[(corner_index + 0)]);
-			linesNormie.append(normal * gdunit_per_dpunit + corners[(corner_index + 1) % 4]);
-		
-		#linesSelect.append(pos);
-		#linesSelect.append(pos + normal * 2);
-		#linesSelect.append(pos);
-		#linesSelect.append(pos + up * 2);
+	if map_selected:
+		# Add boxes around all decals
+		for decal in map.decals:
+			# Grab properties
+			var pos := decal.position.v3;
+			var material := map.material_objects[decal.material];
+			var pixels_per_gdunit := DioptraInterface.get_pixel_scale_top() / float(DioptraInterface.get_pixel_scale_div());
+			var gdunit_per_dpunit := DioptraInterface.get_position_scale_div() / float(DioptraInterface.get_position_scale_top());
+			var decal_texel_size := DPHelpers.get_material_primary_texture_size(material);
+			var decal_size := decal_texel_size / pixels_per_gdunit;
+			
+			# Build the basis
+			var decal_rotation := Quaternion.from_euler(decal.rotation);
+			var normal := decal_rotation * -Vector3.FORWARD;
+			var up := decal_rotation * Vector3.UP;
+			var left := decal_rotation * Vector3.LEFT;
+			
+			# Get corners
+			var w_up := up * decal_size.y * 0.5;
+			var w_left := left * decal_size.x * 0.5;
+			var corners : PackedVector3Array = [
+					pos + w_up + w_left,
+					pos + w_up - w_left,
+					pos - w_up - w_left,
+					pos - w_up + w_left,
+			];
+			for corner_index in corners.size():
+				linesNormie.append(normal * gdunit_per_dpunit + corners[(corner_index + 0)]);
+				linesNormie.append(normal * gdunit_per_dpunit + corners[(corner_index + 1) % 4]);
 	
 	# Add the solids now:
 	if not linesNormie.is_empty():
@@ -187,6 +217,37 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 	if not handles.is_empty():
 		gizmo.add_handles(handles, get_material("handles", gizmo), []);
 	
+	pass
+	
+func _redraw_add_glow_to_polygon(polygon : PackedVector3Array, am : DPArrayMesher, color : Color, offset : Vector3 = Vector3.ZERO) -> void:
+	var corner_count := polygon.size();
+	
+	# Add glow mesh around the face
+	var scale : float = DioptraInterface.get_position_scale_div() / float(DioptraInterface.get_position_scale_top());
+	for corner_index in range(corner_count):
+		var corner_0 := corner_index + 0;
+		var corner_1 := (corner_index + 1) % corner_count;
+		var corner_2 := (corner_index + 2) % corner_count;
+		var corner_3 := (corner_index + 3) % corner_count;
+		var point_0 := polygon[corner_0];
+		var point_1 := polygon[corner_1];
+		var point_2 := polygon[corner_2];
+		var point_3 := polygon[corner_3];
+		var d_12 = (point_2 - point_1).normalized() * scale * cGlowSize;
+		var d_01 = (point_1 - point_0).normalized() * scale * cGlowSize;
+		var d_23 = (point_3 - point_2).normalized() * scale * cGlowSize;
+		var vert0 := am.get_vertex_count();
+		am.point_add(point_1 + offset);
+		am.point_add(point_1 + offset + d_01 - d_12);
+		am.point_add(point_2 + offset);
+		am.point_add(point_2 + offset - d_23 + d_12);
+		am.tri_add_indicies(vert0 + 0, vert0 + 1, vert0 + 2);
+		am.tri_add_indicies(vert0 + 2, vert0 + 1, vert0 + 3);
+		am.get_surface_color()[vert0 + 0] = color; 
+		am.get_surface_color()[vert0 + 2] = color;
+		am.get_surface_color()[vert0 + 1] = color * Color(1.0, 1.0, 1.0, 0.0);
+		am.get_surface_color()[vert0 + 3] = color * Color(1.0, 1.0, 1.0, 0.0);
+		pass # End adding glowmesh
 	pass
 	
 ## Selection Raycast Logic:
@@ -203,11 +264,9 @@ func _subgizmos_intersect_ray(gizmo: EditorNode3DGizmo, camera: Camera3D, screen
 		
 	return subgizmo_id;
 	
-## Selection transforming logic
-func _begin_handle_action(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool) -> void:
-	print("action: %s" % ("true" if secondary else "false"));
-	# TODO unify storing gizmo reference
-	pass
+#------------------------------------------------------------------------------#
+# Selection transforming logic
+#------------------------------------------------------------------------------#
 	
 func _get_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int) -> Transform3D:
 	var t := Transform3D.IDENTITY;
@@ -340,4 +399,92 @@ func _commit_subgizmos(gizmo: EditorNode3DGizmo, ids: PackedInt32Array, restores
 	
 	pass
 	
+# Handle dragging handles
+var _screenpos_start : Vector2;
+
+func _begin_handle_action(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool) -> void:
+	print("action: handle %d, %s" % [handle_id, ("secondary" if secondary else "primary")]);
+	# TODO unify storing gizmo reference
 	
+	# Rotation
+	if handle_id == 4:
+		pass
+	
+	pass
+	
+func _get_handle_name(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool) -> String:
+	var strings : Array[String] = [
+		"Back Plane",
+		"Front Plane",
+		"Scale Y",
+		"Scale X",
+		"Rotate"
+	];
+	if handle_id >= 0 and handle_id < 5:
+		return strings[handle_id];
+	return "";
+	
+func _start_handle_action(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool, camera: Camera3D, screen_pos: Vector2) -> void:
+	_is_transforming = true;
+	
+	var selection_list := gizmo.get_subgizmo_selection();
+	for subgizmo_id in selection_list:
+		_start_subgizmo_transform(gizmo, subgizmo_id);
+	
+	_screenpos_start = screen_pos;
+	
+	pass
+	
+func _set_handle(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool, camera: Camera3D, screen_pos: Vector2) -> void:
+	if not _is_transforming:
+		_start_handle_action(gizmo, handle_id, secondary, camera, screen_pos);
+		
+	var node3d := gizmo.get_node_3d()
+	var map := node3d as DP_Map;
+	var selection_list := gizmo.get_subgizmo_selection();
+	
+	# Get angle to starting position
+	for subgizmo_id in selection_list:
+		var item_pos_2d := camera.unproject_position(_transform_start[subgizmo_id].transform.origin);
+		var delta_start := _screenpos_start - item_pos_2d;
+		var delta_end := screen_pos - item_pos_2d;
+		
+		print(delta_start.angle_to(delta_end));
+		if handle_id == 4:
+			var selection := DPHelpers.get_selection(map, subgizmo_id);
+			var decal := selection.decal;
+			
+			# Let's get the current up & normal
+			#var decal_rotation := Quaternion.from_euler(decal.rotation);
+			var decal_rotation := Quaternion(_transform_start[subgizmo_id].transform.basis);
+			var normal := decal_rotation * -Vector3.FORWARD;
+			var up := decal_rotation * Vector3.UP;
+			
+			# Rotate UP around NORMAL
+			var delta_angle := deg_to_rad(DioptraInterface.get_angle_round(rad_to_deg(delta_start.angle_to(delta_end))));
+			
+			# Get rotated angle
+			decal.rotation = _transform_start[subgizmo_id].transform.basis.rotated(-normal, delta_angle).get_euler();
+	
+	# We did it! Update the gizmos so we can see what we're doing.
+	map.update_gizmos();
+	
+	pass
+	
+func _commit_handle(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool, restore: Variant, cancel: bool) -> void:
+	print("commit handle: cancel %s" % ("true" if cancel else "false"));
+	
+	_is_transforming = false;
+	
+	var node3d := gizmo.get_node_3d()
+	var map := node3d as DP_Map;
+	
+	map.update_gizmos();
+	
+	map.rebuild_editor_decals(); # TODO: only rebuild the decals attached to the given solid
+	
+	# Clear off the transform start state
+	_transform_start.clear();
+	_transforming_reference_subgizmo = -1;
+	
+	pass

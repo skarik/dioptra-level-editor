@@ -116,11 +116,19 @@ func init_settings() -> void:
 
 #------------------------------------------------------------------------------#
 
+# Divs per gdunit
 var _grid_round : float = 8;
+# Degrees per div
+var _angle_round : float = 15;
 
 ## Rounds the given Vector3 to the current editor grid settings.
 static func get_grid_round_v3(vector : Vector3) -> Vector3:
 	var inst := _get_instance();
 	return (vector * inst._grid_round).round() / inst._grid_round;
+
+## Rounds the given angle to the current editor angle settings.
+static func get_angle_round(angle : float) -> float:
+	var inst := _get_instance();
+	return roundf(angle / inst._angle_round) * inst._angle_round;
 
 #------------------------------------------------------------------------------#
