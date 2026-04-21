@@ -320,8 +320,8 @@ func rebuild_editor_decals(in_decal : DPMapDecal = null) -> void:
 		#am.quad_add(decal.position.v3 + normal * 0.05, up, left);
 		
 		# Generate decal projection corners
-		var w_up := up * decal_size.y * 0.5;
-		var w_left := left * decal_size.x * 0.5;
+		var w_up := up * decal_size.y * 0.5 * decal.scale.y;
+		var w_left := left * decal_size.x * 0.5 * decal.scale.x;
 		var decal_corners : PackedVector3Array = [
 			decal_position - w_up - w_left + normal * decal.near_clip * gdunit_per_dpunit,
 			decal_position - w_up + w_left + normal * decal.near_clip * gdunit_per_dpunit,
@@ -409,7 +409,7 @@ func rebuild_editor_decals(in_decal : DPMapDecal = null) -> void:
 				var uvs := am.get_surface_tex_uv();
 				for i_vertex in range(v0, am.get_vertex_count()):
 					var position_2d_rot := (positions[i_vertex] - decal_position) * decal_rotation;
-					var position_2d := Vector2(position_2d_rot.x, -position_2d_rot.y) / decal_size;
+					var position_2d := Vector2(position_2d_rot.x, -position_2d_rot.y) / (decal_size * decal.scale);
 					uvs[i_vertex] = position_2d + Vector2(0.5, 0.5);
 					
 				# Push out positions by normal

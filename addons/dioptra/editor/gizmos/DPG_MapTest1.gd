@@ -193,8 +193,8 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 			var left := decal_rotation * Vector3.LEFT;
 			
 			# Get corners
-			var w_up := up * decal_size.y * 0.5;
-			var w_left := left * decal_size.x * 0.5;
+			var w_up := up * decal_size.y * 0.5 * decal.scale.y;
+			var w_left := left * decal_size.x * 0.5 * decal.scale.x;
 			var corners : PackedVector3Array = [
 					pos + w_up + w_left,
 					pos + w_up - w_left,
@@ -296,6 +296,8 @@ func _get_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int) -> Tran
 class StartingTransform:
 	var transform : Transform3D;
 	var points : Array[Vector3i] = [];
+	var extra0 : Vector3;
+	var extra1 : Vector3;
 
 var _is_transforming : bool = false;
 var _transform_start : Dictionary[int, StartingTransform];
@@ -322,6 +324,11 @@ func _start_subgizmo_transform_get_ref(gizmo: EditorNode3DGizmo, subgizmo_id: in
 		_transform_start[subgizmo_id].points.resize(solid.points.size());
 		for i in _transform_start[subgizmo_id].points.size():
 			_transform_start[subgizmo_id].points[i] = solid.points[i].v3i;
+	
+	# Save decal info
+	if selection.decal:
+		_transform_start[subgizmo_id].extra0 = Vector3(selection.decal.scale.x, selection.decal.scale.y, selection.decal.near_clip);
+		_transform_start[subgizmo_id].extra1 = Vector3(selection.decal.far_scale.x, selection.decal.far_scale.y, selection.decal.far_clip);
 			
 	if set_main_reference:
 		_transforming_reference_subgizmo = subgizmo_id;
@@ -402,16 +409,26 @@ func _commit_subgizmos(gizmo: EditorNode3DGizmo, ids: PackedInt32Array, restores
 # Handle dragging handles
 var _screenpos_start : Vector2;
 
+## Magic numbers for the handles
+enum HandleID {
+	BACK_PLANE = 0,
+	FRONT_PLANE = 1,
+	SCALE_Y = 2,
+	SCALE_X = 3,
+	ROTATE = 4,
+	
+	MAX_COUNT
+}
+
 func _begin_handle_action(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool) -> void:
 	print("action: handle %d, %s" % [handle_id, ("secondary" if secondary else "primary")]);
 	# TODO unify storing gizmo reference
 	
 	# Rotation
-	if handle_id == 4:
+	if handle_id == HandleID.ROTATE:
 		pass
 	
 	pass
-	
 func _get_handle_name(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool) -> String:
 	var strings : Array[String] = [
 		"Back Plane",
@@ -420,8 +437,8 @@ func _get_handle_name(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool)
 		"Scale X",
 		"Rotate"
 	];
-	if handle_id >= 0 and handle_id < 5:
-		return strings[handle_id];
+	if handle_id >= 0:
+		return strings[handle_id % HandleID.MAX_COUNT];
 	return "";
 	
 func _start_handle_action(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool, camera: Camera3D, screen_pos: Vector2) -> void:
@@ -449,22 +466,59 @@ func _set_handle(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool, came
 		var delta_start := _screenpos_start - item_pos_2d;
 		var delta_end := screen_pos - item_pos_2d;
 		
-		print(delta_start.angle_to(delta_end));
-		if handle_id == 4:
-			var selection := DPHelpers.get_selection(map, subgizmo_id);
-			var decal := selection.decal;
+		var selection := DPHelpers.get_selection(map, subgizmo_id);
+		var decal := selection.decal;
+		
+		# Skip non-decals
+		if not decal:
+			continue;
 			
-			# Let's get the current up & normal
-			#var decal_rotation := Quaternion.from_euler(decal.rotation);
-			var decal_rotation := Quaternion(_transform_start[subgizmo_id].transform.basis);
-			var normal := decal_rotation * -Vector3.FORWARD;
-			var up := decal_rotation * Vector3.UP;
-			
+		# Get decal information
+		var material := map.material_objects[decal.material];
+		var pixels_per_gdunit := DioptraInterface.get_pixel_scale_top() / float(DioptraInterface.get_pixel_scale_div());
+		var gdunit_per_dpunit := DioptraInterface.get_position_scale_div() / float(DioptraInterface.get_position_scale_top());
+		var decal_texel_size := DPHelpers.get_material_primary_texture_size(material);
+		var decal_size := decal_texel_size / pixels_per_gdunit;
+		
+		# Let's get the current up & normal
+		var decal_rotation := Quaternion(_transform_start[subgizmo_id].transform.basis);
+		var normal := decal_rotation * -Vector3.FORWARD;
+		var up := decal_rotation * Vector3.UP;
+		var left := decal_rotation * Vector3.LEFT;
+		
+		if handle_id == HandleID.ROTATE:
 			# Rotate UP around NORMAL
 			var delta_angle := deg_to_rad(DioptraInterface.get_angle_round(rad_to_deg(delta_start.angle_to(delta_end))));
-			
 			# Get rotated angle
 			decal.rotation = _transform_start[subgizmo_id].transform.basis.rotated(-normal, delta_angle).get_euler();
+			
+		if handle_id == HandleID.SCALE_X or handle_id == HandleID.SCALE_Y:
+			# Get a plane to project onto
+			var scaling_plane := Plane(normal, _transform_start[subgizmo_id].transform.origin);
+			
+			# Project both positions onto the plane
+			var plane_start := scaling_plane.intersects_ray(camera.project_ray_origin(_screenpos_start), camera.project_ray_normal(_screenpos_start));
+			var plane_end := scaling_plane.intersects_ray(camera.project_ray_origin(screen_pos), camera.project_ray_normal(screen_pos));
+			
+			if plane_start == null or plane_end == null:
+				continue;
+			
+			var projection_direction := left if (handle_id == HandleID.SCALE_X) else up;
+			
+			# Let's get the motion in world coordinates:
+			var delta_drag := Vector3(plane_end - plane_start).project(projection_direction);
+			var delta_drag_sign := signf(delta_drag.dot(projection_direction));
+			
+			# Take the drag length and turn it into scale differential
+			decal.scale = Vector2(_transform_start[subgizmo_id].extra0.x, _transform_start[subgizmo_id].extra0.y);
+			if handle_id == HandleID.SCALE_X:
+				decal.scale.x = (0.5 * decal_size.x * decal.scale.x + delta_drag.length() * delta_drag_sign) / 1.0;
+				decal.scale.x = roundf(decal.scale.x * 10.0) / 10.0;
+			else:
+				decal.scale.y = (0.5 * decal_size.y * decal.scale.y + delta_drag.length() * delta_drag_sign) / 1.0;
+				decal.scale.y = roundf(decal.scale.y * 10.0) / 10.0;
+			
+			pass
 	
 	# We did it! Update the gizmos so we can see what we're doing.
 	map.update_gizmos();
