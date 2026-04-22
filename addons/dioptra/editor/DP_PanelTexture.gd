@@ -58,18 +58,21 @@ func _on_selection_changed() -> void:
 			# Grab the first face we can get
 			var subgizmo_id := subgizmo_selection[subgizmo_selection.size() - 1];
 			var selection := DPHelpers.get_selection(map, subgizmo_id);
-			var solid_id := selection.solid_id;;
-			var face_id := 0;
-			if selection.type == DPHelpers.SelectionType.SOLID:
-				face_id = 0;
-			elif selection.type == DPHelpers.SelectionType.FACE:
-				face_id = selection.face_id;
-			# Grab the face:
-			var solid := map.solids[solid_id];
-			var face := solid.faces[face_id];
 			
-			# We can now update the editor with the face info:
-			update_with_face_info(map, face);
+			if selection.type <= DPHelpers.SelectionType.VERTEX:
+				var solid_id := selection.solid_id;
+				var face_id := 0;
+				if selection.type == DPHelpers.SelectionType.SOLID:
+					face_id = 0;
+				elif selection.type == DPHelpers.SelectionType.FACE:
+					face_id = selection.face_id;
+				# Grab the face:
+				var face := selection.solid.faces[face_id];
+				# We can now update the editor with the face info:
+				update_with_face_info(map, face);
+			elif selection.type == DPHelpers.SelectionType.DECAL:
+				# Update the editor with the decal info
+				update_with_decal_info(map, selection.decal);
 			
 		# TODO: Update with decal
 	
@@ -128,6 +131,9 @@ func _on_material_dialog_preview_done(path : String, preview : Texture2D, thumbn
 func update_ui_with_material(mat : Material) -> void:
 	_texture_label.text = mat.resource_path.get_basename().get_file();
 	EditorInterface.get_resource_previewer().queue_resource_preview(mat.resource_path, self, "_on_material_dialog_preview_done", null);
+	
+	# Update the editor with the last used material:
+	_plugin._last_material = mat;
 	pass
 
 #------------------------------------------------------------------------------#
@@ -149,6 +155,17 @@ func update_with_face_info(map : DP_Map, face : DPMapFace) -> void:
 	# Update translation
 	_offset_spinbox_x.set_value_no_signal(face.uv_offset.x);
 	_offset_spinbox_y.set_value_no_signal(face.uv_offset.y);
+	
+	pass
+	
+## Updates the UI with the input decal's params
+func update_with_decal_info(map : DP_Map, decal : DPMapDecal) -> void:
+	var mat := map.material_objects[decal.material];
+	
+	# Update the material thumbnail
+	update_ui_with_material(mat);
+	
+	# TODO: Disable the other UI
 	
 	pass
 	

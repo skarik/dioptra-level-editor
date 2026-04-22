@@ -43,6 +43,11 @@ func _process(delta: float) -> void:
 		EditorInterface.get_selection().clear();
 		for node in _selection_restore:
 			EditorInterface.get_selection().add_node(node);
+			#if node == _editor_plugin.get_last_edited_map():
+				#var map := node as DP_Map;
+				#var gizmo := _get_target_gizmo(_editor_plugin, map);
+				#gizmo.get_subgizmo_selection()
+			_selection_subgizmo_restore = []; # TODO: figure this out later
 		_selection_restore = [];
 	
 	pass
@@ -51,6 +56,7 @@ func _process(delta: float) -> void:
 
 var _last_edited_map : DP_Map = null;
 var _selection_restore : Array[Node] = [];
+var _selection_subgizmo_restore : PackedInt32Array = [];
 
 #------------------------------------------------------------------------------#
 
@@ -129,16 +135,31 @@ func _action_delete_selected_solids(editor : DioptraEditorMainPlugin, map : DP_M
 		var subgizmo_selection := target_gizmo.get_subgizmo_selection();
 		# Count upwards when deleting
 		subgizmo_selection.sort();
-		for i in subgizmo_selection.size():
-			var selection = subgizmo_selection[i] - i;
-			map.solids.remove_at(selection);
+		for subgizmo_id in subgizmo_selection:
+			var selection := DPHelpers.get_selection(map, subgizmo_id);
+			# Refcounted objects. Remove the main map reference for now.
+			if selection.type == DPHelpers.SelectionType.SOLID:
+				map.solids[selection.solid_id] = null; 
+			elif selection.type == DPHelpers.SelectionType.DECAL:
+				map.decals[selection.decal_id] = null;
+				
+		# Clean up all the null values
+		for i in range(map.solids.size() - 1, -1, -1):
+			if map.solids[i] == null:
+				map.solids.remove_at(i);
+		for i in range(map.decals.size() - 1, -1, -1):
+			if map.decals[i] == null:
+				map.decals.remove_at(i);
+				
 		# Clear selection
 		map.clear_subgizmo_selection();
 		# Remove the editor map entirely on delete
 		map.rebuild_editor_mesh_groups();
 		map.rebuild_editor_map();
+		map.rebuild_editor_decals();
 		# Hack so that SceneTreeDock doesn't keep monching the deleting signal. We'll bring it back next frame
 		_selection_restore = EditorInterface.get_selection().get_selected_nodes().duplicate();
+		#_selection_subgizmo_restore = subgizmo_selection.duplicate();
 		EditorInterface.get_selection().clear(); # hack (see scene_tree_dock.cpp)
 		# Return we did something
 		if not subgizmo_selection.is_empty():
@@ -150,7 +171,6 @@ func _action_delete_selected_solids(editor : DioptraEditorMainPlugin, map : DP_M
 func _action_assign_material_to_selected_solids(editor : DioptraEditorMainPlugin, map : DP_Map, mat : Material) -> bool:
 	# TODO: assert we're in solid selection mode
 	# Add material to the map
-	var material_index := map.get_or_add_material(mat);
 	editor._last_material = mat;
 	
 	# Apply the material to all faces
@@ -159,15 +179,19 @@ func _action_assign_material_to_selected_solids(editor : DioptraEditorMainPlugin
 		var subgizmo_selection := target_gizmo.get_subgizmo_selection();
 		# Apply it to all items in selection
 		for subgizmo_id in subgizmo_selection:
-			var selection_type := DPHelpers.get_selection_type(map, subgizmo_id);
 			var selection := DPHelpers.get_selection(map, subgizmo_id);
-			var sel_solid := selection.solid as DPMapSolid;
-			var sel_face := selection.face as DPMapFace;
-			if selection_type == DPHelpers.SelectionType.SOLID:
-				for face in sel_solid.faces:
+			var is_object : bool = selection.type > DPHelpers.SelectionType.VERTEX;
+			var material_index := map.get_or_add_material(mat, is_object); 
+			
+			if selection.type == DPHelpers.SelectionType.SOLID:
+				for face in selection.solid.faces:
 					face.material = material_index;
-			elif selection_type == DPHelpers.SelectionType.FACE:
-				sel_face.material = material_index;
+			elif selection.type == DPHelpers.SelectionType.FACE:
+				selection.face.material = material_index;
+			elif selection.type == DPHelpers.SelectionType.DECAL:
+				selection.decal.material = material_index;
+		pass # End looping thru subgizmos
+				
 		# Rebuild the mesh with the new material
 		if not subgizmo_selection.is_empty():
 			if subgizmo_selection.size() > 1:
