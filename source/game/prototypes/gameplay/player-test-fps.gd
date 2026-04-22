@@ -13,17 +13,9 @@ var _model_bone_eye_node : BoneAttachment3D;
 
 #------------------------------------------------------------------------------#
 
-const cTapTime = 0.2;
-const cDashTime = 0.14;
+var input_tap_time : float = 0.2;
 
-const cMaxMoveSpeed = 4.0;
-const cMaxSprintSpeed = 7.5;
-const cGroundAcceleration = 15.0;
-const cGroundFriction = 50.0;
-
-const cDashSpeed = 20.0;
-const cJumpImpulse = 5.0;
-const cGrindSpeed = 11.0;
+@export var motion_settings : GMCharacterMotionSettings = GMCharacterMotionSettings.new();
 
 const cCameraBaseFOV = 75.0;
 const cCameraDashFOV = +10.0;
@@ -129,6 +121,7 @@ func _process(delta: float) -> void:
 	_process_animation(delta);
 	_process_camera();
 	_process_stabilizer(delta);
+	_process_input(delta);
 	pass
 	
 func _physics_process(delta: float) -> void:
@@ -186,6 +179,13 @@ func _process_animation(delta: float) -> void:
 	_animation_player.advance(delta);
 	pass
 	
+func _process_input(delta: float) -> void:
+	# Update the jump logic
+	mJumpState.updateProcess();
+	if (mJumpState.was_enabled()):
+		print("jump pressed");
+		mJumpNextPhysicsFrame = true;
+	
 #------------------------------------------------------------------------------#
 
 func _physics_process_input_motion(delta : float) -> void:
@@ -201,19 +201,19 @@ func _physics_process_input_motion(delta : float) -> void:
 	
 	# Apply next motion
 	var possibleNextMotion : Vector2 = mFlatMotion;
-	var possibleMaxSpeed : float = cMaxMoveSpeed;
+	var possibleMaxSpeed : float = motion_settings.max_ground_walk_speed;
 	if (mSprintState.is_enabled()):
-		possibleMaxSpeed = cMaxSprintSpeed;
+		possibleMaxSpeed = motion_settings.max_ground_sprint_speed;
 	if (mDisableSpeedLimitUntilGround):
-		possibleMaxSpeed = max(possibleMaxSpeed, cGrindSpeed);
+		possibleMaxSpeed = max(possibleMaxSpeed, motion_settings.grind_speed);
 		
 	if (not mDashing):
 		# Calculate both motion accel and friction accel
 		var targetDelta : Vector2 = (rotatedInputVector * possibleMaxSpeed) - mFlatMotion;
 		var targetDeltaLength : float = targetDelta.length();
 		var targetDeltaNormalized : Vector2 = targetDelta / max(0.0001, targetDeltaLength);
-		var possibleNextMotionAccel : Vector2 = mFlatMotion + targetDeltaNormalized * min(targetDeltaLength, cGroundAcceleration * delta);
-		var possibleNextMotionFrict : Vector2 = mFlatMotion + targetDeltaNormalized * min(targetDeltaLength, cGroundFriction * delta);
+		var possibleNextMotionAccel : Vector2 = mFlatMotion + targetDeltaNormalized * min(targetDeltaLength, motion_settings.ground_acceleration * delta);
+		var possibleNextMotionFrict : Vector2 = mFlatMotion + targetDeltaNormalized * min(targetDeltaLength, motion_settings.ground_friction * delta);
 		
 		# Apply friction if the friction is closer to stopping, or the friction is in a different direction than the acceleration
 		possibleNextMotion = possibleNextMotionAccel;
@@ -230,10 +230,13 @@ func _physics_process_input_motion(delta : float) -> void:
 			
 	elif (mDashing):
 		# We dash:
-		possibleNextMotion = mDashingDirection * lerp(cDashSpeed, (cMaxMoveSpeed + cDashSpeed) * 0.5, mDashingTime / cDashTime);
+		possibleNextMotion = mDashingDirection * lerp(
+			motion_settings.dash_speed,
+			(motion_settings.max_ground_walk_speed + motion_settings.dash_speed) * 0.5, 
+			mDashingTime / motion_settings.dash_time);
 		# State tracking for the dash:
 		mDashingTime += delta;
-		if (mDashingTime > cDashTime):
+		if (mDashingTime > motion_settings.dash_time):
 			mDashing = false;
 			
 	# Use the chosen motion!
@@ -314,7 +317,7 @@ func _physics_process_motion_collision(delta : float) -> void:
 	if mJumpNextPhysicsFrame:
 		mJumpNextPhysicsFrame = false;
 		if mOnGround:
-			mFullMotion.y = cJumpImpulse;
+			mFullMotion.y = motion_settings.jump_velocity;
 		pass
 	
 	# Do motion checks now
