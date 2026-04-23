@@ -40,7 +40,9 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 	var nodes = EditorInterface.get_selection().get_selected_nodes();
 	var map_selected : bool = nodes.has(node3d);
 	
-	var color_sel : Color = EditorInterface.get_editor_theme().get_color("warning_color", "Editor");
+	#var color_sel : Color = EditorInterface.get_editor_theme().get_color("warning_color", "Editor");
+	#var color_sel : Color = EditorInterface.get_editor_settings().get_setting("editors/3d/active_selection_box_color"); # Godot 4.6 only
+	var color_sel : Color = EditorInterface.get_editor_settings().get_setting("editors/3d/selection_box_color");
 
 	# Do all solids
 	var linesNormie := PackedVector3Array();

@@ -123,7 +123,7 @@ func _get_target_gizmo(editor : DioptraEditorMainPlugin, map : DP_Map) -> Editor
 		if item is EditorNode3DGizmo:
 			var editor_item = item as EditorNode3DGizmo;
 			var plugin : EditorNode3DGizmoPlugin = editor_item.get_plugin();
-			if plugin == editor.DPGizmoPlugin_MapTest1:
+			if plugin == editor.DPGizmoPlugin_MapGlobalEditor:
 				target_gizmo = editor_item;
 				break;
 	return target_gizmo;
