@@ -28,8 +28,8 @@ enum UVModePer {
 const cDPG_PathNode := preload("res://addons/dioptra/editor/gizmos/DPG_PathNode.gd");
 var DPGizmoPlugin_PathNode : EditorNode3DGizmoPlugin = null;
 
-const cDPG_ToolCube := preload("res://addons/dioptra/editor/gizmos/DPG_ToolCube.gd");
-var DPGizmoPlugin_ToolCube : EditorNode3DGizmoPlugin = null;
+#const cDPG_ToolCube := preload("res://addons/dioptra/editor/gizmos/DPG_ToolCube.gd");
+#var DPGizmoPlugin_ToolCube : EditorNode3DGizmoPlugin = null;
 
 const cDPG_FaceHover := preload("res://addons/dioptra/editor/gizmos/DPG_FaceHover.gd");
 var DPGizmoPlugin_FaceHover : EditorNode3DGizmoPlugin = null;
@@ -67,7 +67,7 @@ func stop_gizmo_plugin(item : EditorNode3DGizmoPlugin) -> void:
 
 func _enter_tree() -> void:
 	DPGizmoPlugin_PathNode = start_gizmo_plugin(DPGizmoPlugin_PathNode, func(): return cDPG_PathNode.new(get_undo_redo()) );
-	DPGizmoPlugin_ToolCube = start_gizmo_plugin(DPGizmoPlugin_ToolCube, func(): return cDPG_ToolCube.new(get_undo_redo()) );
+	#DPGizmoPlugin_ToolCube = start_gizmo_plugin(DPGizmoPlugin_ToolCube, func(): return cDPG_ToolCube.new(get_undo_redo()) );
 	DPGizmoPlugin_FaceHover = start_gizmo_plugin(DPGizmoPlugin_FaceHover, func(): return cDPG_FaceHover.new(self) );
 	DPGizmoPlugin_MapGlobalEditor = start_gizmo_plugin(DPGizmoPlugin_MapGlobalEditor, func(): return cDPG_MapGlobalEditor.new(self, get_undo_redo()) );
 	
@@ -96,8 +96,8 @@ func _enter_tree() -> void:
 func _exit_tree() -> void:
 	stop_gizmo_plugin(DPGizmoPlugin_PathNode);
 	DPGizmoPlugin_PathNode = null;
-	stop_gizmo_plugin(DPGizmoPlugin_ToolCube);
-	DPGizmoPlugin_ToolCube = null;
+	#stop_gizmo_plugin(DPGizmoPlugin_ToolCube);
+	#DPGizmoPlugin_ToolCube = null;
 	stop_gizmo_plugin(DPGizmoPlugin_FaceHover);
 	DPGizmoPlugin_FaceHover = null;
 	stop_gizmo_plugin(DPGizmoPlugin_MapGlobalEditor);
@@ -126,6 +126,9 @@ var _plugin_maphelper : DioptraEditorMaphelperPlugin = null;
 
 var _selectionMode : SelectMode = SelectMode.SOLID; # todo
 var _uvModePer : UVModePer = UVModePer.FACE;
+
+var _last_2d_mouse_position : Vector2;
+var _last_3d_mouse_position : Vector3;
 
 #------------------------------------------------------------------------------#
 
@@ -187,9 +190,37 @@ func _handles(object: Object) -> bool:
 	return false;
 	
 func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
+	# Forward the input to the tool
+	var input_action : EditorPlugin.AfterGUIInput = EditorPlugin.AFTER_GUI_INPUT_PASS;
 	if _currentTool != null:
-		return _currentTool.forward_3d_gui_input(viewport_camera, event);
-	return EditorPlugin.AFTER_GUI_INPUT_PASS;
+		input_action = _currentTool.forward_3d_gui_input(viewport_camera, event);
+		
+	# Update mouse position
+	if input_action == EditorPlugin.AFTER_GUI_INPUT_PASS:
+		if event is InputEventMouseMotion:
+			_last_2d_mouse_position = event.position;
+			
+			# Raycast and update:
+			var map := get_last_edited_map();
+			var subgizmo_id := DPEditorSelection.subgizmo_intersect_ray(map, viewport_camera, event.position, DioptraEditorMainPlugin.SelectMode.FACE);
+			var selection_type := DPHelpers.get_selection_type(map, subgizmo_id);
+			var selection := DPHelpers.get_selection(map, subgizmo_id);
+			if selection_type == DPHelpers.SelectionType.FACE or selection_type == DPHelpers.SelectionType.SOLID:
+				var solid := selection.solid;
+				var face := selection.face;
+				var normal : Vector3 = -(solid.points[face.corners[1]].v3 - solid.points[face.corners[0]].v3).cross(
+					solid.points[face.corners[2]].v3 - solid.points[face.corners[0]].v3).normalized();
+					
+				var collision_plane := Plane(normal, solid.points[face.corners[0]].v3);
+				var collision := collision_plane.intersects_ray(viewport_camera.project_ray_origin(event.position), viewport_camera.project_ray_normal(event.position));
+				if collision != null:
+					var collision_point := collision as Vector3;
+					_last_3d_mouse_position = collision_point;
+					
+			pass # End InputEventMouseMotion
+		pass # End input pass
+		
+	return input_action;
 	
 func _edit(object: Object) -> void:
 	if object is DP_Map:

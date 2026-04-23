@@ -12,6 +12,7 @@ const cGlowSize = 8.0;
 
 func _init(editorPlugin : DioptraEditorMainPlugin, undoredo : EditorUndoRedoManager):
 	create_material("lines", Color(1.0, 1.0, 1.0), false, true, true);
+	create_material("lines_ztest", Color(1.0, 1.0, 1.0), false, false, true);
 	create_material("geo", Color(1.0, 1.0, 1.0, 0.5), false, false, true);
 	create_handle_material("handles");
 	_ghost_box = DPUBoxGhost.new();
@@ -46,6 +47,7 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 
 	# Do all solids
 	var linesNormie := PackedVector3Array();
+	var linesNormieZTest := PackedVector3Array();
 	var linesSelect := PackedVector3Array();
 	var handles := PackedVector3Array();
 	var am := DPArrayMesher.new(DPArrayMesher.TypeFlags.VERTEX \
@@ -164,6 +166,13 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 			_redraw_add_glow_to_polygon(min_face, am, color_sel);
 			_redraw_add_glow_to_polygon(max_face, am, color_sel);
 			
+			# Add selection for the edges
+			for corner_index in 4:
+				linesNormie.append(min_face[(corner_index + 0)]);
+				linesNormie.append(min_face[(corner_index + 1) % 4]);
+				linesNormie.append(max_face[(corner_index + 0)]);
+				linesNormie.append(max_face[(corner_index + 1) % 4]);
+			
 			# Add the frustum forward & back handles
 			handles.push_back(w_center0 + normal * 0.2);
 			handles.push_back(w_center1 - normal * 0.2);
@@ -179,35 +188,69 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 	
 	if map_selected:
 		# Add boxes around all decals
-		for decal in map.decals:
+		for decal_id in map.decals.size():
+			var decal := map.decals[decal_id];
+			#var item := DPSelectionItem.new();
+			#item.decal_id = decal_id;
+			#item.type = DPHelpers.SelectionType.DECAL;
+			#var subgizmo_id := DPHelpers.get_subgizmo(item);
+			#var is_selected := gizmo.is_subgizmo_selected(subgizmo_id);
+			
 			# Grab properties
 			var pos := decal.position.v3;
-			var material := map.material_objects[decal.material];
-			var pixels_per_gdunit := DioptraInterface.get_pixel_scale_top() / float(DioptraInterface.get_pixel_scale_div());
+			#var material := map.material_objects[decal.material];
+			#var pixels_per_gdunit := DioptraInterface.get_pixel_scale_top() / float(DioptraInterface.get_pixel_scale_div());
 			var gdunit_per_dpunit := DioptraInterface.get_position_scale_div() / float(DioptraInterface.get_position_scale_top());
-			var decal_texel_size := DPHelpers.get_material_primary_texture_size(material);
-			var decal_size := decal_texel_size / pixels_per_gdunit;
+			#var decal_texel_size := DPHelpers.get_material_primary_texture_size(material);
+			#var decal_size := decal_texel_size / pixels_per_gdunit;
 			
-			# Build the basis
+			## Build the basis
 			var decal_rotation := Quaternion.from_euler(decal.rotation);
 			var normal := decal_rotation * -Vector3.FORWARD;
-			var up := decal_rotation * Vector3.UP;
-			var left := decal_rotation * Vector3.LEFT;
+			#var up := decal_rotation * Vector3.UP;
+			#var left := decal_rotation * Vector3.LEFT;
 			
 			# Get corners
-			var w_up := up * decal_size.y * 0.5 * decal.scale.y;
-			var w_left := left * decal_size.x * 0.5 * decal.scale.x;
-			var corners : PackedVector3Array = [
-					pos + w_up + w_left,
-					pos + w_up - w_left,
-					pos - w_up - w_left,
-					pos - w_up + w_left,
+			#if is_selected:
+				#var w_up := up * decal_size.y * 0.5 * decal.scale.y;
+				#var w_left := left * decal_size.x * 0.5 * decal.scale.x;
+				#var corners : PackedVector3Array = [
+						#pos + w_up + w_left,
+						#pos + w_up - w_left,
+						#pos - w_up - w_left,
+						#pos - w_up + w_left,
+				#];
+				#for corner_index in corners.size():
+					#linesNormie.append(normal * gdunit_per_dpunit + corners[(corner_index + 0)]);
+					#linesNormie.append(normal * gdunit_per_dpunit + corners[(corner_index + 1) % 4]);
+			
+			# TODO
+			const bbox_halfsize : float = 0.1;
+			var bbox_corners : PackedVector3Array = [
+				pos + ( Vector3.UP + Vector3.LEFT + Vector3.FORWARD) * bbox_halfsize,
+				pos + (-Vector3.UP + Vector3.LEFT + Vector3.FORWARD) * bbox_halfsize,
+				pos + (-Vector3.UP - Vector3.LEFT + Vector3.FORWARD) * bbox_halfsize,
+				pos + ( Vector3.UP - Vector3.LEFT + Vector3.FORWARD) * bbox_halfsize,
+				pos + ( Vector3.UP + Vector3.LEFT - Vector3.FORWARD) * bbox_halfsize,
+				pos + (-Vector3.UP + Vector3.LEFT - Vector3.FORWARD) * bbox_halfsize,
+				pos + (-Vector3.UP - Vector3.LEFT - Vector3.FORWARD) * bbox_halfsize,
+				pos + ( Vector3.UP - Vector3.LEFT - Vector3.FORWARD) * bbox_halfsize,
 			];
-			for corner_index in corners.size():
-				linesNormie.append(normal * gdunit_per_dpunit + corners[(corner_index + 0)]);
-				linesNormie.append(normal * gdunit_per_dpunit + corners[(corner_index + 1) % 4]);
+			for corner_index in 4:
+				linesNormieZTest.append(normal * gdunit_per_dpunit + bbox_corners[(corner_index + 0)]);
+				linesNormieZTest.append(normal * gdunit_per_dpunit + bbox_corners[(corner_index + 1) % 4]);
+				
+				linesNormieZTest.append(normal * gdunit_per_dpunit + bbox_corners[(corner_index + 0) + 4]);
+				linesNormieZTest.append(normal * gdunit_per_dpunit + bbox_corners[(corner_index + 1) % 4 + 4]);
+				
+				linesNormieZTest.append(normal * gdunit_per_dpunit + bbox_corners[corner_index + 0]);
+				linesNormieZTest.append(normal * gdunit_per_dpunit + bbox_corners[corner_index + 4]);
+			
 	
 	# Add the solids now:
+	if not linesNormieZTest.is_empty():
+		get_material("lines_ztest", gizmo).render_priority = Material.RENDER_PRIORITY_MAX - 1;
+		gizmo.add_lines(linesNormieZTest, get_material("lines_ztest", gizmo), false, Color(0.8, 0.8, 0.1, 0.5));
 	if not linesNormie.is_empty():
 		gizmo.add_lines(linesNormie, get_material("lines", gizmo), false, Color(0.8, 0.8, 0.1, 0.5));
 	if not linesSelect.is_empty():

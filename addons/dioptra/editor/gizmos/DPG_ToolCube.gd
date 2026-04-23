@@ -1,6 +1,7 @@
 @tool
 extends EditorNode3DGizmoPlugin
 ## General purpose ToolCube gizmo plugin for doing Item gizmos
+## @deprecated use the BoxGhost utility instead
 
 var enabled : bool = false;
 var box_start : Vector3 = Vector3.ZERO;

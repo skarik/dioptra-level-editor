@@ -17,10 +17,8 @@ func cleanup() -> void:
 	
 ## Overrideable GUI input handling
 func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
-	
 	# TODO: grab the last selected material and use that as a decal that we just BIPBAP on with a click
 	# OR: wait for a material to be set in the material editor.
-	
 	var helper_plugin := _plugin._plugin_maphelper;
 	var map := _plugin.get_last_edited_map();
 	var map_gizmo := helper_plugin._get_target_gizmo(_plugin, map);
@@ -51,13 +49,14 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 			var collision := collision_plane.intersects_ray(viewport_camera.project_ray_origin(event.position), viewport_camera.project_ray_normal(event.position));
 			if collision != null:
 				var collision_point := collision as Vector3;
-				#collision_point = DioptraInterface.get_grid_round_v3(collision_point);
-				_ghost_box.box_start = collision_point - Vector3.ONE * 0.2;
-				_ghost_box.box_end = collision_point + Vector3.ONE * 0.2;
-				_ghost_box.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
 				
 				_decal_position.v3 = collision_point;
 				_decal_normal = normal;
+			
+				# Update ghost:
+				_ghost_box.box_start = collision_point - Vector3.ONE * 0.2;
+				_ghost_box.box_end = collision_point + Vector3.ONE * 0.2;
+				_ghost_box.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
 			
 	# When the mouse click releases, stop dragging
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
