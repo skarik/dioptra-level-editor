@@ -1,0 +1,131 @@
+[gd_scene load_steps=7 format=3 uid="uid://c6c3q36id4l4o"]
+
+[ext_resource type="Script" uid="uid://dg7qc8y0258ef" path="res://addons/dioptra/editor/DP_PanelMaterialBrowser.gd" id="1_4lljm"]
+[ext_resource type="Script" uid="uid://chlbhwkfnipmm" path="res://addons/dioptra/editor/DPC_AssetItemList.gd" id="2_30o72"]
+[ext_resource type="Texture2D" uid="uid://n5ppa5ptcmrl" path="res://addons/dioptra/asset/plugin-icon.svg" id="2_i13h2"]
+[ext_resource type="Texture2D" uid="uid://dpa077l7f6ndk" path="res://asset/dev/devtex128x128.png" id="3_vlkoq"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_30o72"]
+bg_color = Color(0, 0, 0, 0.501961)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vlkoq"]
+bg_color = Color(0, 0, 0, 1)
+
+[node name="DP Material Browser" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 77.0
+offset_top = 35.0
+offset_right = -814.0
+offset_bottom = -365.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_4lljm")
+
+[node name="ItemList" type="ItemList" parent="."]
+visible = false
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+auto_width = true
+auto_height = true
+item_count = 3
+item_0/text = "filler 1"
+item_1/text = "filler 2"
+item_2/text = "filler 3"
+
+[node name="Box File Tree" type="FlowContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Box File Tree"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Filter Container" type="HBoxContainer" parent="Box File Tree/VBoxContainer"]
+layout_mode = 2
+
+[node name="Button" type="Button" parent="Box File Tree/VBoxContainer/Filter Container"]
+layout_mode = 2
+text = "Clear"
+
+[node name="LineEdit" type="LineEdit" parent="Box File Tree/VBoxContainer/Filter Container"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Filter by Name"
+
+[node name="FileTree" type="Tree" parent="Box File Tree/VBoxContainer"]
+visible = false
+layout_mode = 2
+
+[node name="Box Asset View" type="FlowContainer" parent="."]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Asset View Container" type="ScrollContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_30o72")
+horizontal_scroll_mode = 0
+
+[node name="ItemContainer" type="FlowContainer" parent="Asset View Container"]
+clip_contents = true
+custom_minimum_size = Vector2(1, 1)
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("2_30o72")
+
+[node name="ReferenceItem" type="PanelContainer" parent="Asset View Container/ItemContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_vlkoq")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Asset View Container/ItemContainer/ReferenceItem"]
+layout_mode = 2
+
+[node name="TextureRect" type="TextureRect" parent="Asset View Container/ItemContainer/ReferenceItem/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+texture = ExtResource("2_i13h2")
+stretch_mode = 4
+
+[node name="LabelName" type="Label" parent="Asset View Container/ItemContainer/ReferenceItem/VBoxContainer"]
+layout_mode = 2
+text = "Item Name"
+
+[node name="ReferenceItem2" type="PanelContainer" parent="Asset View Container/ItemContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_vlkoq")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Asset View Container/ItemContainer/ReferenceItem2"]
+layout_mode = 2
+
+[node name="TextureRect" type="TextureRect" parent="Asset View Container/ItemContainer/ReferenceItem2/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+texture = ExtResource("3_vlkoq")
+stretch_mode = 4
+
+[node name="LabelName" type="Label" parent="Asset View Container/ItemContainer/ReferenceItem2/VBoxContainer"]
+layout_mode = 2
+text = "Item Name"
+
+[node name="Asset View Container Beta" type="HBoxContainer" parent="."]
+visible = false
+clip_contents = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="VScrollBar" type="VScrollBar" parent="Asset View Container Beta"]
+visible = false
+layout_mode = 2

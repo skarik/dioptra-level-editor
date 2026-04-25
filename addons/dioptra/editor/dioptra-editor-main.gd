@@ -49,6 +49,13 @@ const cDock_State := preload("res://addons/dioptra/editor/panel-state.tscn");
 var DPDock_State : Control = null;
 const cScript_State := preload("res://addons/dioptra/editor/DP_PanelState.gd");
 
+const cDock_MaterialBrowser := preload("res://addons/dioptra/editor/panel-material-browser.tscn");
+var DPDock_MaterialBrowser : Control = null;
+const cScript_MaterialBrowser := preload("res://addons/dioptra/editor/DP_PanelMaterialBrowser.gd");
+
+const cDP_MaterialPreviewGenerator := preload("res://addons/dioptra/editor/DP_MaterialPreviewGenerator.gd");
+var DP_Genny_MaterialPreview : EditorResourcePreviewGenerator = null;
+
 #------------------------------------------------------------------------------#
 
 ## Starts the given gizmo plugin, instantiating it if it's not read with the given factor
@@ -91,6 +98,23 @@ func _enter_tree() -> void:
 		add_control_to_dock(EditorPlugin.DOCK_SLOT_RIGHT_BL, DPDock_Texturing);
 		var textures := DPDock_Texturing as cScript_Texturing;
 		textures.setPlugin(self);
+		
+	if DPDock_MaterialBrowser == null:
+		DPDock_MaterialBrowser = cDock_MaterialBrowser.instantiate()
+	if DPDock_MaterialBrowser:
+		add_control_to_dock(EditorPlugin.DOCK_SLOT_RIGHT_BR, DPDock_MaterialBrowser);
+		var matbrowser := DPDock_MaterialBrowser as cScript_MaterialBrowser;
+		matbrowser.setPlugin(self);
+		
+	#if DP_Genny_MaterialPreview == null:
+		#DP_Genny_MaterialPreview = cDP_MaterialPreviewGenerator.new(self);
+	#if DP_Genny_MaterialPreview:
+		#EditorInterface.get_resource_previewer().add_preview_generator(DP_Genny_MaterialPreview);
+	# Since this is the way that materials are already rendered, we can't simply add something to override it w/o going into source.
+	# Better off making a material browser
+		
+	EditorInterface.get_resource_previewer().preview_invalidated.connect(on_resource_preview_invalidated);
+		
 	pass
 
 func _exit_tree() -> void:
@@ -112,6 +136,13 @@ func _exit_tree() -> void:
 	if DPDock_Texturing:
 		remove_control_from_docks(DPDock_Texturing);
 		DPDock_Texturing.queue_free()
+	if DPDock_MaterialBrowser:
+		remove_control_from_docks(DPDock_MaterialBrowser);
+		DPDock_MaterialBrowser.queue_free()
+		
+	if DP_Genny_MaterialPreview:
+		EditorInterface.get_resource_previewer().remove_preview_generator(DP_Genny_MaterialPreview);
+		DP_Genny_MaterialPreview = null;
 	pass
 
 #------------------------------------------------------------------------------#
@@ -287,3 +318,9 @@ func add_new_decal(decal : DPMapDecal) -> void:
 	map.rebuild_editor_decals(decal);
 	
 	pass;
+
+#------------------------------------------------------------------------------#
+
+func on_resource_preview_invalidated(path : String) -> void:
+	#print(path);
+	pass
