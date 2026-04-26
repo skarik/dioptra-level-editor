@@ -1,8 +1,10 @@
-[gd_scene load_steps=7 format=3 uid="uid://c6c3q36id4l4o"]
+[gd_scene load_steps=9 format=3 uid="uid://c6c3q36id4l4o"]
 
 [ext_resource type="Script" uid="uid://dg7qc8y0258ef" path="res://addons/dioptra/editor/DP_PanelMaterialBrowser.gd" id="1_4lljm"]
+[ext_resource type="Texture2D" uid="uid://c84saf6lfd3v8" path="res://addons/dioptra/asset/default/view-square.svg" id="2_5ii8l"]
 [ext_resource type="Script" uid="uid://chlbhwkfnipmm" path="res://addons/dioptra/editor/DPC_AssetItemList.gd" id="2_30o72"]
 [ext_resource type="Texture2D" uid="uid://n5ppa5ptcmrl" path="res://addons/dioptra/asset/plugin-icon.svg" id="2_i13h2"]
+[ext_resource type="Texture2D" uid="uid://d4mbd8i0sbjyr" path="res://addons/dioptra/asset/default/view-sphere.svg" id="3_8b57o"]
 [ext_resource type="Texture2D" uid="uid://dpa077l7f6ndk" path="res://asset/dev/devtex128x128.png" id="3_vlkoq"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_30o72"]
@@ -61,6 +63,20 @@ placeholder_text = "Filter by Name"
 [node name="FileTree" type="Tree" parent="Box File Tree/VBoxContainer"]
 visible = false
 layout_mode = 2
+
+[node name="Box Settings" type="FlowContainer" parent="."]
+layout_mode = 2
+
+[node name="ButtonFlat" type="Button" parent="Box Settings"]
+layout_mode = 2
+toggle_mode = true
+button_pressed = true
+icon = ExtResource("2_5ii8l")
+
+[node name="ButtonSphere" type="Button" parent="Box Settings"]
+layout_mode = 2
+toggle_mode = true
+icon = ExtResource("3_8b57o")
 
 [node name="Box Asset View" type="FlowContainer" parent="."]
 visible = false

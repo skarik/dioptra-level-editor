@@ -1,7 +1,8 @@
-[gd_scene load_steps=11 format=3 uid="uid://bhxmwac2fj16y"]
+[gd_scene load_steps=12 format=3 uid="uid://bhxmwac2fj16y"]
 
 [ext_resource type="Script" uid="uid://hcmgfcqh10uc" path="res://addons/dioptra/editor/DP_PanelTexture.gd" id="1_0o48c"]
 [ext_resource type="Script" uid="uid://ymtvdjr4c6o" path="res://addons/dioptra/util/StylesOverride.gd" id="2_r5rll"]
+[ext_resource type="Texture2D" uid="uid://dwqfmqg0oe1mp" path="res://addons/dioptra/asset/default/tex-fit.svg" id="3_08nva"]
 [ext_resource type="Texture2D" uid="uid://bbnhdwmklnusu" path="res://addons/dioptra/asset/default/tex-flip-x.svg" id="3_hl7nd"]
 [ext_resource type="Texture2D" uid="uid://b264naldos6im" path="res://addons/dioptra/asset/default/tex-flip-y.svg" id="4_vn6ip"]
 [ext_resource type="Texture2D" uid="uid://bywlkqqtsecsv" path="res://addons/dioptra/asset/default/tex-center-x.svg" id="5_j747c"]
@@ -109,7 +110,7 @@ layout_mode = 2
 [node name="ButtonFit" type="Button" parent="Container UVs/VContainer/GridContainer/HBoxContainerActions"]
 layout_mode = 2
 tooltip_text = "Fit"
-icon = ExtResource("3_hl7nd")
+icon = ExtResource("3_08nva")
 icon_alignment = 1
 
 [node name="ButtonAutofit" type="Button" parent="Container UVs/VContainer/GridContainer/HBoxContainerActions"]
