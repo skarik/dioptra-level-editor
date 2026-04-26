@@ -81,6 +81,11 @@ func change_displaymode(mode : DisplayMode) -> void:
 		if _display_mode == DisplayMode.FLAT:
 			icon = cached.thumb_flat;
 		_itemlist_assets.set_item_icon(item_index, icon);
+		
+func clear_filter() -> void:
+	var line_edit := $"Box File Tree/VBoxContainer/Filter Container/LineEdit";
+	line_edit.text = "";
+	line_edit.text_changed.emit("");
 	
 #------------------------------------------------------------------------------#
 
@@ -89,7 +94,7 @@ func scan_materials() -> void:
 	
 	var extensions := ResourceLoader.get_recognized_extensions_for_type("Material");
 	#TODO signifier or skip items internal to Dioptra
-	var skip_list : PackedStringArray = [];
+	var skip_list : PackedStringArray = ["addons/dioptra/"];
 	
 	# Build a list of every single resource as we scan
 	var dirs : Array[String] = [];
@@ -113,17 +118,22 @@ func scan_materials() -> void:
 			else:
 				var extension := file_name.get_extension().to_lower();
 				if extensions.has(extension):
-					# Actual file
-					var resource := ResourceLoader.load(dir_path + "/" + file_name);
-					if resource and resource.resource_path != "":
-						var mat := resource as Material;
-						if mat:
-							materials.push_back(mat);
+					var skip = false;
+					for skip_item in skip_list:
+						if file_name.to_lower().contains(skip_item):
+							skip = true;
+							break;
+					if not skip:
+						# Actual file
+						var resource := ResourceLoader.load(dir_path + "/" + file_name);
+						if resource and resource.resource_path != "":
+							var mat := resource as Material;
+							if mat:
+								materials.push_back(mat);
 							
 	# Cache the material!
 	for mat in materials:
 		_all_materials.push_back(CachedMaterialInfo.new(mat, _all_materials.size()));
-		print(mat.resource_path);
 	
 func build_itemlist(filter : String) -> void:
 	var materials : Array[CachedMaterialInfo] = [];
@@ -183,7 +193,14 @@ func _on_preview_done_genny_flat(path : String, preview : Texture2D, thumbnail_p
 	
 #------------------------------------------------------------------------------#
 	
-	
+func on_item_clicked(index : int) -> void:
+	# Update UI with the material
+	var texturing_dock := _plugin.DPDock_Texturing as DioptraEditorMainPlugin.cScript_Texturing; # circular, reboot godot
+	texturing_dock.update_ui_with_material(_visible_materials[index].get_material());
+	pass
+
+func on_item_double_clicked(index : int) -> void:
+	pass
 	
 #------------------------------------------------------------------------------#
 

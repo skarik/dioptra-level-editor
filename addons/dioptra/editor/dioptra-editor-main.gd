@@ -323,4 +323,5 @@ func add_new_decal(decal : DPMapDecal) -> void:
 
 func on_resource_preview_invalidated(path : String) -> void:
 	#print(path);
+	# TODO: have material browser connect to the signal
 	pass

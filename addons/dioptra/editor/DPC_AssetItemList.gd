@@ -10,7 +10,8 @@ var _item_dict : Dictionary[int, Control] = {};
 
 #------------------------------------------------------------------------------#
 
-signal item_clicked;
+signal item_clicked(index : int);
+signal item_double_clicked(index : int);
 
 #------------------------------------------------------------------------------#
 
@@ -82,8 +83,34 @@ func set_item_background(idx: int, bg_color : Color, reset : bool = false) -> vo
 	
 #------------------------------------------------------------------------------#
 # Mouse Control:
+
+var _last_item_index : int = -1;
 	
 func _on_mouse_entered(idx : int) -> void:
-	print("enter %d" % idx);
+	_last_item_index = idx;
 func _on_mouse_exited(idx : int) -> void:
-	print("exit %d" % idx);
+	if _last_item_index == idx:
+		_last_item_index = -1;
+
+func _gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		# Check position
+		if _last_item_index != -1:
+			if not _item_dict[_last_item_index].get_rect().has_point(event.position):
+				_last_item_index = -1;
+		# If not valid, loop through items and find one
+		if _last_item_index == -1:
+			for idx in _item_dict:
+				var item := _item_dict[idx];
+				if item.get_rect().has_point(event.position):
+					_last_item_index = idx;
+					break;
+		
+		if event.pressed and event.double_click and event.button_index == MOUSE_BUTTON_LEFT:
+			item_double_clicked.emit(_last_item_index);
+			pass
+		elif event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			item_clicked.emit(_last_item_index);
+			pass
+		
+		
