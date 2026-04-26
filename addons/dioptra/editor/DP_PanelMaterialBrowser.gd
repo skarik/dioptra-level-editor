@@ -56,13 +56,21 @@ func _ready() -> void:
 	#buttongroup_displaymode.pressed.connect(on_change_displaymode);
 	pass
 	
-func _notification(what: int) -> void:
-	if what == NOTIFICATION_PREDELETE:
-		_preview_worker_continue = false;
-		if _preview_worker_semaphore:
-			_preview_worker_semaphore.post();
+func _exit_tree() -> void:
+	_preview_worker_continue = false;
+	if _preview_worker_semaphore:
+		_preview_worker_semaphore.post();
+	if _preview_worker_thread.is_alive():
 		_preview_worker_thread.wait_to_finish();
-		_preview_worker_generator = null;
+	_preview_worker_generator = null;
+	
+#func _notification(what: int) -> void:
+	#if what == NOTIFICATION_PREDELETE:
+		#_preview_worker_continue = false;
+		#if _preview_worker_semaphore:
+			#_preview_worker_semaphore.post();
+		#_preview_worker_thread.wait_to_finish();
+		#_preview_worker_generator = null;
 	
 func setPlugin(plugin : DioptraEditorMainPlugin) -> void:
 	_plugin = plugin;
@@ -196,10 +204,19 @@ func _on_preview_done_genny_flat(path : String, preview : Texture2D, thumbnail_p
 func on_item_clicked(index : int) -> void:
 	# Update UI with the material
 	var texturing_dock := _plugin.DPDock_Texturing as DioptraEditorMainPlugin.cScript_Texturing; # circular, reboot godot
-	texturing_dock.update_ui_with_material(_visible_materials[index].get_material());
+	if texturing_dock:
+		var mat := _visible_materials[index].get_material() if _visible_materials.has(index) else null;
+		if mat:
+			texturing_dock.update_ui_with_material(mat);
 	pass
 
 func on_item_double_clicked(index : int) -> void:
+	var mat := _visible_materials[index].get_material() if _visible_materials.has(index) else null;
+	if mat:
+		var texturing_dock := _plugin.DPDock_Texturing as DioptraEditorMainPlugin.cScript_Texturing; # circular, reboot godot
+		if texturing_dock:
+			texturing_dock.update_ui_with_material(mat);
+		_plugin._plugin_maphelper.do_assign_material(mat);
 	pass
 	
 #------------------------------------------------------------------------------#

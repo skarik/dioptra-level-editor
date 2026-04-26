@@ -58,6 +58,7 @@ func _generate(resource: Resource, size: Vector2i, metadata: Dictionary) -> Text
 	RenderingServer.viewport_set_active(_viewport, true);
 	
 	# Build the command list
+	RenderingServer.canvas_item_clear(_canvas_item);
 	var sm := material as StandardMaterial3D;
 	if sm and sm.albedo_texture:
 		RenderingServer.canvas_item_add_texture_rect(_canvas_item, Rect2(0, 0, size.x, size.y), sm.albedo_texture.get_rid());
