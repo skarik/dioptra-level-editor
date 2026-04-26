@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3 uid="uid://bpowa1m52cdxo"]
+[gd_scene load_steps=24 format=3 uid="uid://bpowa1m52cdxo"]
 
 [ext_resource type="Script" uid="uid://b1o8seedypiyh" path="res://addons/dioptra/node-types/DP_Map.gd" id="1_2bx53"]
 [ext_resource type="Script" uid="uid://ddjlh0744b23n" path="res://addons/dioptra/node-types/internal/DP_Map_Solids.gd" id="2_wdejr"]
@@ -18,6 +18,7 @@
 [ext_resource type="Script" uid="uid://barqdgg8ycbe3" path="res://source/game/prototypes/gameplay/player-test-fps.gd" id="14_8qjxl"]
 [ext_resource type="Texture2D" uid="uid://dryevs13spedu" path="res://asset/decal/test.png" id="16_sp18w"]
 [ext_resource type="Script" uid="uid://dopylaler80vl" path="res://source/game/player/CharacterMotionSettings.gd" id="17_bpfwy"]
+[ext_resource type="VoxelGIData" uid="uid://bxojc8yk6yihl" path="res://Test5-FPSMap/fpsmap-test.VoxelGI_data.res" id="19_aakh7"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_baiak"]
 
@@ -328,12 +329,6 @@ decals = Array[ExtResource("8_sp18w")]([Object(RefCounted,"script":ExtResource("
 , Object(RefCounted,"script":ExtResource("8_sp18w"),"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(664, 139, -512),"v3":Vector3(5.1875, 1.08594, -4),"v3i":Vector3i(664, 139, -512),"value":Vector3i(664, 139, -512))
 ,"rotation":Vector3(0, -3.14159, 0),"scale":Vector2(1, 1),"near_clip":-1.0,"far_clip":1.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false,"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(664, 139, -512),"v3":Vector3(5.1875, 1.08594, -4),"v3i":Vector3i(664, 139, -512),"value":Vector3i(664, 139, -512))
 ,"rotation":Vector3(0, -3.14159, 0),"scale":Vector2(1, 1),"near_clip":-1.0,"far_clip":1.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false)
-, Object(RefCounted,"script":ExtResource("8_sp18w"),"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-346, 219, -512),"v3":Vector3(-2.70313, 1.71094, -4),"v3i":Vector3i(-346, 219, -512),"value":Vector3i(-346, 219, -512))
-,"rotation":Vector3(0, -3.14159, 0),"scale":Vector2(1, 1),"near_clip":-1.0,"far_clip":1.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false,"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-346, 219, -512),"v3":Vector3(-2.70313, 1.71094, -4),"v3i":Vector3i(-346, 219, -512),"value":Vector3i(-346, 219, -512))
-,"rotation":Vector3(0, -3.14159, 0),"scale":Vector2(1, 1),"near_clip":-1.0,"far_clip":1.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false)
-, Object(RefCounted,"script":ExtResource("8_sp18w"),"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-607, 109, -512),"v3":Vector3(-4.74219, 0.851563, -4),"v3i":Vector3i(-607, 109, -512),"value":Vector3i(-607, 109, -512))
-,"rotation":Vector3(0, -3.14159, 0),"scale":Vector2(1, 1),"near_clip":-1.0,"far_clip":1.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false,"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(-607, 109, -512),"v3":Vector3(-4.74219, 0.851563, -4),"v3i":Vector3i(-607, 109, -512),"value":Vector3i(-607, 109, -512))
-,"rotation":Vector3(0, -3.14159, 0),"scale":Vector2(1, 1),"near_clip":-1.0,"far_clip":1.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false)
 , Object(RefCounted,"script":ExtResource("8_sp18w"),"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(277, 173, -512),"v3":Vector3(2.16406, 1.35156, -4),"v3i":Vector3i(277, 173, -512),"value":Vector3i(277, 173, -512))
 ,"rotation":Vector3(0, -3.14159, 0),"scale":Vector2(1, 1),"near_clip":-1.0,"far_clip":1.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false,"position":Object(RefCounted,"script":Resource("res://addons/dioptra/util/MapVector3.gd"),"_value":Vector3i(277, 173, -512),"v3":Vector3(2.16406, 1.35156, -4),"v3i":Vector3i(277, 173, -512),"value":Vector3i(277, 173, -512))
 ,"rotation":Vector3(0, -3.14159, 0),"scale":Vector2(1, 1),"near_clip":-1.0,"far_clip":1.0,"far_scale":Vector2(1, 1),"material":0,"color_lch_offset":Vector3(0, 0, 0),"project_two_sided":false,"project_colinear":false)
@@ -359,7 +354,7 @@ visible = false
 current = true
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.950451, -0.128152, 0.283232, -0.263119, 0.153609, 0.952456, -0.165566, -0.979786, 0.112278, 0, 4.99635, 0)
+transform = Transform3D(0.950451, -0.00597859, 0.310817, -0.263119, 0.517011, 0.814535, -0.165566, -0.855957, 0.48982, 0, 4.99635, 0)
 shadow_enabled = true
 
 [node name="StaticBody3D2" type="RigidBody3D" parent="."]
@@ -370,6 +365,7 @@ impact_sfx = ExtResource("7_od74r")
 [node name="Box" type="MeshInstance3D" parent="StaticBody3D2"]
 transform = Transform3D(-1, -8.74228e-08, 0, 8.74228e-08, -1, 0, 0, 0, 1, 0, 4.76837e-07, 0)
 material_override = ExtResource("6_etp26")
+gi_mode = 0
 mesh = SubResource("BoxMesh_baiak")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D2"]
@@ -419,3 +415,9 @@ process_mode = 4
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 4.87633, 1.46767, -2)
 visible = false
 texture_albedo = ExtResource("16_sp18w")
+
+[node name="VoxelGI" type="VoxelGI" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.6521, 2.74359, -0.159668)
+subdiv = 0
+size = Vector3(25.7045, 10.0082, 16.5576)
+data = ExtResource("19_aakh7")

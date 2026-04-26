@@ -32,6 +32,18 @@ bones/45/rotation = Quaternion(0.0242682, 0.564658, -0.0706369, 0.821939)
 bones/46/rotation = Quaternion(-0.00828744, -0.0180902, 0.722317, 0.691276)
 bones/53/position = Vector3(-2.66454e-15, -1.28412, 1.68801e-09)
 
+[node name="alana_bod" parent="Skeleton3D" index="0"]
+gi_mode = 0
+
+[node name="alana_clothes" parent="Skeleton3D" index="1"]
+gi_mode = 0
+
+[node name="alana_hair" parent="Skeleton3D" index="2"]
+gi_mode = 0
+
+[node name="alana_timeye" parent="Skeleton3D" index="3"]
+gi_mode = 0
+
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." index="1"]
 libraries = {
 &"anim test 2": ExtResource("2_m0ea4")
