@@ -10,8 +10,6 @@ Note, for the developer this is a "Good Enough" editor. If you are looking for s
 If you want to use this and are interested in the development, feel free to get in contact. I am super easy to contact on [Bluesky](https://bsky.app/profile/skarik.bsky.social) and [Discord](https://discord.com/invite/ahEJgUynK2).
 
 ![Editor view](screenshots/editor-view.png)
-![Texturing panel](screenshots/texturing-panel.png)
-![Material viewer](screenshots/material-viewer.png)
 
 ## Features
 ### Solids
@@ -29,3 +27,6 @@ Splat all over your map! Forget post-process decals with optimized render paths 
 - Spheres in the material preview? Let's get FLAT THINGS so you too can truly misunderstand how the material will be lit from a glance!
 ### ~~Automeshes~~
 - Soon(TM)
+
+![Texturing panel](screenshots/texturing-panel.png)
+![Material viewer](screenshots/material-viewer.png)
