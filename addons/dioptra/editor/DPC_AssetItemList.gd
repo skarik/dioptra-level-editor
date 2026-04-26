@@ -8,6 +8,12 @@ var _reference_item : Control;#= $ReferenceItem;
 
 var _item_dict : Dictionary[int, Control] = {};
 
+#------------------------------------------------------------------------------#
+
+signal item_clicked;
+
+#------------------------------------------------------------------------------#
+
 func _ready() -> void:
 	#_reference_item.visible = false;
 	pass
@@ -50,6 +56,9 @@ func add_item(text: String, icon: Texture2D = null, selectable: bool = true) -> 
 		label.add_theme_font_override("font", EditorInterface.get_editor_theme().get_font("font", "CodeEdit"));
 		label.add_theme_font_size_override("font_size", int(EditorInterface.get_editor_theme().get_font_size("font", "CodeEdit") / 1.2));
 	
+	item.mouse_entered.connect(_on_mouse_entered.bind(index));
+	item.mouse_exited.connect(_on_mouse_exited.bind(index));
+	
 	return index;
 
 func set_item_icon(idx: int, icon: Texture2D) -> void:
@@ -58,3 +67,23 @@ func set_item_icon(idx: int, icon: Texture2D) -> void:
 	var tex_rect : TextureRect = item.get_node("VBoxContainer/TextureRect");
 	tex_rect.texture = icon;
 	pass
+	
+func set_item_background(idx: int, bg_color : Color, reset : bool = false) -> void:
+	_setup_if_not_ready();
+	if reset:
+		var reference_panel := _reference_item as PanelContainer;
+		var stylebox := reference_panel.get_theme_stylebox("panel"); #theme_override_styles/panel
+		print(stylebox);
+	else:
+		var item := _item_dict[idx];
+		var panel := item as PanelContainer;
+		var color := panel.get_theme_color("bg_color");
+		print(color);
+	
+#------------------------------------------------------------------------------#
+# Mouse Control:
+	
+func _on_mouse_entered(idx : int) -> void:
+	print("enter %d" % idx);
+func _on_mouse_exited(idx : int) -> void:
+	print("exit %d" % idx);
