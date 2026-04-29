@@ -14,15 +14,18 @@ var _generator : DP_MaterialPreviewGenerator = null;
 
 func _init(panel : DP_PanelMaterialBrowser) -> void:
 	_panel = panel;
-	pass
 	
-func start_working() -> void:
 	_thread_continue = true;
 	_semaphore = Semaphore.new();
 	_request_mutex = Mutex.new();
 	_thread = Thread.new();
-	_thread.start(_preview_build_thread);
 	_generator = DP_MaterialPreviewGenerator.new(null);
+	pass
+	
+func start_working() -> void:
+	if not _thread.is_alive():
+		_thread.start(_preview_build_thread);
+	
 	pass
 	
 func stop_working() -> void:

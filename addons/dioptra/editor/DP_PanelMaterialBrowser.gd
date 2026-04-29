@@ -39,6 +39,8 @@ var _display_mode : DisplayMode = DisplayMode.FLAT;
 
 var _preview_worker : DP_MaterialBrowserWorker = null;
 
+var _last_filter : String = "";
+
 func _ready() -> void:
 	if not _preview_worker:
 		_preview_worker = DP_MaterialBrowserWorker.new(self);
@@ -53,8 +55,7 @@ func _exit_tree() -> void:
 func setPlugin(plugin : DioptraEditorMainPlugin) -> void:
 	_plugin = plugin;
 	_visible_materials = {};
-	scan_materials();
-	build_itemlist("");
+	scan_materials(true);
 	
 #------------------------------------------------------------------------------#
 
@@ -81,14 +82,18 @@ func clear_filter() -> void:
 	
 #------------------------------------------------------------------------------#
 
-func scan_materials() -> void:
+func scan_materials(rebuild_itemlist : bool = false) -> void:
 	var materials : Array[Material] = [];
 	
 	#TODO signifier or skip items internal to Dioptra
 	var skip_list : PackedStringArray = ["addons/dioptra/"];
 	
-	# TODO: defer until is_scanning is done
 	# TODO: sub to EditorFileSystem signals: resources_reimported, resources_reload
+	
+	# If we're still scanning the filesystem, defer the call until the next frame
+	if EditorInterface.get_resource_filesystem().is_scanning():
+		get_tree().process_frame.connect(scan_materials.bind(rebuild_itemlist), CONNECT_ONE_SHOT);
+		return;
 	
 	var dirs : Array[EditorFileSystemDirectory] = [];
 	dirs.push_back(EditorInterface.get_resource_filesystem().get_filesystem());
@@ -130,13 +135,20 @@ func scan_materials() -> void:
 							materials.push_back(mat);
 			pass # End subfile loop
 		pass # End while dirs loop
-
+	
 	# Cache the material!
 	for mat in materials:
 		_all_materials.push_back(CachedMaterialInfo.new(mat, _all_materials.size()));
+		
+	if rebuild_itemlist:
+		build_itemlist(_last_filter);
+		
+	return; # End scan_materials
 	
 func build_itemlist(filter : String) -> void:
 	var materials : Array[CachedMaterialInfo] = [];
+	
+	_last_filter = filter;
 	
 	if filter.is_empty():
 		for cached in _all_materials:
