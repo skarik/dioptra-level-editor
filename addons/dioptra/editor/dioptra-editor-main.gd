@@ -53,7 +53,7 @@ const cDock_MaterialBrowser := preload("res://addons/dioptra/editor/panel-materi
 var DPDock_MaterialBrowser : Control = null;
 const cScript_MaterialBrowser := preload("res://addons/dioptra/editor/DP_PanelMaterialBrowser.gd");
 
-const cDP_MaterialPreviewGenerator := preload("res://addons/dioptra/editor/DP_MaterialPreviewGenerator.gd");
+const cDP_MaterialPreviewGenerator := preload("res://addons/dioptra/editor/util/DP_MaterialPreviewGenerator.gd");
 var DP_Genny_MaterialPreview : EditorResourcePreviewGenerator = null;
 
 #------------------------------------------------------------------------------#

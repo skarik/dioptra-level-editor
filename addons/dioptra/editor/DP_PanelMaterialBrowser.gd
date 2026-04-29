@@ -1,5 +1,6 @@
 @tool
 extends Control
+class_name DP_PanelMaterialBrowser;
 
 var _plugin : DioptraEditorMainPlugin = null;
 
@@ -36,47 +37,30 @@ enum DisplayMode {
 ## Current display mode of the items
 var _display_mode : DisplayMode = DisplayMode.FLAT;
 
-var _preview_worker_continue : bool = true;
-var _preview_worker_thread : Thread;
-var _preview_worker_semaphore : Semaphore;
-var _preview_worker_request_mutex : Mutex;
-var _preview_worker_request_items : Array[Material] = [];
-var _preview_worker_request_indexes : Array[int] = [];
-var _preview_worker_generator : DP_MaterialPreviewGenerator = null;
+var _preview_worker : DP_MaterialBrowserWorker = null;
 
 func _ready() -> void:
-	_preview_worker_continue = true;
-	_preview_worker_semaphore = Semaphore.new();
-	_preview_worker_request_mutex = Mutex.new();
-	_preview_worker_thread = Thread.new();
-	_preview_worker_thread.start(_preview_build_thread);
-	_preview_worker_generator = DP_MaterialPreviewGenerator.new(null);
-	
-	#var buttongroup_displaymode : ButtonGroup = $"Box Settings/ButtonFlat".button_group;
-	#buttongroup_displaymode.pressed.connect(on_change_displaymode);
+	if not _preview_worker:
+		_preview_worker = DP_MaterialBrowserWorker.new(self);
+	_preview_worker.start_working();
 	pass
 	
 func _exit_tree() -> void:
-	_preview_worker_continue = false;
-	if _preview_worker_semaphore:
-		_preview_worker_semaphore.post();
-	if _preview_worker_thread.is_alive():
-		_preview_worker_thread.wait_to_finish();
-	_preview_worker_generator = null;
-	
-#func _notification(what: int) -> void:
-	#if what == NOTIFICATION_PREDELETE:
-		#_preview_worker_continue = false;
-		#if _preview_worker_semaphore:
-			#_preview_worker_semaphore.post();
-		#_preview_worker_thread.wait_to_finish();
-		#_preview_worker_generator = null;
+	if _preview_worker:
+		_preview_worker.stop_working();
+		_preview_worker.free();
 	
 func setPlugin(plugin : DioptraEditorMainPlugin) -> void:
 	_plugin = plugin;
 	_visible_materials = {};
 	scan_materials();
 	build_itemlist("");
+	
+#------------------------------------------------------------------------------#
+
+func _process(delta: float) -> void:
+	if _preview_worker:
+		_preview_worker.process();
 	
 #------------------------------------------------------------------------------#
 	
@@ -100,45 +84,53 @@ func clear_filter() -> void:
 func scan_materials() -> void:
 	var materials : Array[Material] = [];
 	
-	var extensions := ResourceLoader.get_recognized_extensions_for_type("Material");
 	#TODO signifier or skip items internal to Dioptra
 	var skip_list : PackedStringArray = ["addons/dioptra/"];
 	
-	# Build a list of every single resource as we scan
-	var dirs : Array[String] = [];
-	dirs.push_back("res://");
+	# TODO: defer until is_scanning is done
+	# TODO: sub to EditorFileSystem signals: resources_reimported, resources_reload
+	
+	var dirs : Array[EditorFileSystemDirectory] = [];
+	dirs.push_back(EditorInterface.get_resource_filesystem().get_filesystem());
 	while not dirs.is_empty():
-		var dir_path := dirs.pop_front();
-		var dir : DirAccess = DirAccess.open(dir_path);
+		var dir : EditorFileSystemDirectory = dirs.pop_front();
 		if not dir:
 			continue;
-		
-		var dir_list := dir.get_current_dir();
-		
-		dir.list_dir_begin()
-		var file_name : String;
-		while true:
-			file_name = dir.get_next();
-			if file_name == "":
-				break;
-			if dir.current_is_dir():
-				dirs.push_back(dir_path + "/" + file_name);
-			else:
-				var extension := file_name.get_extension().to_lower();
-				if extensions.has(extension):
-					var skip = false;
-					for skip_item in skip_list:
-						if file_name.to_lower().contains(skip_item):
-							skip = true;
-							break;
-					if not skip:
-						# Actual file
-						var resource := ResourceLoader.load(dir_path + "/" + file_name);
-						if resource and resource.resource_path != "":
-							var mat := resource as Material;
-							if mat:
-								materials.push_back(mat);
-							
+		# Add subdirs to search
+		for dir_idx in dir.get_subdir_count():
+			var subdir := dir.get_subdir(dir_idx);
+			# Check if dir in skip list
+			var skip := false;
+			for skip_item in skip_list:
+				if subdir.get_path().to_lower().contains(skip_item):
+					skip = true;
+					break;
+			if not skip:
+				dirs.push_back(subdir);
+			pass # End subdirs loop
+		# Go through files
+		for file_idx in dir.get_file_count():
+			# Skip broken files
+			if not dir.get_file_import_is_valid(file_idx):
+				continue;
+			var file_type := dir.get_file_type(file_idx);
+			if ClassDB.is_parent_class(file_type, "Material"):
+				var file_path := dir.get_file_path(file_idx);
+				var skip = false;
+				for skip_item in skip_list:
+					if file_path.to_lower().contains(skip_item):
+						skip = true;
+						break;
+				if not skip:
+					# Actual file
+					var resource := ResourceLoader.load(file_path);
+					if resource and resource.resource_path != "":
+						var mat := resource as Material;
+						if mat:
+							materials.push_back(mat);
+			pass # End subfile loop
+		pass # End while dirs loop
+
 	# Cache the material!
 	for mat in materials:
 		_all_materials.push_back(CachedMaterialInfo.new(mat, _all_materials.size()));
@@ -178,7 +170,7 @@ func set_items(materials : Array[CachedMaterialInfo]) -> void:
 		if cached.thumb_godot == null:
 			previewer.queue_resource_preview(mat.resource_path, self, "_on_preview_done_genny", cached.get_idx());
 		if cached.thumb_flat == null:
-			_queue_resource_preview_internal(mat, cached.get_idx());
+			_preview_worker.queue_resource_preview_internal(mat, cached.get_idx());
 		
 		pass
 	pass
@@ -220,28 +212,3 @@ func on_item_double_clicked(index : int) -> void:
 	pass
 	
 #------------------------------------------------------------------------------#
-
-func _queue_resource_preview_internal(item : Material, index : int) -> void:
-	_preview_worker_request_mutex.lock();
-	_preview_worker_request_items.push_back(item);
-	_preview_worker_request_indexes.push_back(index);
-	_preview_worker_request_mutex.unlock();
-	_preview_worker_semaphore.post();
-	pass
-	
-func _preview_build_thread() -> void:
-	while true:
-		_preview_worker_semaphore.wait();
-		if not _preview_worker_continue:
-			break;
-			
-		_preview_worker_request_mutex.lock();
-		var item : Material = _preview_worker_request_items.pop_front();
-		var index : int = _preview_worker_request_indexes.pop_front();
-		_preview_worker_request_mutex.unlock();
-		
-		var tex := _preview_worker_generator._generate(item, DPHelpers.get_material_primary_texture_size(item).min(Vector2i(256, 256)), {});
-		
-		if tex:
-			self.call_deferred("_on_preview_done_genny_flat", "", tex, tex, index);
-	pass
