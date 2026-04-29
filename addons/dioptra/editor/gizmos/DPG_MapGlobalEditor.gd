@@ -378,6 +378,13 @@ func _get_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int) -> Tran
 		elif selection.type == DPHelpers.SelectionType.FACE:
 			var face := selection.face;
 			t = Transform3D(Basis.IDENTITY, solid.points[face.corners[0]].v3);
+		# Edge 0
+		elif selection.type == DPHelpers.SelectionType.EDGE:
+			var face := selection.face;
+			t = Transform3D(Basis.IDENTITY, solid.points[face.corners[selection.edge_id]].v3);
+		# Vertex
+		elif selection.type == DPHelpers.SelectionType.VERTEX:
+			t = Transform3D(Basis.IDENTITY, solid.points[selection.vertex_id].v3);
 	elif selection.type == DPHelpers.SelectionType.DECAL:
 		var decal_id := selection.decal_id;
 		var decal := map.decals[decal_id];
@@ -472,6 +479,20 @@ func _set_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int, transfo
 			var vert = face.corners[i];
 			solid.points[vert].v3i = reference.points[vert];
 			solid.points[vert].v3 += delta_position;
+	# Transforming edge
+	elif selection.type == DPHelpers.SelectionType.EDGE:
+		var solid := selection.solid;
+		var face := selection.face;
+		for i in range(selection.edge_id, selection.edge_id + 2):
+			var vert = face.corners[i % face.corners.size()];
+			solid.points[vert].v3i = reference.points[vert];
+			solid.points[vert].v3 += delta_position;
+	# Transforming vertex
+	elif selection.type == DPHelpers.SelectionType.VERTEX:
+		var solid := selection.solid;
+		var vert := selection.vertex_id;
+		solid.points[vert].v3i = reference.points[vert];
+		solid.points[vert].v3 += delta_position;
 	# Transforming decal
 	elif selection.type == DPHelpers.SelectionType.DECAL:
 		var decal := selection.decal;
