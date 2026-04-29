@@ -18,6 +18,9 @@ static func subgizmo_intersect_ray(map: DP_Map, camera: Camera3D, screen_pos: Ve
 	var closest_type := DPHelpers.SelectionType.NONE;
 	var closest_decal := -1;
 	
+	var closest_vertex_proc0 := -1;
+	var closest_edge := -1;
+	
 	# Get selection mode from the plugin:
 	#var selection_mode := mEditorPlugin.get_selection_mode();
 	
@@ -113,11 +116,33 @@ static func subgizmo_intersect_ray(map: DP_Map, camera: Camera3D, screen_pos: Ve
 			closest_type = DPHelpers.SelectionType.DECAL;
 			closest_decal = decal_index;
 			pass
+	
+	# Do additional geometry for the closest face:
+	if selection_mode == DioptraEditorMainPlugin.SelectMode.EDGE and closest_solid != -1:
+		# Find closest edge
+		var solid := map.solids[closest_solid];
+		var face := solid.faces[closest_face];
+		for i_corner in range(0, face.corners.size()):
+			var p0 := solid.points[face.corners[i_corner + 0]].v3;
+			var p1 := solid.points[face.corners[(i_corner + 1) % face.corners.size()]].v3;
+			var pX := Geometry3D.get_closest_point_to_segment(closest_position, p0, p1);
+			var dist_sqr := pX.distance_squared_to(closest_position);
+			if closest_edge == -1 or dist_sqr < closest_distance:
+				closest_distance = dist_sqr;
+				closest_edge = i_corner;
+	elif selection_mode == DioptraEditorMainPlugin.SelectMode.VERTEX and closest_solid != -1:
+		# Find closest corner
+		var solid := map.solids[closest_solid];
+		var face := solid.faces[closest_face];
+		for i_corner in range(0, face.corners.size()):
+			var p0 := solid.points[face.corners[i_corner + 0]].v3;
+			var dist_sqr := p0.distance_squared_to(closest_position);
+			if closest_vertex_proc0 == -1 or dist_sqr < closest_distance:
+				closest_distance = dist_sqr;
+				closest_edge = i_corner;
+				closest_vertex_proc0 = face.corners[i_corner + 0];
 		
-	# If there's a selection, emit selection changed.
-	#if closest_type != DPHelpers.SelectionType.NONE:
-	#	_queue_selection_changed = true;
-		
+	# Convert selection into a selection
 	var selection := DPSelectionItem.new();
 		
 	if closest_type == DPHelpers.SelectionType.SOLID:
@@ -132,13 +157,13 @@ static func subgizmo_intersect_ray(map: DP_Map, camera: Camera3D, screen_pos: Ve
 			selection.type = DPHelpers.SelectionType.EDGE;
 			selection.solid_id = closest_solid;
 			selection.face_id = closest_face;
-			#selection.edge_id = closest_edge;
+			selection.edge_id = closest_edge;
 		elif selection_mode == DioptraEditorMainPlugin.SelectMode.VERTEX:
 			selection.type = DPHelpers.SelectionType.VERTEX;
 			selection.solid_id = closest_solid;
 			selection.face_id = closest_face;
-			#selection.edge_id = closest_edge;
-			#selection.vertex_id = closest_vertex;
+			selection.edge_id = closest_edge;
+			selection.vertex_id = closest_vertex_proc0;
 			pass
 	elif closest_type == DPHelpers.SelectionType.DECAL:
 		selection.type = DPHelpers.SelectionType.DECAL;

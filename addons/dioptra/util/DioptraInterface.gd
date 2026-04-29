@@ -23,6 +23,8 @@ static func free_instance() -> void:
 
 var shortcut_select_solids : Shortcut = null;
 var shortcut_select_faces : Shortcut = null;
+var shortcut_select_edges : Shortcut = null;
+var shortcut_select_verts : Shortcut = null;
 
 func _init():
 	print("DioptraInterface started");
@@ -37,6 +39,16 @@ func _init():
 		key_event.keycode = KEY_2;
 		shortcut_select_faces = Shortcut.new();
 		shortcut_select_faces.events = [key_event];
+	if true:
+		var key_event := InputEventKey.new();
+		key_event.keycode = KEY_3;
+		shortcut_select_edges = Shortcut.new();
+		shortcut_select_edges.events = [key_event];
+	if true:
+		var key_event := InputEventKey.new();
+		key_event.keycode = KEY_4;
+		shortcut_select_verts = Shortcut.new();
+		shortcut_select_verts.events = [key_event];
 		
 	# Load Settings now that items initialized
 	init_settings();
@@ -106,9 +118,18 @@ func init_settings() -> void:
 				if !editor_settings.has_shortcut("dioptra/select_solids"):
 					editor_settings.add_shortcut("dioptra/select_solids", shortcut_select_solids);
 				shortcut_select_solids = editor_settings.get_shortcut("dioptra/select_solids");
+				
 				if !editor_settings.has_shortcut("dioptra/select_faces"):
 					editor_settings.add_shortcut("dioptra/select_faces", shortcut_select_faces);
 				shortcut_select_faces = editor_settings.get_shortcut("dioptra/select_faces");
+				
+				if !editor_settings.has_shortcut("dioptra/select_edges"):
+					editor_settings.add_shortcut("dioptra/select_edges", shortcut_select_edges);
+				shortcut_select_edges = editor_settings.get_shortcut("dioptra/select_edges");
+				
+				if !editor_settings.has_shortcut("dioptra/select_verts"):
+					editor_settings.add_shortcut("dioptra/select_verts", shortcut_select_verts);
+				shortcut_select_verts = editor_settings.get_shortcut("dioptra/select_verts");
 			pass # End editor settings
 		pass # End editor-only info
 		

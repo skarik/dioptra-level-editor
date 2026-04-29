@@ -1,10 +1,13 @@
-[gd_scene load_steps=6 format=3 uid="uid://w4h7fd6pioos"]
+[gd_scene load_steps=7 format=3 uid="uid://w4h7fd6pioos"]
 
 [ext_resource type="Texture2D" uid="uid://rqqlq11sn5sn" path="res://addons/dioptra/asset/default/select-cube.svg" id="2_65h2v"]
 [ext_resource type="Script" uid="uid://ca5l34adahm2i" path="res://addons/dioptra/editor/DP_PanelState.gd" id="2_tp8tb"]
 [ext_resource type="Texture2D" uid="uid://bnr2ljfbxq7pd" path="res://addons/dioptra/asset/default/select-face.svg" id="3_a21wj"]
 [ext_resource type="Texture2D" uid="uid://2f8k644wse8b" path="res://addons/dioptra/asset/default/select-edge.svg" id="4_dfuey"]
 [ext_resource type="Texture2D" uid="uid://dcqhv2mvdsl2m" path="res://addons/dioptra/asset/default/select-vertex.svg" id="5_oiw7u"]
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_4mdk8"]
+resource_name = "select_mode"
 
 [node name="DP State" type="HFlowContainer"]
 anchors_preset = 15
@@ -30,26 +33,28 @@ layout_mode = 2
 tooltip_text = "Select solids (1)"
 toggle_mode = true
 button_pressed = true
+button_group = SubResource("ButtonGroup_4mdk8")
 icon = ExtResource("2_65h2v")
 
 [node name="Face" type="Button" parent="Box/Selection"]
 layout_mode = 2
 tooltip_text = "Select faces (2)"
 toggle_mode = true
+button_group = SubResource("ButtonGroup_4mdk8")
 icon = ExtResource("3_a21wj")
 
 [node name="Edge" type="Button" parent="Box/Selection"]
 layout_mode = 2
 tooltip_text = "Select edges (3)"
-disabled = true
 toggle_mode = true
+button_group = SubResource("ButtonGroup_4mdk8")
 icon = ExtResource("4_dfuey")
 
 [node name="Vertex" type="Button" parent="Box/Selection"]
 layout_mode = 2
 tooltip_text = "Select corners (4)"
-disabled = true
 toggle_mode = true
+button_group = SubResource("ButtonGroup_4mdk8")
 icon = ExtResource("5_oiw7u")
 
 [node name="Label_Editor" type="Label" parent="Box"]

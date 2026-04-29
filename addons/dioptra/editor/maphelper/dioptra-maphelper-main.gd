@@ -75,24 +75,29 @@ func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 	var editor := _get_editor_plugin();
 	var map := editor.get_last_edited_map();
 	
-	#print(event.get_class() + " : " + event.as_text());
-	
 	if editor._currentTool == null:
 		if event is InputEventKey:
-			#print(event.get_class() + " : " + event.as_text());
 			if event.keycode == KEY_DELETE:
 				if _action_delete_selected_solids(editor, map):
 					return EditorPlugin.AFTER_GUI_INPUT_STOP;
 		pass
 		
 	# Forward shortcuts to the state panel
+	var state := _editor_plugin.DPDock_State as cScript_State;
 	if DioptraInterface._get_instance().shortcut_select_solids.matches_event(event) && event.is_pressed() and not event.is_echo():
-		var state := _editor_plugin.DPDock_State as cScript_State;
 		state.onSelectionTypePressed(DioptraEditorMainPlugin.SelectMode.SOLID);
 		return EditorPlugin.AFTER_GUI_INPUT_STOP;
+		
 	if DioptraInterface._get_instance().shortcut_select_faces.matches_event(event) && event.is_pressed() and not event.is_echo():
-		var state := _editor_plugin.DPDock_State as cScript_State;
 		state.onSelectionTypePressed(DioptraEditorMainPlugin.SelectMode.FACE);
+		return EditorPlugin.AFTER_GUI_INPUT_STOP;
+		
+	if DioptraInterface._get_instance().shortcut_select_edges.matches_event(event) && event.is_pressed() and not event.is_echo():
+		state.onSelectionTypePressed(DioptraEditorMainPlugin.SelectMode.EDGE);
+		return EditorPlugin.AFTER_GUI_INPUT_STOP;
+	
+	if DioptraInterface._get_instance().shortcut_select_verts.matches_event(event) && event.is_pressed() and not event.is_echo():
+		state.onSelectionTypePressed(DioptraEditorMainPlugin.SelectMode.VERTEX);
 		return EditorPlugin.AFTER_GUI_INPUT_STOP;
 	
 	return EditorPlugin.AFTER_GUI_INPUT_PASS;

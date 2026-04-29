@@ -122,6 +122,54 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 				face_polygon[corner_index] = solid.points[face.corners[corner_index]].v3;
 			_redraw_add_glow_to_polygon(face_polygon, am, color_sel, normal);
 			
+		elif selection.type == DPHelpers.SelectionType.EDGE:
+			var solid := selection.solid;
+			var face := selection.face;
+			var corner_count : int = face.corners.size();
+			
+			# Add selection to the edge:
+			var corner_0 := selection.edge_id + 0;
+			var corner_1 := (selection.edge_id + 1) % corner_count;
+			linesSelect.append(solid.points[face.corners[corner_0]].v3);
+			linesSelect.append(solid.points[face.corners[corner_1]].v3);
+			
+			# Draw ghost box for the face size
+			var min_p := solid.points[face.corners[corner_0]].v3;
+			var max_p := solid.points[face.corners[corner_0]].v3;
+			min_p = min_p.min(solid.points[face.corners[corner_1]].v3);
+			max_p = max_p.max(solid.points[face.corners[corner_1]].v3);
+			_ghost_box.box_start = min_p;
+			_ghost_box.box_end = max_p;
+			_ghost_box.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
+			
+		elif selection.type == DPHelpers.SelectionType.VERTEX:
+			var solid := selection.solid;
+			var face := selection.face;
+			
+			#var pos := solid.points[selection.face.corners[selection.edge_id]].v3;
+			var pos := solid.points[selection.vertex_id].v3;
+			
+			const bbox_halfsize : float = 0.1;
+			var bbox_corners : PackedVector3Array = [
+				pos + ( Vector3.UP + Vector3.LEFT + Vector3.FORWARD) * bbox_halfsize,
+				pos + (-Vector3.UP + Vector3.LEFT + Vector3.FORWARD) * bbox_halfsize,
+				pos + (-Vector3.UP - Vector3.LEFT + Vector3.FORWARD) * bbox_halfsize,
+				pos + ( Vector3.UP - Vector3.LEFT + Vector3.FORWARD) * bbox_halfsize,
+				pos + ( Vector3.UP + Vector3.LEFT - Vector3.FORWARD) * bbox_halfsize,
+				pos + (-Vector3.UP + Vector3.LEFT - Vector3.FORWARD) * bbox_halfsize,
+				pos + (-Vector3.UP - Vector3.LEFT - Vector3.FORWARD) * bbox_halfsize,
+				pos + ( Vector3.UP - Vector3.LEFT - Vector3.FORWARD) * bbox_halfsize,
+			];
+			for corner_index in 4:
+				linesNormieZTest.append(bbox_corners[(corner_index + 0)]);
+				linesNormieZTest.append(bbox_corners[(corner_index + 1) % 4]);
+				
+				linesNormieZTest.append(bbox_corners[(corner_index + 0) + 4]);
+				linesNormieZTest.append(bbox_corners[(corner_index + 1) % 4 + 4]);
+				
+				linesNormieZTest.append(bbox_corners[corner_index + 0]);
+				linesNormieZTest.append(bbox_corners[corner_index + 4]);
+			
 		elif selection.type == DPHelpers.SelectionType.DECAL:
 			var decal := selection.decal;
 			var material := map.material_objects[decal.material];
