@@ -32,5 +32,5 @@ toggle_mode = true
 icon = ExtResource("4_q0hs4")
 
 [connection signal="pressed" from="Selection" to="." method="onSelect_Select"]
-[connection signal="pressed" from="Box" to="." method="onSelect_BoxTest"]
+[connection signal="pressed" from="Box" to="." method="onSelect_Box"]
 [connection signal="pressed" from="Decal" to="." method="onSelect_Decal"]
