@@ -11,8 +11,8 @@ func setPlugin(plugin : DioptraEditorMainPlugin) -> void:
 	
 func onSelect_Select() -> void:
 	return onToolSelect(DioptraEditorMainPlugin.ToolMode.SELECT, $Selection);
-func onSelect_BoxTest() -> void:
-	return onToolSelect(DioptraEditorMainPlugin.ToolMode.BOX_TEST, $Box);
+func onSelect_Box() -> void:
+	return onToolSelect(DioptraEditorMainPlugin.ToolMode.BOX, $Box);
 func onSelect_Decal() -> void:
 	return onToolSelect(DioptraEditorMainPlugin.ToolMode.DECAL, $Decal);
 	

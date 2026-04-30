@@ -1,5 +1,5 @@
 extends DPUTool
-class_name DPUTool_BoxTest
+class_name DPUTool_Box
 
 enum {
 	TOOLSTATE_WAITING = 0,
@@ -32,15 +32,28 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 	#	_plugin.DPGizmoPlugin_ToolCube.enabled = true;
 	
 	if _state == TOOLSTATE_WAITING:
+		# Update ghost:
+		const CURSOR_SIZE := 0.2;
+		_ghost_box.box_start = _plugin._last_3d_mouse_position + _plugin._last_3d_mouse_normal * CURSOR_SIZE - Vector3.ONE * CURSOR_SIZE;
+		_ghost_box.box_end = _plugin._last_3d_mouse_position + _plugin._last_3d_mouse_normal * CURSOR_SIZE + Vector3.ONE * CURSOR_SIZE;
+		_ghost_box.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
+		
 		# Waiting for an initial drag, so we wait for a click:
 		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 			# Get the normal:
-			_normal_axis = 1; # Lock to Y axis now
+			if _plugin._last_3d_mouse_hit:
+				var abs_normal = _plugin._last_3d_mouse_normal.abs();
+				_normal_axis = abs_normal.max_axis_index();
+			else:
+				_normal_axis = Vector3.AXIS_Y; # Lock to Y axis now
 			# Get the hit position to start the box:
 			var drag_from : Vector3 = viewport_camera.project_ray_origin(event.position);
 			var drag_dir : Vector3 = viewport_camera.project_ray_normal(event.position);
 			
-			var world_hit_point := Vector3.ZERO; # TODO
+			# Get a basis for the plane we're gonna work on
+			var world_hit_point := Vector3.ZERO;
+			if _plugin._last_3d_mouse_hit:
+				world_hit_point = _plugin._last_3d_mouse_position;
 			
 			# Cast on the working plane:
 			const AxesLookup := [Vector3(1, 0, 0), Vector3(0, 1, 0), Vector3(0, 0, 1)];

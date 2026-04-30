@@ -6,7 +6,7 @@ class_name DioptraEditorMainPlugin
 
 enum ToolMode {
 	SELECT = 0,
-	BOX_TEST = 1,
+	BOX = 1,
 	DECAL = 2,
 }
 
@@ -160,6 +160,8 @@ var _uvModePer : UVModePer = UVModePer.FACE;
 
 var _last_2d_mouse_position : Vector2;
 var _last_3d_mouse_position : Vector3;
+var _last_3d_mouse_normal : Vector3;
+var _last_3d_mouse_hit : bool;
 
 #------------------------------------------------------------------------------#
 
@@ -191,9 +193,9 @@ func onToolSelect(tool : ToolMode) -> void:
 		if _currentTool != null:
 			_currentTool.cleanup();
 		_currentTool = null;
-	elif tool == ToolMode.BOX_TEST:
-		if not (_currentTool is DPUTool_BoxTest):
-			newTool = DPUTool_BoxTest.new(self);
+	elif tool == ToolMode.BOX:
+		if not (_currentTool is DPUTool_Box):
+			newTool = DPUTool_Box.new(self);
 	elif tool == ToolMode.DECAL:
 		if not (_currentTool is DPUTool_Decal):
 			newTool = DPUTool_Decal.new(self);
@@ -230,6 +232,7 @@ func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 	if input_action == EditorPlugin.AFTER_GUI_INPUT_PASS:
 		if event is InputEventMouseMotion:
 			_last_2d_mouse_position = event.position;
+			_last_3d_mouse_hit = false;
 			
 			# Raycast and update:
 			var map := get_last_edited_map();
@@ -247,6 +250,8 @@ func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 				if collision != null:
 					var collision_point := collision as Vector3;
 					_last_3d_mouse_position = collision_point;
+					_last_3d_mouse_normal = normal;
+					_last_3d_mouse_hit = true;
 					
 			pass # End InputEventMouseMotion
 		pass # End input pass

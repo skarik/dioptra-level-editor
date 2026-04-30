@@ -129,6 +129,9 @@ func _on_material_dialog_preview_done(path : String, preview : Texture2D, thumbn
 
 ## Updates the UI with the given material
 func update_ui_with_material(mat : Material) -> void:
+	if not mat: # Skip invalid materials
+		return;
+		
 	_texture_label.text = mat.resource_path.get_basename().get_file();
 	EditorInterface.get_resource_previewer().queue_resource_preview(mat.resource_path, self, "_on_material_dialog_preview_done", null);
 	
