@@ -15,7 +15,7 @@ If you want to use this and are interested in the development, feel free to get 
 ### Solids
 Backbone of your map!
 - Making solids
-- Per face, ~~edge, and vertex~~ editing
+- Per face, edge, and vertex editing
 ### Decals
 Splat all over your map! Forget post-process decals with optimized render paths get your fill-rate destroying mesh-hugging decals here!
 - Mesh-based decals that use map geometry
