@@ -1,14 +1,17 @@
-[gd_scene load_steps=12 format=3 uid="uid://bhxmwac2fj16y"]
+[gd_scene load_steps=15 format=3 uid="uid://bhxmwac2fj16y"]
 
 [ext_resource type="Script" uid="uid://hcmgfcqh10uc" path="res://addons/dioptra/editor/DP_PanelTexture.gd" id="1_0o48c"]
 [ext_resource type="Script" uid="uid://ymtvdjr4c6o" path="res://addons/dioptra/util/StylesOverride.gd" id="2_r5rll"]
 [ext_resource type="Texture2D" uid="uid://dwqfmqg0oe1mp" path="res://addons/dioptra/asset/default/tex-fit.svg" id="3_08nva"]
 [ext_resource type="Texture2D" uid="uid://bbnhdwmklnusu" path="res://addons/dioptra/asset/default/tex-flip-x.svg" id="3_hl7nd"]
 [ext_resource type="Texture2D" uid="uid://b264naldos6im" path="res://addons/dioptra/asset/default/tex-flip-y.svg" id="4_vn6ip"]
+[ext_resource type="Texture2D" uid="uid://rqqlq11sn5sn" path="res://addons/dioptra/asset/default/select-cube.svg" id="5_bqldj"]
 [ext_resource type="Texture2D" uid="uid://bywlkqqtsecsv" path="res://addons/dioptra/asset/default/tex-center-x.svg" id="5_j747c"]
 [ext_resource type="Texture2D" uid="uid://b0ixfaeav5qd6" path="res://addons/dioptra/asset/default/tex-move-left-x.svg" id="5_ll376"]
 [ext_resource type="Texture2D" uid="uid://ddmn85s73mgb8" path="res://addons/dioptra/asset/default/tex-move-right-x.svg" id="6_08nva"]
+[ext_resource type="Texture2D" uid="uid://c84saf6lfd3v8" path="res://addons/dioptra/asset/default/view-square.svg" id="6_lrmmq"]
 [ext_resource type="Texture2D" uid="uid://cb282krjn0r61" path="res://addons/dioptra/asset/default/tex-move-top-y.svg" id="7_107lr"]
+[ext_resource type="Texture2D" uid="uid://bnr2ljfbxq7pd" path="res://addons/dioptra/asset/default/select-face.svg" id="7_uwnna"]
 [ext_resource type="Texture2D" uid="uid://daoorg2afms01" path="res://addons/dioptra/asset/default/tex-move-bot-y.svg" id="8_8f21f"]
 [ext_resource type="Texture2D" uid="uid://c2pjw6rbpfbu7" path="res://addons/dioptra/asset/default/tex-center-y.svg" id="10_bqldj"]
 
@@ -116,7 +119,7 @@ icon_alignment = 1
 [node name="ButtonAutofit" type="Button" parent="Container UVs/VContainer/GridContainer/HBoxContainerActions"]
 layout_mode = 2
 tooltip_text = "Autofit (Rotates material to best fit)"
-icon = ExtResource("3_hl7nd")
+icon = ExtResource("3_08nva")
 icon_alignment = 1
 
 [node name="HBoxContainerMode" type="HBoxContainer" parent="Container UVs/VContainer/GridContainer"]
@@ -127,7 +130,7 @@ layout_mode = 2
 tooltip_text = "Work per-face"
 toggle_mode = true
 button_pressed = true
-icon = ExtResource("3_hl7nd")
+icon = ExtResource("5_bqldj")
 icon_alignment = 1
 
 [node name="ButtonPerIsland" type="Button" parent="Container UVs/VContainer/GridContainer/HBoxContainerMode"]
@@ -135,14 +138,14 @@ layout_mode = 2
 tooltip_text = "Work with islands: treating faces nearby each other as one face"
 disabled = true
 toggle_mode = true
-icon = ExtResource("3_hl7nd")
+icon = ExtResource("6_lrmmq")
 icon_alignment = 1
 
 [node name="ButtonPerAll" type="Button" parent="Container UVs/VContainer/GridContainer/HBoxContainerMode"]
 layout_mode = 2
 tooltip_text = "Work treating all selected faces as one face"
 toggle_mode = true
-icon = ExtResource("3_hl7nd")
+icon = ExtResource("7_uwnna")
 icon_alignment = 1
 
 [node name="LabelScale" type="Label" parent="Container UVs/VContainer/GridContainer"]

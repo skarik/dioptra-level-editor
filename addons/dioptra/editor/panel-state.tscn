@@ -1,10 +1,11 @@
-[gd_scene load_steps=7 format=3 uid="uid://w4h7fd6pioos"]
+[gd_scene load_steps=8 format=3 uid="uid://w4h7fd6pioos"]
 
 [ext_resource type="Texture2D" uid="uid://rqqlq11sn5sn" path="res://addons/dioptra/asset/default/select-cube.svg" id="2_65h2v"]
 [ext_resource type="Script" uid="uid://ca5l34adahm2i" path="res://addons/dioptra/editor/DP_PanelState.gd" id="2_tp8tb"]
 [ext_resource type="Texture2D" uid="uid://bnr2ljfbxq7pd" path="res://addons/dioptra/asset/default/select-face.svg" id="3_a21wj"]
 [ext_resource type="Texture2D" uid="uid://2f8k644wse8b" path="res://addons/dioptra/asset/default/select-edge.svg" id="4_dfuey"]
 [ext_resource type="Texture2D" uid="uid://dcqhv2mvdsl2m" path="res://addons/dioptra/asset/default/select-vertex.svg" id="5_oiw7u"]
+[ext_resource type="Texture2D" uid="uid://bldwjxgpbh06n" path="res://addons/dioptra/asset/default/tex-lock.svg" id="6_65h2v"]
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_4mdk8"]
 resource_name = "select_mode"
@@ -68,7 +69,9 @@ layout_mode = 2
 layout_mode = 2
 tooltip_text = "Texture Lock.
 When moving solids, the editor will attempt to lock the texture by changing the offset and the rotation."
-icon = ExtResource("5_oiw7u")
+disabled = true
+toggle_mode = true
+icon = ExtResource("6_65h2v")
 
 [node name="Button5" type="Button" parent="Box/Editor"]
 visible = false
@@ -98,6 +101,8 @@ layout_mode = 2
 
 [node name="Wireframe" type="Button" parent="Box/View"]
 layout_mode = 2
+tooltip_text = "Show map wireframe"
+disabled = true
 toggle_mode = true
 icon = ExtResource("5_oiw7u")
 
