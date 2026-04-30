@@ -1,2 +1,16 @@
 # Normalize EOL for all files that Git considers text files.
 * text=auto eol=lf
+
+# Only export the addons directory
+asset export-ignore
+screenshots export-ignore
+source export-ignore
+Test0-Cube export-ignore
+Test1-Camera export-ignore
+Test2-Textbox export-ignore
+Test3-SkinnedMesh export-ignore
+Test4-Editor export-ignore
+Test5-FPSMap export-ignore
+addons/godot-plugin-refresher export-ignore
+addons/Test4-Editor export-ignore
+addons/TTSelectableTest export-ignore
