@@ -9,7 +9,7 @@ Note, for the developer this is a "Good Enough" editor. If you are looking for s
 
 If you want to use this and are interested in the development, feel free to get in contact. I am super easy to contact on [Bluesky](https://bsky.app/profile/skarik.bsky.social) and [Discord](https://discord.com/invite/ahEJgUynK2).
 
-![Editor view](screenshots/editor-view.png)
+![Editor view](screenshots/editor-view-2.png)
 
 ## Features
 ### Solids

@@ -2,6 +2,9 @@
 * text=auto eol=lf
 
 # Only export the addons directory
-/**							export-ignore
-/addons/dioptra				!export-ignore
-/addons/dioptra-geobuilder	!export-ignore
+/**								export-ignore
+/addons							!export-ignore
+/addons/dioptra					!export-ignore
+/addons/dioptra/**				!export-ignore
+/addons/dioptra-geobuilder		!export-ignore
+/addons/dioptra-geobuilder/**	!export-ignore

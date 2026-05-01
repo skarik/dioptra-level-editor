@@ -644,12 +644,13 @@ transform = Transform3D(0.950451, -0.00597859, 0.310817, -0.263119, 0.517011, 0.
 shadow_enabled = true
 
 [node name="StaticBody3D2" type="RigidBody3D" parent="."]
-transform = Transform3D(0.93943, 0, -0.342742, -2.99634e-08, -1, -8.21276e-08, -0.342742, 8.74228e-08, -0.93943, -0.205753, 4.68371, -2.28261)
+transform = Transform3D(0.93943, 0, -0.342742, -2.99634e-08, -1, -8.21276e-08, -0.342742, 8.74228e-08, -0.93943, -0.205753, 4.99475, -2.28261)
+visible = false
 script = ExtResource("6_baiak")
 impact_sfx = ExtResource("7_od74r")
 
 [node name="Box" type="MeshInstance3D" parent="StaticBody3D2"]
-transform = Transform3D(-1, -8.74228e-08, 0, 8.74228e-08, -1, 0, 0, 0, 1, -5.77941e-08, -0.661087, 3.55271e-15)
+transform = Transform3D(-1, -8.74228e-08, 0, 8.74228e-08, -1, 0, 0, 0, 1, 0, 0, 0)
 material_override = ExtResource("6_etp26")
 gi_mode = 0
 mesh = SubResource("BoxMesh_baiak")
@@ -681,6 +682,7 @@ visible = false
 shape = SubResource("CylinderShape3D_bpfwy")
 
 [node name="CharacterBody3D" type="CharacterBody3D" parent="."]
+transform = Transform3D(0.121679, 0, -0.99257, 0, 1, 0, 0.99257, 0, 0.121679, 0.0862486, 0, -5.71823)
 script = ExtResource("14_8qjxl")
 motion_settings = SubResource("Resource_aakh7")
 
