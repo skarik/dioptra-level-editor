@@ -42,5 +42,13 @@ Additional features incoming that are planned
   - Configurable chunks!
 - Automeshes: auto-tiling meshes 
 
-![Texturing panel](screenshots/texturing-panel.png)
-![Material viewer](screenshots/material-viewer.png)
+[![Texturing panel](screenshots/texturing-panel-thumb.png)](screenshots/texturing-panel.png)[![Material viewer](screenshots/material-viewer-thumb.png)](screenshots/material-viewer.png)
+
+## Included Addons:
+### `dioptra`
+Main level editor plugin. Has the following sub-plugins:
+- `node-types`: Has all the node types used for making maps plus some utility ones to wrap Godot functionality
+- `editor`: Has the main editor and tools
+### `dioptra-geobuilder`
+Plugin contains helpers for easier creation of procedural meshes.
+Does not rely on `dioptra` to function so can be grabbed separately.
