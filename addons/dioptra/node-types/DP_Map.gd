@@ -232,7 +232,9 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 		pass
 	
 	# Apply the mesh
-	mesh_instance.mesh = mesh if has_data else null;
+	if has_data:
+		mesh.lightmap_unwrap(global_transform, 0.25);
+		mesh_instance.mesh = mesh;
 		
 	pass # func _rebuild_editor_map_group
 	
@@ -437,7 +439,9 @@ func rebuild_editor_decals(in_decal : DPMapDecal = null) -> void:
 		pass
 	
 	# Apply the mesh
-	mesh_instance.mesh = mesh if has_data else null;
+	if has_data:
+		mesh.lightmap_unwrap(global_transform, 0.25);
+		mesh_instance.mesh = mesh;
 	
 	pass
 
