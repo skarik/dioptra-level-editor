@@ -247,6 +247,7 @@ func _editor_get_mesh_instance(group_index : int) -> MeshInstance3D:
 	# fill in if null, instantiate a hidden child :)
 	if _editor_mesh_instances[group_index] == null:
 		var mesh_renderer := MeshInstance3D.new();
+		mesh_renderer.name = "EditorMesh_Solids_%d" % group_index;
 		add_child(mesh_renderer, false, Node.INTERNAL_MODE_FRONT);
 		mesh_renderer.owner = self;
 		_editor_mesh_instances[group_index] = mesh_renderer;
@@ -451,6 +452,7 @@ func _editor_get_mesh_instance_for_decals() -> MeshInstance3D:
 	# fill in if null, instantiate a hidden child :)
 	if _editor_mesh_instances_decals == null:
 		var mesh_renderer := MeshInstance3D.new();
+		mesh_renderer.name = "EditorMesh_Decals_0";
 		add_child(mesh_renderer, false, Node.INTERNAL_MODE_FRONT);
 		mesh_renderer.owner = self;
 		_editor_mesh_instances_decals = mesh_renderer;
