@@ -16,6 +16,7 @@ If you want to use this and are interested in the development, feel free to get 
 Backbone of your map!
 - Making solids
 - Per face, edge, and vertex editing
+- Lightmap GI compatible!
 ### Decals
 Splat all over your map! Forget post-process decals with optimized render paths get your fill-rate destroying mesh-hugging decals here!
 - Mesh-based decals that use map geometry
