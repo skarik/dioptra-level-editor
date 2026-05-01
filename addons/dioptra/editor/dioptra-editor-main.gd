@@ -177,6 +177,8 @@ func onToolSelect(tool : ToolMode) -> void:
 		_editorNode = EditorDP_InternalTool.new();
 		# We need this node in the scene so it can update the sizes of items
 		EditorInterface.get_edited_scene_root().add_child(_editorNode, false, Node.INTERNAL_MODE_FRONT);
+		# Lock it so no gizmos appear
+		_editorNode.set_meta("_edit_lock_", true);
 	
 	# Switch to the editor mode
 	EditorInterface.get_selection().clear();
