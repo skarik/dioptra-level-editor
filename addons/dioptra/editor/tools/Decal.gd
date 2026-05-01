@@ -2,17 +2,22 @@ extends DPUTool
 class_name DPUTool_Decal
 
 var _ghost_box : DPUBoxGhost = null;
+var _cursor : DPUCursorGhost = null;
 var _decal_position := MapVector3.new();
 var _decal_normal : Vector3 = Vector3.ZERO;
 
 func _init(plugin : DioptraEditorMainPlugin) -> void:
 	super(plugin);
 	_ghost_box = DPUBoxGhost.new();
-	
+	_cursor = DPUCursorGhost.new();
+
 func cleanup() -> void:
 	if _ghost_box != null:
 		_ghost_box.cleanup()
 		_ghost_box = null;
+	if _cursor != null:
+		_cursor.cleanup();
+		_cursor = null;
 	pass
 	
 ## Overrideable GUI input handling
@@ -54,9 +59,12 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 				_decal_normal = normal;
 			
 				# Update ghost:
-				_ghost_box.box_start = collision_point - Vector3.ONE * 0.2;
-				_ghost_box.box_end = collision_point + Vector3.ONE * 0.2;
-				_ghost_box.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
+				_cursor.position = _decal_position.v3;
+				_cursor.normal = _decal_normal;
+				_cursor.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
+				#_ghost_box.box_start = _decal_position.v3 - Vector3.ONE * 0.2;
+				#_ghost_box.box_end = _decal_position.v3 + Vector3.ONE * 0.2;
+				#_ghost_box.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
 			
 	# When the mouse click releases, stop dragging
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:

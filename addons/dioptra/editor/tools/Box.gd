@@ -15,28 +15,39 @@ var _box_end := MapVector3.new();
 var _drag_start : Vector3;
 
 var _ghost_box : DPUBoxGhost = null;
+var _cursor : DPUCursorGhost = null;
 
 func _init(plugin : DioptraEditorMainPlugin) -> void:
 	super(plugin);
 	_ghost_box = DPUBoxGhost.new();
+	_cursor = DPUCursorGhost.new();
 	
 ## Overridable cleanup
 func cleanup() -> void:
 	if _ghost_box != null:
 		_ghost_box.cleanup()
 		_ghost_box = null;
+	if _cursor != null:
+		_cursor.cleanup();
+		_cursor = null;
 	
 ## Overrideable GUI input handling
 func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
-	#if _plugin and _plugin.DPGizmoPlugin_ToolCube:
-	#	_plugin.DPGizmoPlugin_ToolCube.enabled = true;
+	# If they hit cancel & want to remove the box, then yeah stop it
+	if event is InputEventKey and (event.keycode == KEY_ESCAPE or event.keycode == KEY_BACKSPACE):
+		 # Clean up the state of the tool
+		_ghost_box.cleanup();
+		_state = TOOLSTATE_WAITING; # Reset
+	
+		# Capture the input
+		return EditorPlugin.AFTER_GUI_INPUT_STOP;
 	
 	if _state == TOOLSTATE_WAITING:
 		# Update ghost:
-		const CURSOR_SIZE := 0.2;
-		_ghost_box.box_start = _plugin._last_3d_mouse_position + _plugin._last_3d_mouse_normal * CURSOR_SIZE - Vector3.ONE * CURSOR_SIZE;
-		_ghost_box.box_end = _plugin._last_3d_mouse_position + _plugin._last_3d_mouse_normal * CURSOR_SIZE + Vector3.ONE * CURSOR_SIZE;
-		_ghost_box.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
+		var cursor_position := DioptraInterface.get_grid_round_v3(_plugin._last_3d_mouse_position);
+		_cursor.position = cursor_position;
+		_cursor.normal = _plugin._last_3d_mouse_normal;
+		_cursor.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
 		
 		# Waiting for an initial drag, so we wait for a click:
 		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
@@ -158,6 +169,9 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 			# Clean up the state of the tool
 			_ghost_box.cleanup();
 			_state = TOOLSTATE_WAITING; # Reset
+			
+			# Capture the input
+			return EditorPlugin.AFTER_GUI_INPUT_STOP;
 		
 		# Otherwise, let other events through
 		return EditorPlugin.AFTER_GUI_INPUT_PASS;

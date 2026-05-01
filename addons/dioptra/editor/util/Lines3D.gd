@@ -19,15 +19,10 @@ static func free_instance() -> void:
 		_Instance.queue_free();
 	_Instance = null;
 	
-# Options
-#static var TextFixedSize : bool = true;
-#static var UseCodeFont : bool = true;
-
 #------------------------------------------------------------------------------#
 
-## Item in the node pool with utilities of memory management
+## Lines item that defines how a group of lines are renderered
 class LinesItem:
-	#var _lines : DPULines3D;
 	var points : PackedVector3Array = [];
 	var colors : PackedColorArray = []; 
 	var width : float = 2.0;
@@ -35,7 +30,6 @@ class LinesItem:
 	var dpi_aware : bool = true; ## Do we scale up and down for the DPI?
 
 	func _init(lines : DPULines3D) -> void:
-		#_lines = lines;
 		pass
 		
 	## Requests an update to the lines. Call when the mesh changes.
@@ -43,7 +37,7 @@ class LinesItem:
 		#_lines._request_update();
 		DPULines3D.request_update();
 
-	## Releases the given node back to the pool
+	## Gives the item back to the line manager
 	func release() -> void:
 		DPULines3D.release_item(self);
 
@@ -56,8 +50,6 @@ var _line_rebuild_requested : bool = false;
 #------------------------------------------------------------------------------#
 
 func _init() -> void:
-	#_used_lines = [];
-	#_unused_lines = [];
 	_lines = [];
 	_line_renderer = MeshInstance3D.new();
 	add_child(_line_renderer, false, Node.INTERNAL_MODE_FRONT);
@@ -69,8 +61,6 @@ func _init() -> void:
 func _exit_tree() -> void:
 	# Clean up all the items
 	for item in _lines:
-		#if item != null:
-		#	item.free();
 		item = null;
 	_lines.clear();
 	# We shouldn't need to touch _line_renderer, as it's a child of this node.
@@ -107,7 +97,6 @@ static func release_item(line : LinesItem) -> void:
 func _release_item(line : LinesItem) -> void:
 	var line_item_pos := _lines.find(line);
 	if line_item_pos != -1:
-		#_lines[line_item_pos].free();
 		_lines.remove_at(line_item_pos);
 		_request_update();
 	pass
