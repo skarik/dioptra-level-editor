@@ -28,5 +28,18 @@ Splat all over your map! Forget post-process decals with optimized render paths 
 ### ~~Automeshes~~
 - Soon(TM)
 
+## Planned
+Additional features incoming that are planned 
+- SolidsMesh: tie selected solids to a new non-map node
+  - Like Hammer 1's Tie to Entity but godot flavored
+- Quality of Life
+  - Undo and redo that won't crash
+  - Improving mapping workflow
+  - Copy and paste with saved offsets
+- Perf partitioning
+  - Hidden face removal!
+  - Configurable chunks!
+- Automeshes: auto-tiling meshes 
+
 ![Texturing panel](screenshots/texturing-panel.png)
 ![Material viewer](screenshots/material-viewer.png)
