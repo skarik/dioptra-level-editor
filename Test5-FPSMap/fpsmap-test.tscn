@@ -706,4 +706,5 @@ texture_albedo = ExtResource("16_sp18w")
 environment = SubResource("Environment_11doq")
 
 [node name="LightmapGI" type="LightmapGI" parent="."]
+shadowmask_mode = 2
 light_data = ExtResource("24_3hqk8")
