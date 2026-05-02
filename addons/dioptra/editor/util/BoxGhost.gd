@@ -6,10 +6,13 @@ var box_end : Vector3 = Vector3.ZERO;
 var icon_corners : bool = false;
 var show_size_labels : bool = true;
 var show_edge_highlight : bool = true;
+var show_face_highlight : bool = false;
+var highlighted_face : int = -1; ## X-, X+, Y-, Y+, Z-, Z+ in order
 
 var _label_x : DPULabelPool.LabelNodeItem = null;
 var _label_y : DPULabelPool.LabelNodeItem = null;
 var _label_z : DPULabelPool.LabelNodeItem = null;
+var _mesh_renderer : MeshInstance3D = null;
 var _lines : DPULines3D.LinesItem = null;
 var _lines_edge : DPULines3D.LinesItem = null;
 
@@ -25,6 +28,9 @@ func cleanup() -> void:
 	if _label_z:
 		_label_z.release();
 		_label_z = null;
+	if _mesh_renderer:
+		_mesh_renderer.queue_free();
+		_mesh_renderer = null;
 	if _lines:
 		_lines.release();
 		_lines = null;
@@ -58,8 +64,14 @@ func update(viewport_camera : Camera3D) -> void:
 	var color_y : Color = EditorInterface.get_editor_theme().get_color("property_color_y", "Editor");
 	var color_z : Color = EditorInterface.get_editor_theme().get_color("property_color_z", "Editor");
 	var color_w : Color = EditorInterface.get_editor_theme().get_color("property_color_w", "Editor");
+	var color_h : Color = DPHelpers.COLOR_GEO_ACCENT;
 	
-	# TODO: mesh
+	# Create arraymesher
+	var am := DPArrayMesher.new(DPArrayMesher.TypeFlags.VERTEX \
+		| DPArrayMesher.TypeFlags.NORMAL \
+		| DPArrayMesher.TypeFlags.COLOR | DPArrayMesher.TypeFlags.TEX_UV \
+		| DPArrayMesher.TypeFlags.TEX_UV2 \
+		| DPArrayMesher.TypeFlags.INDEX);
 	
 	# Wires
 	if _lines == null:
@@ -122,6 +134,79 @@ func update(viewport_camera : Camera3D) -> void:
 			_lines_edge.segments = true;
 			_lines_edge.width = 3.0;
 		_update_edge(_last_valid_camera);
+		
+	if show_face_highlight:
+		# Build faces
+		# Each face gets their own 4 points as they can have different colors
+		var points : PackedVector3Array = [];
+		points.resize(6 * 4);
+		# X Faces
+		points[0] = Vector3(-1, -1, -1);
+		points[1] = Vector3(-1, -1,  1);
+		points[2] = Vector3(-1,  1, -1);
+		points[3] = Vector3(-1,  1,  1);
+		points[4] = Vector3( 1, -1, -1);
+		points[5] = Vector3( 1, -1,  1);
+		points[6] = Vector3( 1,  1, -1);
+		points[7] = Vector3( 1,  1,  1);
+		# Y Faces
+		points[8] = Vector3(-1, -1, -1);
+		points[9] = Vector3(-1, -1,  1);
+		points[10] = Vector3( 1, -1, -1);
+		points[11] = Vector3( 1, -1,  1);
+		points[12] = Vector3(-1,  1, -1);
+		points[13] = Vector3(-1,  1,  1);
+		points[14] = Vector3( 1,  1, -1);
+		points[15] = Vector3( 1,  1,  1);
+		# Z Faces
+		points[16] = Vector3(-1, -1, -1);
+		points[17] = Vector3(-1,  1, -1);
+		points[18] = Vector3( 1, -1, -1);
+		points[19] = Vector3( 1,  1, -1);
+		points[20] = Vector3(-1, -1,  1);
+		points[21] = Vector3(-1,  1,  1);
+		points[22] = Vector3( 1, -1,  1);
+		points[23] = Vector3( 1,  1,  1);
+		# Fix positions
+		for v in 24:
+			points[v] = center + points[v] * halfsize;
+		
+		am.points_add(points);
+		
+		# Fix colors
+		for v in 24:
+			am.get_surface_color()[v] = Color(color_h * 0.5, 0.2);
+		# Face highlight
+		if highlighted_face != -1:
+			var v0 := highlighted_face * 4;
+			for v in 4:
+				am.get_surface_color()[v0 + v] = Color(color_h, 0.3);
+			
+		# Build quads
+		for face in 6:
+			var v0 = face * 4;
+			am.quad_add_indicies(v0 + 0, v0 + 1, v0 + 2, v0 + 3);
+			
+
+	if am.get_index_count() > 0:
+		# Mesh
+		if _mesh_renderer == null:
+			_mesh_renderer = MeshInstance3D.new();
+			EditorInterface.get_edited_scene_root().add_child(_mesh_renderer, false, Node.INTERNAL_MODE_FRONT);
+		
+		var old_mesh = _mesh_renderer.mesh;
+		var new_mesh = ArrayMesh.new();
+		new_mesh.add_surface_from_arrays(am.get_primitive_type(), am.get_surface_array());
+		new_mesh.surface_set_material(0, preload("res://addons/dioptra/editor/util/ghost_transparent.tres"));
+		_mesh_renderer.mesh = new_mesh;
+		old_mesh = null;
+		pass
+	else:
+		if _mesh_renderer:
+			var old_mesh = _mesh_renderer.mesh;
+			_mesh_renderer.mesh = null;
+			old_mesh = null;
+		pass
 	
 	pass
 

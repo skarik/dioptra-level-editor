@@ -50,11 +50,6 @@ func update(viewport_camera : Camera3D) -> void:
 		| DPArrayMesher.TypeFlags.COLOR | DPArrayMesher.TypeFlags.TEX_UV \
 		| DPArrayMesher.TypeFlags.TEX_UV2 \
 		| DPArrayMesher.TypeFlags.INDEX);
-		
-	# Mesh
-	if _mesh_renderer == null:
-		_mesh_renderer = MeshInstance3D.new();
-		EditorInterface.get_edited_scene_root().add_child(_mesh_renderer, false, Node.INTERNAL_MODE_FRONT);
 
 	# Wires
 	if _lines == null:
@@ -95,6 +90,11 @@ func update(viewport_camera : Camera3D) -> void:
 		am.get_surface_color()[0].a = 0.80;
 		
 	if am.get_index_count() > 0:
+		# Mesh
+		if _mesh_renderer == null:
+			_mesh_renderer = MeshInstance3D.new();
+			EditorInterface.get_edited_scene_root().add_child(_mesh_renderer, false, Node.INTERNAL_MODE_FRONT);
+		
 		var old_mesh = _mesh_renderer.mesh;
 		var new_mesh = ArrayMesh.new();
 		new_mesh.add_surface_from_arrays(am.get_primitive_type(), am.get_surface_array());
@@ -103,9 +103,10 @@ func update(viewport_camera : Camera3D) -> void:
 		old_mesh = null;
 		pass
 	else:
-		var old_mesh = _mesh_renderer.mesh;
-		_mesh_renderer.mesh = null;
-		old_mesh = null;
+		if _mesh_renderer:
+			var old_mesh = _mesh_renderer.mesh;
+			_mesh_renderer.mesh = null;
+			old_mesh = null;
 		pass
 		
 	pass

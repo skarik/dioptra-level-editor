@@ -3,6 +3,10 @@ class_name DPHelpers
 
 #------------------------------------------------------------------------------#
 
+const COLOR_GEO_ACCENT := Color(0.2, 0.95, 1.0);
+
+#------------------------------------------------------------------------------#
+
 static func get_material_primary_texture_size(mat : Material) -> Vector2i:
 	var smat := mat as StandardMaterial3D;
 	if smat != null and smat.albedo_texture != null:
