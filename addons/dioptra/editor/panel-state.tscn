@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://w4h7fd6pioos"]
+[gd_scene load_steps=10 format=3 uid="uid://w4h7fd6pioos"]
 
 [ext_resource type="Texture2D" uid="uid://rqqlq11sn5sn" path="res://addons/dioptra/asset/default/select-cube.svg" id="2_65h2v"]
 [ext_resource type="Script" uid="uid://ca5l34adahm2i" path="res://addons/dioptra/editor/DP_PanelState.gd" id="2_tp8tb"]
@@ -6,6 +6,8 @@
 [ext_resource type="Texture2D" uid="uid://2f8k644wse8b" path="res://addons/dioptra/asset/default/select-edge.svg" id="4_dfuey"]
 [ext_resource type="Texture2D" uid="uid://dcqhv2mvdsl2m" path="res://addons/dioptra/asset/default/select-vertex.svg" id="5_oiw7u"]
 [ext_resource type="Texture2D" uid="uid://bldwjxgpbh06n" path="res://addons/dioptra/asset/default/tex-lock.svg" id="6_65h2v"]
+[ext_resource type="Texture2D" uid="uid://dfsw7dcdsi71y" path="res://addons/dioptra/asset/default/shading-wires.svg" id="7_dfuey"]
+[ext_resource type="Texture2D" uid="uid://bpclherpyaj1u" path="res://addons/dioptra/asset/default/shading-grid.svg" id="8_oiw7u"]
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_4mdk8"]
 resource_name = "select_mode"
@@ -58,7 +60,11 @@ toggle_mode = true
 button_group = SubResource("ButtonGroup_4mdk8")
 icon = ExtResource("5_oiw7u")
 
+[node name="VSeparator" type="VSeparator" parent="Box"]
+layout_mode = 2
+
 [node name="Label_Editor" type="Label" parent="Box"]
+visible = false
 layout_mode = 2
 text = "Editor:"
 
@@ -91,8 +97,13 @@ max_value = 128.0
 value = 16.0
 rounded = true
 alignment = 1
+suffix = "grid"
+
+[node name="VSeparator2" type="VSeparator" parent="Box"]
+layout_mode = 2
 
 [node name="Label_View" type="Label" parent="Box"]
+visible = false
 layout_mode = 2
 text = "View:"
 
@@ -104,7 +115,14 @@ layout_mode = 2
 tooltip_text = "Show map wireframe"
 disabled = true
 toggle_mode = true
-icon = ExtResource("5_oiw7u")
+icon = ExtResource("7_dfuey")
+
+[node name="Grid" type="Button" parent="Box/View"]
+layout_mode = 2
+tooltip_text = "Show map grid"
+disabled = true
+toggle_mode = true
+icon = ExtResource("8_oiw7u")
 
 [connection signal="pressed" from="Box/Selection/Solid" to="." method="onSelectionTypePressed" binds= [0]]
 [connection signal="pressed" from="Box/Selection/Face" to="." method="onSelectionTypePressed" binds= [1]]

@@ -149,6 +149,8 @@ func update_with_face_info(map : DP_Map, face : DPMapFace) -> void:
 	update_ui_with_material(mat);
 	
 	# TODO: Update the other items in the UI
+	var uses_normals := face.uv_mode == DPMapFace.UVMode.WORLD;
+	$"Container UVs/VContainer/GridContainer/OptionNormalAxis".disabled = not uses_normals;
 	
 	# Update scale
 	_scale_spinbox_x.set_value_no_signal(face.uv_scale.x);
@@ -178,15 +180,15 @@ func _on_mode_selection_changed(modeType : int) -> void:
 	_plugin._uvModePer =  modeType as DioptraEditorMainPlugin.UVModePer;
 	print("UV Mode: %s" % _plugin.UVModePer.find_key(_plugin._uvModePer));
 
-	for child in $"Container UVs/VContainer/GridContainer/HBoxContainerMode".get_children():
-		var child_button := child as Button;
-		if child_button != null:
-			child_button.button_pressed = false;
-			
-	var child_main = $"Container UVs/VContainer/GridContainer/HBoxContainerMode".get_children()[modeType];
-	var child_main_button = child_main as Button;
-	if child_main_button != null:
-		child_main_button.button_pressed = true;
+	#for child in $"Container UVs/VContainer/GridContainer/HBoxContainerMode".get_children():
+		#var child_button := child as Button;
+		#if child_button != null:
+			#child_button.button_pressed = false;
+			#
+	#var child_main = $"Container UVs/VContainer/GridContainer/HBoxContainerMode".get_children()[modeType];
+	#var child_main_button = child_main as Button;
+	#if child_main_button != null:
+		#child_main_button.button_pressed = true;
 
 	pass
 	
@@ -224,4 +226,7 @@ func _on_offset_changed(_dummy : float) -> void:
 	var uv_offset := Vector2(_offset_spinbox_x.value, _offset_spinbox_y.value);
 	_plugin._plugin_maphelper.do_assign_uv_offset(uv_offset);
 
-	
+func _on_mapping_changed(index: int) -> void:
+	var uses_normals := index == DPMapFace.UVMode.WORLD;
+	$"Container UVs/VContainer/GridContainer/OptionNormalAxis".disabled = not uses_normals;
+	# TODO: actually do something

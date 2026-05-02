@@ -1,19 +1,29 @@
-[gd_scene load_steps=15 format=3 uid="uid://bhxmwac2fj16y"]
+[gd_scene load_steps=23 format=3 uid="uid://bhxmwac2fj16y"]
 
 [ext_resource type="Script" uid="uid://hcmgfcqh10uc" path="res://addons/dioptra/editor/DP_PanelTexture.gd" id="1_0o48c"]
 [ext_resource type="Script" uid="uid://ymtvdjr4c6o" path="res://addons/dioptra/util/StylesOverride.gd" id="2_r5rll"]
 [ext_resource type="Texture2D" uid="uid://dwqfmqg0oe1mp" path="res://addons/dioptra/asset/default/tex-fit.svg" id="3_08nva"]
+[ext_resource type="Texture2D" uid="uid://b5rj5g87k07u2" path="res://addons/dioptra/asset/default/tex-select-all.svg" id="3_gtbp8"]
 [ext_resource type="Texture2D" uid="uid://bbnhdwmklnusu" path="res://addons/dioptra/asset/default/tex-flip-x.svg" id="3_hl7nd"]
+[ext_resource type="Texture2D" uid="uid://oe84oxgd0pi0" path="res://addons/dioptra/asset/default/tex-select-groups.svg" id="4_55n65"]
 [ext_resource type="Texture2D" uid="uid://b264naldos6im" path="res://addons/dioptra/asset/default/tex-flip-y.svg" id="4_vn6ip"]
-[ext_resource type="Texture2D" uid="uid://rqqlq11sn5sn" path="res://addons/dioptra/asset/default/select-cube.svg" id="5_bqldj"]
+[ext_resource type="Texture2D" uid="uid://dc5rdsouhqp0s" path="res://addons/dioptra/asset/default/tex-select-faces.svg" id="5_hbbxq"]
 [ext_resource type="Texture2D" uid="uid://bywlkqqtsecsv" path="res://addons/dioptra/asset/default/tex-center-x.svg" id="5_j747c"]
 [ext_resource type="Texture2D" uid="uid://b0ixfaeav5qd6" path="res://addons/dioptra/asset/default/tex-move-left-x.svg" id="5_ll376"]
 [ext_resource type="Texture2D" uid="uid://ddmn85s73mgb8" path="res://addons/dioptra/asset/default/tex-move-right-x.svg" id="6_08nva"]
-[ext_resource type="Texture2D" uid="uid://c84saf6lfd3v8" path="res://addons/dioptra/asset/default/view-square.svg" id="6_lrmmq"]
 [ext_resource type="Texture2D" uid="uid://cb282krjn0r61" path="res://addons/dioptra/asset/default/tex-move-top-y.svg" id="7_107lr"]
-[ext_resource type="Texture2D" uid="uid://bnr2ljfbxq7pd" path="res://addons/dioptra/asset/default/select-face.svg" id="7_uwnna"]
+[ext_resource type="Texture2D" uid="uid://bj0ppwo3fgs1" path="res://addons/dioptra/asset/default/tex-fit-x.svg" id="7_gtbp8"]
 [ext_resource type="Texture2D" uid="uid://daoorg2afms01" path="res://addons/dioptra/asset/default/tex-move-bot-y.svg" id="8_8f21f"]
+[ext_resource type="Texture2D" uid="uid://b5hgjh25i815h" path="res://addons/dioptra/asset/default/tex-fit-y.svg" id="8_55n65"]
+[ext_resource type="Texture2D" uid="uid://gg2tit0hwe6e" path="res://addons/dioptra/asset/default/tex-fit-auto.svg" id="9_hbbxq"]
 [ext_resource type="Texture2D" uid="uid://c2pjw6rbpfbu7" path="res://addons/dioptra/asset/default/tex-center-y.svg" id="10_bqldj"]
+[ext_resource type="Texture2D" uid="uid://ctucm76v0xubv" path="res://addons/dioptra/asset/default/tex-rot-180.svg" id="12_m32uo"]
+[ext_resource type="Texture2D" uid="uid://dgqgxx8mxbjnu" path="res://addons/dioptra/asset/default/tex-rot-90.svg" id="13_8oxdk"]
+[ext_resource type="Texture2D" uid="uid://c5j1g22tewx27" path="res://addons/dioptra/asset/default/tex-rot-n90.svg" id="14_0hgrm"]
+[ext_resource type="Texture2D" uid="uid://caeyydxrxeptx" path="res://addons/dioptra/asset/default/tex-rot-45.svg" id="15_edwrf"]
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_gtbp8"]
+resource_name = "mode_btg"
 
 [node name="DP Texturing" type="FlowContainer"]
 offset_right = 195.0
@@ -44,6 +54,7 @@ layout_mode = 2
 [node name="TextureButton" type="Button" parent="Container Material Select/HFlowContainer"]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
+tooltip_text = "Click to browse for material files, or drag a material from Filesystem or DP Material Browser panel."
 
 [node name="MaterialName" type="Label" parent="Container Material Select/HFlowContainer"]
 layout_mode = 2
@@ -79,23 +90,28 @@ horizontal_alignment = 2
 
 [node name="OptionMapping" type="OptionButton" parent="Container UVs/VContainer/GridContainer"]
 layout_mode = 2
+tooltip_text = "Controls how the selected face is mapped:
+World: Uses world coordinates to generate UVs. Finds closest axis and uses it as a normal.
+Face: Treats the face as a 2D plane with its own origin to generate UVs.
+Hotspot: Currently unsupported."
 selected = 0
 item_count = 3
 popup/item_0/text = "World"
 popup/item_0/id = 0
 popup/item_1/text = "Face"
 popup/item_1/id = 1
-popup/item_2/text = "Hotspot"
+popup/item_2/text = "Hotspot (x)"
 popup/item_2/id = 2
 popup/item_2/disabled = true
 
-[node name="World-LabelAxis" type="Label" parent="Container UVs/VContainer/GridContainer"]
+[node name="LabelNormalAxis" type="Label" parent="Container UVs/VContainer/GridContainer"]
 layout_mode = 2
 text = "   Normal"
 horizontal_alignment = 2
 
-[node name="World-OptionAxis" type="OptionButton" parent="Container UVs/VContainer/GridContainer"]
+[node name="OptionNormalAxis" type="OptionButton" parent="Container UVs/VContainer/GridContainer"]
 layout_mode = 2
+tooltip_text = "When Mapping: World is selected, handles which axis is used to map the texture."
 selected = 0
 item_count = 4
 popup/item_0/text = "Auto"
@@ -107,20 +123,10 @@ popup/item_2/id = 2
 popup/item_3/text = "Z"
 popup/item_3/id = 4
 
-[node name="HBoxContainerActions" type="HBoxContainer" parent="Container UVs/VContainer/GridContainer"]
+[node name="LabelWorkMode" type="Label" parent="Container UVs/VContainer/GridContainer"]
 layout_mode = 2
-
-[node name="ButtonFit" type="Button" parent="Container UVs/VContainer/GridContainer/HBoxContainerActions"]
-layout_mode = 2
-tooltip_text = "Fit"
-icon = ExtResource("3_08nva")
-icon_alignment = 1
-
-[node name="ButtonAutofit" type="Button" parent="Container UVs/VContainer/GridContainer/HBoxContainerActions"]
-layout_mode = 2
-tooltip_text = "Autofit (Rotates material to best fit)"
-icon = ExtResource("3_08nva")
-icon_alignment = 1
+text = "Mode"
+horizontal_alignment = 2
 
 [node name="HBoxContainerMode" type="HBoxContainer" parent="Container UVs/VContainer/GridContainer"]
 layout_mode = 2
@@ -130,7 +136,8 @@ layout_mode = 2
 tooltip_text = "Work per-face"
 toggle_mode = true
 button_pressed = true
-icon = ExtResource("5_bqldj")
+button_group = SubResource("ButtonGroup_gtbp8")
+icon = ExtResource("3_gtbp8")
 icon_alignment = 1
 
 [node name="ButtonPerIsland" type="Button" parent="Container UVs/VContainer/GridContainer/HBoxContainerMode"]
@@ -138,14 +145,48 @@ layout_mode = 2
 tooltip_text = "Work with islands: treating faces nearby each other as one face"
 disabled = true
 toggle_mode = true
-icon = ExtResource("6_lrmmq")
+button_group = SubResource("ButtonGroup_gtbp8")
+icon = ExtResource("4_55n65")
 icon_alignment = 1
 
 [node name="ButtonPerAll" type="Button" parent="Container UVs/VContainer/GridContainer/HBoxContainerMode"]
 layout_mode = 2
 tooltip_text = "Work treating all selected faces as one face"
 toggle_mode = true
-icon = ExtResource("7_uwnna")
+button_group = SubResource("ButtonGroup_gtbp8")
+icon = ExtResource("5_hbbxq")
+icon_alignment = 1
+
+[node name="LabelActions" type="Label" parent="Container UVs/VContainer/GridContainer"]
+layout_mode = 2
+text = "   Actions"
+horizontal_alignment = 2
+
+[node name="HBoxContainerActions" type="HBoxContainer" parent="Container UVs/VContainer/GridContainer"]
+layout_mode = 2
+
+[node name="ButtonFit" type="Button" parent="Container UVs/VContainer/GridContainer/HBoxContainerActions"]
+layout_mode = 2
+tooltip_text = "Fit"
+icon = ExtResource("3_08nva")
+icon_alignment = 1
+
+[node name="ButtonFitX" type="Button" parent="Container UVs/VContainer/GridContainer/HBoxContainerActions"]
+layout_mode = 2
+tooltip_text = "Fit"
+icon = ExtResource("7_gtbp8")
+icon_alignment = 1
+
+[node name="ButtonFitY" type="Button" parent="Container UVs/VContainer/GridContainer/HBoxContainerActions"]
+layout_mode = 2
+tooltip_text = "Fit"
+icon = ExtResource("8_55n65")
+icon_alignment = 1
+
+[node name="ButtonAutofit" type="Button" parent="Container UVs/VContainer/GridContainer/HBoxContainerActions"]
+layout_mode = 2
+tooltip_text = "Autofit (Rotates material to best fit)"
+icon = ExtResource("9_hbbxq")
 icon_alignment = 1
 
 [node name="LabelScale" type="Label" parent="Container UVs/VContainer/GridContainer"]
@@ -225,25 +266,25 @@ size_flags_horizontal = 8
 [node name="Button180" type="Button" parent="Container UVs/VContainer/GridContainer/VBoxContainerRot/HBoxContainer"]
 layout_mode = 2
 tooltip_text = "Rotate 180°"
-icon = ExtResource("3_hl7nd")
+icon = ExtResource("12_m32uo")
 icon_alignment = 1
 
 [node name="Button90" type="Button" parent="Container UVs/VContainer/GridContainer/VBoxContainerRot/HBoxContainer"]
 layout_mode = 2
 tooltip_text = "Rotate clockwise 90°"
-icon = ExtResource("3_hl7nd")
+icon = ExtResource("13_8oxdk")
 icon_alignment = 1
 
 [node name="ButtonN90" type="Button" parent="Container UVs/VContainer/GridContainer/VBoxContainerRot/HBoxContainer"]
 layout_mode = 2
 tooltip_text = "Rotate Counterclockwise 90°"
-icon = ExtResource("3_hl7nd")
+icon = ExtResource("14_0hgrm")
 icon_alignment = 1
 
 [node name="Button45" type="Button" parent="Container UVs/VContainer/GridContainer/VBoxContainerRot/HBoxContainer"]
 layout_mode = 2
 tooltip_text = "Rotate Clockwise 45°"
-icon = ExtResource("3_hl7nd")
+icon = ExtResource("15_edwrf")
 icon_alignment = 1
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="Container UVs/VContainer/GridContainer/VBoxContainerRot"]
@@ -346,6 +387,7 @@ allow_lesser = true
 custom_arrow_step = 1.0
 
 [connection signal="pressed" from="Container Material Select/HFlowContainer/TextureButton" to="." method="_on_texture_button_pressed"]
+[connection signal="item_selected" from="Container UVs/VContainer/GridContainer/OptionMapping" to="." method="_on_mapping_changed"]
 [connection signal="pressed" from="Container UVs/VContainer/GridContainer/HBoxContainerMode/ButtonPerFace" to="." method="_on_mode_selection_changed" binds= [0]]
 [connection signal="pressed" from="Container UVs/VContainer/GridContainer/HBoxContainerMode/ButtonPerIsland" to="." method="_on_mode_selection_changed" binds= [1]]
 [connection signal="pressed" from="Container UVs/VContainer/GridContainer/HBoxContainerMode/ButtonPerAll" to="." method="_on_mode_selection_changed" binds= [2]]
