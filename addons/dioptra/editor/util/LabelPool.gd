@@ -156,6 +156,8 @@ static func _create_label3d(camera : Camera3D) -> Label3D:
 	lbl.set_draw_flag(Label3D.FLAG_DISABLE_DEPTH_TEST, true);
 	lbl.set_billboard_mode(BaseMaterial3D.BILLBOARD_ENABLED);
 	lbl.set_texture_filter(BaseMaterial3D.TEXTURE_FILTER_NEAREST); # disable filtering for non-SDF
+	lbl.render_priority = 4;
+	lbl.outline_render_priority = 3;
 	EditorInterface.get_edited_scene_root().add_child(lbl, false, Node.INTERNAL_MODE_BACK);
 	return lbl;
 	

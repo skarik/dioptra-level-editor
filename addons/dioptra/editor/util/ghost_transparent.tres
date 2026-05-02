@@ -1,0 +1,7 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://ch2pqwmw6spwb"]
+
+[ext_resource type="Shader" uid="uid://b7obnw0hkmn82" path="res://addons/dioptra/editor/util/ghost_transparent.gdshader" id="1_jgrby"]
+
+[resource]
+render_priority = 1
+shader = ExtResource("1_jgrby")

@@ -7,6 +7,9 @@ const cPluginName = "dioptra";
 const cPluginName_Geobuilder = "dioptra-geobuilder";
 
 func _enable_plugin() -> void:
+	if not DioptraInterface._has_instance():
+		DioptraInterface.init_instance();
+	
 	EditorInterface.set_plugin_enabled(cPluginName + "/node-types", true);
 	EditorInterface.set_plugin_enabled(cPluginName + "/editor", true);
 	EditorInterface.set_plugin_enabled(cPluginName + "/editor/maphelper", true);
@@ -23,7 +26,8 @@ func _disable_plugin() -> void:
 
 func _enter_tree() -> void:
 	# Initialization of the plugin goes here.
-	DioptraInterface.init_instance();
+	if not DioptraInterface._has_instance():
+		DioptraInterface.init_instance();
 	pass
 
 func _exit_tree() -> void:

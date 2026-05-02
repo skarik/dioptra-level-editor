@@ -160,9 +160,27 @@ static func get_grid_round_v3(vector : Vector3) -> Vector3:
 		# Convert back to Godot units
 		return Vector3(v3i) * get_position_scale_div() / get_position_scale_top();
 
+## Rounds the given float to the current editor grid settings.
+static func get_grid_round_v1(value : float) -> float:
+	var inst := _get_instance();
+	if inst._grid_size == 0:
+		return value;
+	else:
+		# Get DP vector:
+		var vi := float(value * get_position_scale_top() / get_position_scale_div());
+		# Round DP vector:
+		vi = roundf(vi / inst._grid_size) * inst._grid_size;
+		# Convert back to Godot units
+		return float(vi) * get_position_scale_div() / get_position_scale_top();
+
 ## Rounds the given angle to the current editor angle settings.
 static func get_angle_round(angle : float) -> float:
 	var inst := _get_instance();
 	return roundf(angle / inst._angle_round) * inst._angle_round;
+
+## Returns the current DP grid size in Godot units
+static func get_grid_div_godot() -> float:
+	var inst := _get_instance();
+	return float(inst._grid_size) * get_position_scale_div() / get_position_scale_top();
 
 #------------------------------------------------------------------------------#

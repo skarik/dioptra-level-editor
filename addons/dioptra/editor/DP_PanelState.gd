@@ -20,12 +20,13 @@ func get_closest_pow_of_2(value : int) -> int:
 #------------------------------------------------------------------------------#
 
 func _ready() -> void:
-	$Box/Editor/SnapSize.set_value_no_signal(float(DioptraInterface._get_instance()._grid_size));
-	_last_grid_value = int($Box/Editor/SnapSize.value);
 	pass
 	
 func setPlugin(plugin : DioptraEditorMainPlugin) -> void:
 	_plugin = plugin;
+	
+	$Box/Editor/SnapSize.set_value_no_signal(float(DioptraInterface._get_instance()._grid_size));
+	_last_grid_value = int($Box/Editor/SnapSize.value);
 
 func onSelectionTypePressed(selectionType : int) -> void:
 	_plugin._selectionMode =  selectionType as DioptraEditorMainPlugin.SelectMode;

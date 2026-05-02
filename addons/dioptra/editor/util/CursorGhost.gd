@@ -2,7 +2,8 @@ extends RefCounted
 class_name DPUCursorGhost
 
 var position : Vector3;
-var normal : Vector3;
+var normal : Vector3 = Vector3.UP;
+var radius : float = 0.2;
 
 var _mesh_renderer : MeshInstance3D = null;
 var _lines : DPULines3D.LinesItem = null;
@@ -24,6 +25,8 @@ func update(viewport_camera : Camera3D) -> void:
 	# Grab a good camera
 	if viewport_camera:
 		_last_valid_camera = viewport_camera;
+		
+	var normal_valid := normal.is_normalized();
 		
 	var color_x : Color = EditorInterface.get_editor_theme().get_color("property_color_x", "Editor");
 	var color_y : Color = EditorInterface.get_editor_theme().get_color("property_color_y", "Editor");
@@ -70,12 +73,32 @@ func update(viewport_camera : Camera3D) -> void:
 		_lines.colors[i] = color_w;
 	
 	_lines.update();
+	
+	# Add circle mesh by mouse
+	if am and normal_valid:
+		am.point_add(position + normal * 0.001);
+		var left := normal.cross(Vector3.FORWARD);
+		if left.length_squared() < 0.001:
+			left = normal.cross(Vector3.LEFT);
+		left = left.normalized();
+		
+		const POINTS := 20;
+		for i in POINTS:
+			var percent := float(i) / POINTS;
+			am.point_add(position + normal * 0.001 + left.rotated(normal, percent * 2 * PI) * radius);
+		
+		for i in POINTS:
+			am.tri_add_indicies(0, 1 + i, 1 + (i + 1) % POINTS);
+			
+		for v in am.get_vertex_count():
+			am.get_surface_color()[v] = Color(color_w, 0.0);
+		am.get_surface_color()[0].a = 0.80;
 		
 	if am.get_index_count() > 0:
 		var old_mesh = _mesh_renderer.mesh;
 		var new_mesh = ArrayMesh.new();
 		new_mesh.add_surface_from_arrays(am.get_primitive_type(), am.get_surface_array());
-		new_mesh.surface_set_material(0, preload("res://addons/dioptra/editor/util/line3d_material.tres"));
+		new_mesh.surface_set_material(0, preload("res://addons/dioptra/editor/util/ghost_transparent.tres"));
 		_mesh_renderer.mesh = new_mesh;
 		old_mesh = null;
 		pass

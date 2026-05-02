@@ -47,6 +47,7 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 		var cursor_position := DioptraInterface.get_grid_round_v3(_plugin._last_3d_mouse_position);
 		_cursor.position = cursor_position;
 		_cursor.normal = _plugin._last_3d_mouse_normal;
+		_cursor.radius = DioptraInterface.get_grid_div_godot();
 		_cursor.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
 		
 		# Waiting for an initial drag, so we wait for a click:
