@@ -1,4 +1,5 @@
 # Dioptra Level Editor
+[Asset Library Link](https://godotengine.org/asset-library/asset/5115)
 
 Godot Level editor tool in the vein of Cyclops and Codex, though eschewing the node-based approach. Takes some inspiration from both Valve's Hammer and Trenchbroom (and a little bit of Scythe).
 
