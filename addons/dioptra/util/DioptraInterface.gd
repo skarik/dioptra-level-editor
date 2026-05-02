@@ -137,15 +137,28 @@ func init_settings() -> void:
 
 #------------------------------------------------------------------------------#
 
-# Divs per gdunit
-var _grid_round : float = 8;
+# Current size of the grid in DP units
+var _grid_size : int = 16;
 # Degrees per div
 var _angle_round : float = 15;
+
+## Sets the current grid size
+static func set_grid_size(grid_size : int) -> void:
+	var inst := _get_instance();
+	inst._grid_size = max(0, grid_size);
 
 ## Rounds the given Vector3 to the current editor grid settings.
 static func get_grid_round_v3(vector : Vector3) -> Vector3:
 	var inst := _get_instance();
-	return (vector * inst._grid_round).round() / inst._grid_round;
+	if inst._grid_size == 0:
+		return vector;
+	else:
+		# Get DP vector:
+		var v3i := Vector3(vector * get_position_scale_top() / get_position_scale_div());
+		# Round DP vector:
+		v3i = (v3i / inst._grid_size).round() * inst._grid_size;
+		# Convert back to Godot units
+		return Vector3(v3i) * get_position_scale_div() / get_position_scale_top();
 
 ## Rounds the given angle to the current editor angle settings.
 static func get_angle_round(angle : float) -> float:

@@ -3,7 +3,25 @@ extends Control
 
 var _plugin : DioptraEditorMainPlugin = null;
 
+var _last_grid_value : int = 0;
+
+#------------------------------------------------------------------------------#
+
+## Get the closest exponent of 2
+func get_closest_exp_of_2(value : int) -> int:
+	var closest_pow : int = roundf(log(value) / log(2));
+	return closest_pow;
+## Get the closest power of 2
+func get_closest_pow_of_2(value : int) -> int:
+	var closest_pow : int = roundf(log(value) / log(2));
+	value = 1 << closest_pow;
+	return value;
+
+#------------------------------------------------------------------------------#
+
 func _ready() -> void:
+	$Box/Editor/SnapSize.set_value_no_signal(float(DioptraInterface._get_instance()._grid_size));
+	_last_grid_value = int($Box/Editor/SnapSize.value);
 	pass
 	
 func setPlugin(plugin : DioptraEditorMainPlugin) -> void:
@@ -30,3 +48,16 @@ func onSelectionTypePressed(selectionType : int) -> void:
 		#onSelectionTypePressed(DioptraEditorMainPlugin.SelectMode.SOLID);
 	#if DioptraInterface._get_instance().shortcut_select_faces.matches_event(event) && event.is_pressed() and not event.is_echo():
 		#onSelectionTypePressed(DioptraEditorMainPlugin.SelectMode.FACE);
+
+func on_grid_value_changed(gridValue : float) -> void:
+	if gridValue < _last_grid_value:
+		var closest_power := get_closest_exp_of_2(_last_grid_value);
+		_last_grid_value = 1 << max(0, closest_power - 1);
+	else:
+		var max_power := get_closest_exp_of_2($Box/Editor/SnapSize.max_value);
+		var closest_power := get_closest_exp_of_2(_last_grid_value);
+		_last_grid_value = 1 << min(max_power, closest_power + 1);
+	$Box/Editor/SnapSize.set_value_no_signal(float(_last_grid_value));
+	
+	DioptraInterface.set_grid_size(_last_grid_value);
+	

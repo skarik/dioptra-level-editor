@@ -93,11 +93,10 @@ icon = ExtResource("5_oiw7u")
 layout_mode = 2
 tooltip_text = "DP Units to snap to.
 DP unit to Godot unit conversion is controlled in the DP Settings."
-max_value = 128.0
+max_value = 1024.0
 value = 16.0
 rounded = true
 alignment = 1
-suffix = "grid"
 
 [node name="VSeparator2" type="VSeparator" parent="Box"]
 layout_mode = 2
@@ -128,3 +127,4 @@ icon = ExtResource("8_oiw7u")
 [connection signal="pressed" from="Box/Selection/Face" to="." method="onSelectionTypePressed" binds= [1]]
 [connection signal="pressed" from="Box/Selection/Edge" to="." method="onSelectionTypePressed" binds= [2]]
 [connection signal="pressed" from="Box/Selection/Vertex" to="." method="onSelectionTypePressed" binds= [3]]
+[connection signal="value_changed" from="Box/Editor/SnapSize" to="." method="on_grid_value_changed"]
