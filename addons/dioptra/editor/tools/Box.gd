@@ -35,12 +35,14 @@ func cleanup() -> void:
 	
 ## Overrideable GUI input handling
 func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
+	# TODO: minimize the _plugin._get_editor_plugin().update_overlays();
+	
 	# If they hit cancel & want to remove the box, then yeah stop it
 	if event is InputEventKey and (event.keycode == KEY_ESCAPE or event.keycode == KEY_BACKSPACE):
 		 # Clean up the state of the tool
 		_ghost_box.cleanup();
 		_state = TOOLSTATE_WAITING; # Reset
-	
+		
 		# Capture the input
 		return EditorPlugin.AFTER_GUI_INPUT_STOP;
 	
@@ -51,6 +53,10 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 		_cursor.normal = _plugin._last_3d_mouse_normal;
 		_cursor.radius = DioptraInterface.get_grid_div_godot();
 		_cursor.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
+		
+		# Update tooltip
+		overlay_text = "Click and drag to start building a solid.";
+		_plugin.update_overlays();
 		
 		# Waiting for an initial drag, so we wait for a click:
 		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
@@ -94,6 +100,10 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 		pass
 		
 	elif _state == TOOLSTATE_DRAGGING_PLANE:
+		# Update tooltip
+		overlay_text = "Release mouse to finish shape.";
+		_plugin.update_overlays();
+		
 		# When the mouse moves, update
 		if event is InputEventMouseMotion:
 			# Get the hit position on current plane to start the box:
@@ -121,6 +131,10 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 		pass
 		
 	elif _state == TOOLSTATE_WAITING_WITH_PLANE:
+		# Update tooltip
+		overlay_text = "Click and drag to extra shape out.";
+		_plugin.update_overlays();
+		
 		# Waiting for a second drag, so wait for another click
 		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 			# Get the hit position on current plane to start the box:
@@ -143,6 +157,10 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 			return EditorPlugin.AFTER_GUI_INPUT_PASS;
 			
 	elif _state == TOOLSTATE_LIFTING_NORMAL:
+		# Update tooltip
+		overlay_text = "";
+		_plugin.update_overlays();
+		
 		# When the mouse moves, update
 		if event is InputEventMouseMotion:
 			# Get the hit position on current plane to start the box:
@@ -176,7 +194,9 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 			_drag_start = _highlight_ghost_box_face(viewport_camera, event);
 		_ghost_box.update(viewport_camera);
 		
-		# Waiting for the user to commit the box or edit the box
+		# Update tooltip
+		overlay_text = "Press Enter to make new solid. Drag faces to resize.";
+		_plugin.update_overlays();
 		
 		# Clicking:
 		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
@@ -208,6 +228,10 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 		return EditorPlugin.AFTER_GUI_INPUT_PASS;
 		
 	elif _state == TOOLSTATE_LIFTING_FACE:
+		# Update tooltip
+		overlay_text = "";
+		_plugin.update_overlays();
+		
 		# When the mouse moves, update
 		if event is InputEventMouseMotion:
 			

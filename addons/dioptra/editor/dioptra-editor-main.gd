@@ -334,3 +334,16 @@ func on_resource_preview_invalidated(path : String) -> void:
 	#print(path);
 	# TODO: have material browser connect to the signal
 	pass
+	
+#------------------------------------------------------------------------------#
+func _forward_3d_draw_over_viewport(viewport_control: Control) -> void:
+	# Display overlay text
+	if _currentTool != null:
+		if _currentTool.overlay_text != null:
+			var default_font := EditorInterface.get_editor_theme().get_font("main_bold_msdf", "EditorFonts");
+			viewport_control.draw_string(
+				default_font, 
+				Vector2(60, viewport_control.get_rect().size.y - 60),
+				_currentTool.overlay_text);
+			pass
+	pass

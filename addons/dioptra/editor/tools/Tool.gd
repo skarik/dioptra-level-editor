@@ -9,6 +9,11 @@ var _plugin : DioptraEditorMainPlugin = null;
 
 #------------------------------------------------------------------------------#
 
+## Text that draws on the overlay when this tool is running
+var overlay_text : String = "";
+
+#------------------------------------------------------------------------------#
+
 ## Constructor that must be called
 func _init(plugin : DioptraEditorMainPlugin) -> void:
 	_plugin = plugin;

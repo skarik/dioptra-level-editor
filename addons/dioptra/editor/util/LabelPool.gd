@@ -17,7 +17,7 @@ class_name DPULabelPool
 static var _Instance : DPULabelPool = null;
 ## Return current singleton instance of the label pool
 static func get_instance() -> DPULabelPool:
-	if _Instance == null:
+	if _Instance == null or _Instance.is_queued_for_deletion():
 		# Create the new node
 		_Instance = DPULabelPool.new();
 		# We need this node in the scene so it can update the sizes of items
@@ -127,10 +127,18 @@ static func get_label(camera : Camera3D) -> LabelNodeItem:
 # Gets an item for use
 func _get_label(camera : Camera3D) -> LabelNodeItem:
 	_last_camera = camera;
-	## TODO: implement
 	
+	# Clear off any invalid old labels
+	var idx : int = 0;
+	while idx < _used_labels.size():
+		var lbl : LabelNodeItem = _used_labels[idx];
+		if lbl == null or lbl._node == null or lbl._node.is_queued_for_deletion():
+			_used_labels.remove_at(idx);
+			continue;
+		idx += 1;
+	
+	# If no new labels get a new one:
 	if _unused_labels.is_empty():
-		# Create a new label:
 		var lbl := _create_label3d(camera);
 		var item := LabelNodeItem.new(self, lbl);
 		_unused_labels.append(item);
@@ -140,7 +148,7 @@ func _get_label(camera : Camera3D) -> LabelNodeItem:
 	_used_labels.push_back(item);
 
 	# Let it be used now
-	var lbl : Label3D = item.get_node()
+	var lbl : Label3D = item.get_node();
 	lbl.set_visible(true);
 	lbl.set_font(_editor_font); 
 	lbl.set_font_size(_editor_font_size);
