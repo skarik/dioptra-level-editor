@@ -14,7 +14,7 @@ static func _has_instance() -> bool:
 	return is_instance_valid(_Instance);
 	
 static func init_if_not() -> void:
-	if _has_instance():
+	if not _has_instance():
 		init_instance();
 
 static func init_instance() -> void:
