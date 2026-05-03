@@ -12,6 +12,10 @@ static func _get_instance() -> DioptraInterface:
 
 static func _has_instance() -> bool:
 	return is_instance_valid(_Instance);
+	
+static func init_if_not() -> void:
+	if _has_instance():
+		init_instance();
 
 static func init_instance() -> void:
 	_Instance = DioptraInterface.new();

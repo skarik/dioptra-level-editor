@@ -163,41 +163,18 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 	elif _state == TOOLSTATE_WAITING_WITH_CUBE:
 		# Update ghost for the camera when we're working here:
 		if event is InputEventMouseMotion:
-			# Cast against the box with the mouse:
-			_ghost_box.highlighted_face = -1;
-			var box_min : Vector3 = _box_start.v3.min(_box_end.v3);
-			var box_max : Vector3 = _box_start.v3.max(_box_end.v3);
-			var box_planes : Array[Plane] = [
-				Plane(Vector3(-1, 0, 0), box_min),	
-				Plane(Vector3( 1, 0, 0), box_max),	
-				Plane(Vector3( 0,-1, 0), box_min),	
-				Plane(Vector3( 0, 1, 0), box_max),	
-				Plane(Vector3( 0, 0,-1), box_min),	
-				Plane(Vector3( 0, 0, 1), box_max),	
-			];
-			var drag_from : Vector3 = viewport_camera.project_ray_origin(event.position);
-			var drag_dir : Vector3 = viewport_camera.project_ray_normal(event.position);
-			for i in box_planes.size():
-				if not box_planes[i].is_point_over(drag_from):
-					continue;
-				var hit_result = box_planes[i].intersects_ray(drag_from, drag_dir);
-				if hit_result != null:
-					var hit_position := hit_result as Vector3;
-					var invalid_hit := false;
-					# Check points is inside each plane
-					for j in range(2, box_planes.size()):
-						var j_idx := ((i - i % 2) + j) % box_planes.size();
-						if box_planes[j_idx].is_point_over(hit_position):
-							invalid_hit = true;
-					# If it's valid we got our face
-					if not invalid_hit:
-						_ghost_box.highlighted_face = i;
-						break;
-			
+			_highlight_ghost_box_face(viewport_camera, event);
 		_ghost_box.update(viewport_camera);
 		
 		# Waiting for the user to commit the box or edit the box
-		if event is InputEventKey and event.keycode == KEY_ENTER:			
+		
+		# Clicking:
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			# TODO: new state
+			pass
+		
+		# Commit box:
+		elif event is InputEventKey and event.keycode == KEY_ENTER:
 			# Create a cube in the current map with the ghost:
 			_add_box();
 		
@@ -216,6 +193,41 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 
 func process(delta: float) -> void:
 	pass
+	
+#------------------------------------------------------------------------------#
+
+## Highlights a box face on the ghost box based on planes of the box
+func _highlight_ghost_box_face(viewport_camera : Camera3D, event : InputEventMouseMotion) -> void:
+	# Cast against the box with the mouse:
+	_ghost_box.highlighted_face = -1;
+	var box_min : Vector3 = _box_start.v3.min(_box_end.v3);
+	var box_max : Vector3 = _box_start.v3.max(_box_end.v3);
+	var box_planes : Array[Plane] = [
+		Plane(Vector3(-1, 0, 0), box_min),	
+		Plane(Vector3( 1, 0, 0), box_max),	
+		Plane(Vector3( 0,-1, 0), box_min),	
+		Plane(Vector3( 0, 1, 0), box_max),	
+		Plane(Vector3( 0, 0,-1), box_min),	
+		Plane(Vector3( 0, 0, 1), box_max),	
+	];
+	var drag_from : Vector3 = viewport_camera.project_ray_origin(event.position);
+	var drag_dir : Vector3 = viewport_camera.project_ray_normal(event.position);
+	for i in box_planes.size():
+		if not box_planes[i].is_point_over(drag_from):
+			continue;
+		var hit_result = box_planes[i].intersects_ray(drag_from, drag_dir);
+		if hit_result != null:
+			var hit_position := hit_result as Vector3;
+			var invalid_hit := false;
+			# Check points is inside each plane
+			for j in range(2, box_planes.size()):
+				var j_idx := ((i - i % 2) + j) % box_planes.size();
+				if box_planes[j_idx].is_point_over(hit_position):
+					invalid_hit = true;
+			# If it's valid we got our face
+			if not invalid_hit:
+				_ghost_box.highlighted_face = i;
+				break;
 	
 #------------------------------------------------------------------------------#
 	

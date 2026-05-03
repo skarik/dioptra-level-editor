@@ -73,6 +73,8 @@ func stop_gizmo_plugin(item : EditorNode3DGizmoPlugin) -> void:
 	pass
 
 func _enter_tree() -> void:
+	DioptraInterface.init_if_not();
+	
 	DPGizmoPlugin_PathNode = start_gizmo_plugin(DPGizmoPlugin_PathNode, func(): return cDPG_PathNode.new(get_undo_redo()) );
 	#DPGizmoPlugin_ToolCube = start_gizmo_plugin(DPGizmoPlugin_ToolCube, func(): return cDPG_ToolCube.new(get_undo_redo()) );
 	DPGizmoPlugin_FaceHover = start_gizmo_plugin(DPGizmoPlugin_FaceHover, func(): return cDPG_FaceHover.new(self) );
