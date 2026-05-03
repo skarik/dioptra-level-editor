@@ -6,13 +6,15 @@ enum {
 	TOOLSTATE_DRAGGING_PLANE = 1,
 	TOOLSTATE_WAITING_WITH_PLANE = 2,
 	TOOLSTATE_LIFTING_NORMAL = 3,
-	TOOLSTATE_WAITING_WITH_CUBE = 4
+	TOOLSTATE_WAITING_WITH_CUBE = 4,
+	TOOLSTATE_LIFTING_FACE = 5,
 }
 var _state : int = TOOLSTATE_WAITING;
 var _normal_axis : int = 0;
 var _box_start := MapVector3.new();
 var _box_end := MapVector3.new();
 var _drag_start : Vector3;
+var _drag_flip : bool = false;
 
 var _ghost_box : DPUBoxGhost = null;
 var _cursor : DPUCursorGhost = null;
@@ -83,11 +85,14 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 				_ghost_box.update(viewport_camera);
 				
 			_state = TOOLSTATE_DRAGGING_PLANE;
-			pass
+			return EditorPlugin.AFTER_GUI_INPUT_STOP;
+			
 		# Otherwise, let other events through
 		else:
 			return EditorPlugin.AFTER_GUI_INPUT_PASS;
+			
 		pass
+		
 	elif _state == TOOLSTATE_DRAGGING_PLANE:
 		# When the mouse moves, update
 		if event is InputEventMouseMotion:
@@ -106,13 +111,15 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 				_ghost_box.box_start = _box_start.v3;
 				_ghost_box.box_end = _box_end.v3;
 				_ghost_box.update(viewport_camera);
-			pass
+			
+			return EditorPlugin.AFTER_GUI_INPUT_STOP;
 			
 		# When the mouse click releases, stop dragging
 		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
 			_state = TOOLSTATE_WAITING_WITH_PLANE;
 			
 		pass
+		
 	elif _state == TOOLSTATE_WAITING_WITH_PLANE:
 		# Waiting for a second drag, so wait for another click
 		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
@@ -128,10 +135,13 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 				var drag_position = drag_position_result as Vector3;
 				_drag_start = drag_position;
 				_state = TOOLSTATE_LIFTING_NORMAL;
-			pass
+			
+			return EditorPlugin.AFTER_GUI_INPUT_STOP;
+			
 		# Otherwise, let other events through
 		else:
 			return EditorPlugin.AFTER_GUI_INPUT_PASS;
+			
 	elif _state == TOOLSTATE_LIFTING_NORMAL:
 		# When the mouse moves, update
 		if event is InputEventMouseMotion:
@@ -163,16 +173,25 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 	elif _state == TOOLSTATE_WAITING_WITH_CUBE:
 		# Update ghost for the camera when we're working here:
 		if event is InputEventMouseMotion:
-			_highlight_ghost_box_face(viewport_camera, event);
+			_drag_start = _highlight_ghost_box_face(viewport_camera, event);
 		_ghost_box.update(viewport_camera);
 		
 		# Waiting for the user to commit the box or edit the box
 		
 		# Clicking:
 		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			# TODO: new state
-			pass
-		
+			if _ghost_box.highlighted_face != -1:
+				_normal_axis = _ghost_box.highlighted_face / 2;
+				_drag_flip = (_ghost_box.highlighted_face % 2) == 1;
+				
+				# For this we box min < box max so
+				var box_min : Vector3i = _box_start.v3i.min(_box_end.v3i);
+				var box_max : Vector3i = _box_start.v3i.max(_box_end.v3i);
+				_box_start.v3i = box_min;
+				_box_end.v3i = box_max;
+				
+				_state = TOOLSTATE_LIFTING_FACE;
+				return EditorPlugin.AFTER_GUI_INPUT_STOP;
 		# Commit box:
 		elif event is InputEventKey and event.keycode == KEY_ENTER:
 			# Create a cube in the current map with the ghost:
@@ -187,7 +206,39 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 		
 		# Otherwise, let other events through
 		return EditorPlugin.AFTER_GUI_INPUT_PASS;
-		pass
+		
+	elif _state == TOOLSTATE_LIFTING_FACE:
+		# When the mouse moves, update
+		if event is InputEventMouseMotion:
+			
+			# Get the hit position on current plane to start the box:
+			var drag_from : Vector3 = viewport_camera.project_ray_origin(event.position);
+			var drag_dir : Vector3 = viewport_camera.project_ray_normal(event.position);
+			
+			# Cast on the working plane:
+			const AxesLookup := [Vector3(1, 0, 0), Vector3(0, 1, 0), Vector3(0, 0, 1)];
+			var drag_plane : Plane = Plane(AxesLookup[_normal_axis].cross(viewport_camera.basis.x).normalized(), _drag_start);
+			var drag_position_result : Variant = drag_plane.intersects_ray(drag_from, drag_dir);
+			if drag_position_result != null:
+				var drag_position := drag_position_result as Vector3;
+				
+				if not _drag_flip:
+					var current_box_start := _box_start.v3;
+					current_box_start[_normal_axis] = DioptraInterface.get_grid_round_v3(drag_position)[_normal_axis];
+					_box_start.v3 = current_box_start;
+				else:
+					var current_box_end := _box_end.v3;
+					current_box_end[_normal_axis] = DioptraInterface.get_grid_round_v3(drag_position)[_normal_axis];
+					_box_end.v3 = current_box_end;
+				
+				_ghost_box.box_start = _box_start.v3;
+				_ghost_box.box_end = _box_end.v3;
+				_ghost_box.update(viewport_camera);
+			pass
+			
+		# When the mouse click releases, stop dragging
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+			_state = TOOLSTATE_WAITING_WITH_CUBE;
 	
 	return EditorPlugin.AFTER_GUI_INPUT_STOP;
 
@@ -197,7 +248,7 @@ func process(delta: float) -> void:
 #------------------------------------------------------------------------------#
 
 ## Highlights a box face on the ghost box based on planes of the box
-func _highlight_ghost_box_face(viewport_camera : Camera3D, event : InputEventMouseMotion) -> void:
+func _highlight_ghost_box_face(viewport_camera : Camera3D, event : InputEventMouseMotion) -> Vector3:
 	# Cast against the box with the mouse:
 	_ghost_box.highlighted_face = -1;
 	var box_min : Vector3 = _box_start.v3.min(_box_end.v3);
@@ -227,7 +278,8 @@ func _highlight_ghost_box_face(viewport_camera : Camera3D, event : InputEventMou
 			# If it's valid we got our face
 			if not invalid_hit:
 				_ghost_box.highlighted_face = i;
-				break;
+				return hit_position;
+	return Vector3.ZERO;
 	
 #------------------------------------------------------------------------------#
 	
