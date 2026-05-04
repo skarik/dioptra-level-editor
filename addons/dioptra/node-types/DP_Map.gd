@@ -78,6 +78,7 @@ class EditorMeshGroup:
 var _editor_mesh_groups : Array[EditorMeshGroup] = [];
 var _editor_mesh_instances : Array[MeshInstance3D] = [];
 var _editor_mesh_instances_decals : MeshInstance3D = null;
+var _editor_material_grid : Material = null;
 
 ## Rebuilds the mesh groups.
 ##
@@ -138,6 +139,26 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 	# Set up the mesh we have
 	var mesh_instance = _editor_get_mesh_instance(group_index);
 	
+	# Set up material list:
+	var material_list : Array[Material] = [];
+	if Engine.is_editor_hint():
+		# Set up grid material
+		if _editor_material_grid == null:
+			var editor_grid_mat : Material = preload("res://addons/dioptra/editor/util/editor_grid.tres");
+			_editor_material_grid = editor_grid_mat.duplicate();
+			_editor_material_grid.resource_local_to_scene = true;
+		# Set up all the materials we'll use
+		for i_mat in materials.size():
+			if materials[i_mat] != null:
+				var editor_mat : Material = materials[i_mat].duplicate(); # TODO: reuse the editor copy!
+				editor_mat.resource_local_to_scene = true;
+				editor_mat.next_pass = _editor_material_grid;
+				material_list.push_back(editor_mat); 
+			else:
+				material_list.push_back(null); 
+	else:
+		material_list = materials;
+	
 	# Maintain a dictionary of all the mats to array mesher
 	var mesher_list : Dictionary[int, DPArrayMesher] = {};
 	var get_mesher = func(material_index : int) -> DPArrayMesher:
@@ -171,38 +192,34 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 				am.get_surface_normal()[i_vertex] = normal;
 				
 			# Build UVs for the face
-			if face.material != -1:
-				if face.uv_mode == DPMapFace.UVMode.WORLD:
-					# Detect the face UV mode in world mode
-					if face.uv_subflags & DPMapFace.UV_WORLD_FLAG_AUTO:
-						face.uv_subflags = DPMapFace.UV_WORLD_FLAG_AUTO;
-						var normal_abs := normal.abs();
-						if normal_abs.x >= normal_abs.y and normal_abs.x >= normal_abs.z:
-							face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_X;
-						elif normal_abs.y >= normal_abs.x and normal_abs.y >= normal_abs.z:
-							face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_Y;
-						else:
-							face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_Z;
-					# Pull everything we need:
-					var material := materials[face.material];
-					var positions := am.get_surface_vertex();
-					var uvs := am.get_surface_tex_uv();
-					var texture_scale1d := DioptraInterface.get_pixel_scale_top() * float(DioptraInterface.get_pixel_scale_div());
-					var texture_scale2d := (Vector2(texture_scale1d, texture_scale1d) * face.uv_scale) / Vector2(DPHelpers.get_material_primary_texture_size(material));
-					var texture_offset = (face.uv_offset / texture_scale1d);
-					# Apply the world-mode UVs depending on the flag:
-					if face.uv_subflags & DPMapFace.UV_WORLD_FLAG_X:
-						for i_vertex in range(v0, am.get_vertex_count()):
-							uvs[i_vertex] = ((Vector2(-positions[i_vertex].z, -positions[i_vertex].y)).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
-					elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Y:
-						for i_vertex in range(v0, am.get_vertex_count()):
-							uvs[i_vertex] = ((Vector2(positions[i_vertex].x, positions[i_vertex].z)).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
-					elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Z:
-						for i_vertex in range(v0, am.get_vertex_count()):
-							uvs[i_vertex] = ((Vector2(positions[i_vertex].x, -positions[i_vertex].y)).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
-					pass # End UVMode.WORLD
-				#
-				pass # End face.material != -1;
+			if face.uv_mode == DPMapFace.UVMode.WORLD:
+				# Detect the face UV mode in world mode
+				if face.uv_subflags & DPMapFace.UV_WORLD_FLAG_AUTO:
+					face.uv_subflags = DPMapFace.UV_WORLD_FLAG_AUTO;
+					var normal_abs := normal.abs();
+					var normal_max_axis := normal_abs.max_axis_index();
+					if   normal_max_axis == 0:	face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_X;
+					elif normal_max_axis == 1:	face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_Y;
+					elif normal_max_axis == 2:	face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_Z;
+				# Pull everything we need:
+				var material := materials[face.material];
+				var positions := am.get_surface_vertex();
+				var uvs := am.get_surface_tex_uv();
+				var texture_scale1d := DioptraInterface.get_pixel_scale_top() * float(DioptraInterface.get_pixel_scale_div());
+				var texture_scale2d := (Vector2(texture_scale1d, texture_scale1d) * face.uv_scale) / Vector2(DPHelpers.get_material_primary_texture_size(material));
+				var texture_offset = (face.uv_offset / texture_scale1d);
+				# Apply the world-mode UVs depending on the flag:
+				if face.uv_subflags & DPMapFace.UV_WORLD_FLAG_X:
+					for i_vertex in range(v0, am.get_vertex_count()):
+						uvs[i_vertex] = ((Vector2(-positions[i_vertex].z, -positions[i_vertex].y)).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
+				elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Y:
+					for i_vertex in range(v0, am.get_vertex_count()):
+						uvs[i_vertex] = ((Vector2(positions[i_vertex].x, positions[i_vertex].z)).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
+				elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Z:
+					for i_vertex in range(v0, am.get_vertex_count()):
+						uvs[i_vertex] = ((Vector2(positions[i_vertex].x, -positions[i_vertex].y)).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
+				pass # End UVMode.WORLD
+			# End UVs
 				
 			# Pack in solid info into the bones:
 			for i_vertex in range(v0, am.get_vertex_count()):
@@ -218,6 +235,9 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 			pass # i_face
 		pass # i_solid
 	
+	# Set up mats
+	var null_mat = preload("res://addons/dioptra/editor/util/editor_default.tres");
+	
 	# Find the meshers and add the given meshes
 	var mesh := ArrayMesh.new();
 	var has_data := false;
@@ -227,7 +247,7 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 		if am.get_index_count() > 0:
 			var surface_index = mesh.get_surface_count();
 			mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, am.get_surface_array());
-			mesh.surface_set_material(surface_index, null if (material_index == -1) else materials[material_index]);
+			mesh.surface_set_material(surface_index, null_mat if (material_index == -1) else material_list[material_index]);
 			has_data = true; # Mark the mesh is valid
 		pass
 	
@@ -497,6 +517,8 @@ func editor_add_decal(decal : DPMapDecal) -> void:
 
 ## Adds the given material to the array, or finds it. Returns material index in the map.
 func get_or_add_material(mat : Material, for_objects : bool = false) -> int:
+	if mat == null:
+		return -1;
 	fix_member_valid_values();
 	var mat_list = materials if not for_objects else material_objects;
 	var existing_index = mat_list.find(mat);
