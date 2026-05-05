@@ -119,8 +119,8 @@ icon = ExtResource("7_dfuey")
 [node name="Grid" type="Button" parent="Box/View"]
 layout_mode = 2
 tooltip_text = "Show map grid"
-disabled = true
 toggle_mode = true
+button_pressed = true
 icon = ExtResource("8_oiw7u")
 
 [connection signal="pressed" from="Box/Selection/Solid" to="." method="onSelectionTypePressed" binds= [0]]
@@ -128,3 +128,4 @@ icon = ExtResource("8_oiw7u")
 [connection signal="pressed" from="Box/Selection/Edge" to="." method="onSelectionTypePressed" binds= [2]]
 [connection signal="pressed" from="Box/Selection/Vertex" to="." method="onSelectionTypePressed" binds= [3]]
 [connection signal="value_changed" from="Box/Editor/SnapSize" to="." method="on_grid_value_changed"]
+[connection signal="toggled" from="Box/View/Grid" to="." method="on_grid_vis_toggled"]

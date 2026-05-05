@@ -28,6 +28,7 @@ class LinesItem:
 	var width : float = 2.0;
 	var segments : bool = false; ## Is this one big line or a collection of lines?
 	var dpi_aware : bool = true; ## Do we scale up and down for the DPI?
+	# TODO: dotted lines
 
 	func _init(lines : DPULines3D) -> void:
 		pass

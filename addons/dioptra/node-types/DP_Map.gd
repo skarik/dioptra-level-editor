@@ -41,7 +41,7 @@ func _enter_tree() -> void:
 func _ready() -> void:
 	fix_member_valid_values();
 	if Engine.is_editor_hint():
-		rebuild_editor_mesh_groups();
+		rebuild_editor_mesh_groups(); 
 		rebuild_editor_map();
 		rebuild_editor_decals();
 	else:
@@ -156,6 +156,16 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 				material_list.push_back(editor_mat); 
 			else:
 				material_list.push_back(null); 
+				
+		# Connect editor material callbacks
+		if not DioptraInterface.get_instance().grid_size_changed.is_connected(editor_on_grid_changed):
+			DioptraInterface.get_instance().grid_size_changed.connect(editor_on_grid_changed);
+		if not DioptraInterface.get_instance().grid_visual_enabled.is_connected(editor_on_grid_vis_enabled):
+			DioptraInterface.get_instance().grid_visual_enabled.connect(editor_on_grid_vis_enabled);
+		if not DioptraInterface.get_instance().cursor3d_moved.is_connected(editor_on_cursor3d_moved):
+			DioptraInterface.get_instance().cursor3d_moved.connect(editor_on_cursor3d_moved);
+		# TODO: do these callbacks go into another editor-only class
+		# These aren't exactly enabled during builds so maybe splitting the editor-only dioptrainterface is healthy long run
 	else:
 		material_list = materials;
 	
@@ -478,6 +488,21 @@ func _editor_get_mesh_instance_for_decals() -> MeshInstance3D:
 		_editor_mesh_instances_decals = mesh_renderer;
 		
 	return _editor_mesh_instances_decals;
+
+#------------------------------------------------------------------------------#
+
+func editor_on_grid_changed(grid_size : int) -> void:
+	var sm := _editor_material_grid as ShaderMaterial;
+	sm.set_shader_parameter("grid_size", DioptraInterface.get_grid_div_godot());
+	
+func editor_on_grid_vis_enabled(grid_visible : bool) -> void:
+	var sm := _editor_material_grid as ShaderMaterial;
+	sm.set_shader_parameter("enabled", grid_visible);
+	
+func editor_on_cursor3d_moved(cursor_position : Vector3) -> void:
+	var sm := _editor_material_grid as ShaderMaterial;
+	sm.set_shader_parameter("cursor_position", cursor_position);
+	sm.set_shader_parameter("cursor_radius", DioptraInterface.get_grid_div_godot() * 4.0);
 
 #------------------------------------------------------------------------------#
 

@@ -43,8 +43,14 @@ void fragment() {
 	float world_majorgrid_mindist = min(min(world_majorgrid_bias.x, world_majorgrid_bias.y), world_majorgrid_bias.z);
 	float world_majorgridline = clamp((GRID_WIDTH * pixel_scale * 0.5 - world_majorgrid_mindist * GRID_SHARPNESS), 0.0, 1.0);
 	
-	ALPHA = (world_gridline * 0.125 + world_majorgridline * 0.25) * 0.5;
+	float cursor_distance = length(v_world_position.xyz - cursor_position);
+	float cursor_brighten = clamp(1.0 - cursor_distance / cursor_radius, 0.0, 1.0);
+	
+	ALPHA = clamp((world_gridline * 0.125 + world_majorgridline * 0.25) * (0.2 + cursor_brighten * 0.8), 0.0, 1.0);
 	ALBEDO = vec3(1, 1, 1);
-	EMISSION = vec3(0.2, 0.2, 0.2);
+	EMISSION = vec3(0.3, 0.3, 0.3) * (1.0 + cursor_brighten * 0.5);
+	RADIANCE = vec4(0.0);
+	IRRADIANCE = vec4(0.0);
+	//ALPHA_SCISSOR_THRESHOLD = 0.01;
 }
 

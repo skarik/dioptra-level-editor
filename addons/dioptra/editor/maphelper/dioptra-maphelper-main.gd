@@ -69,6 +69,8 @@ func _handles(object: Object) -> bool:
 func _edit(object: Object) -> void:
 	if object is DP_Map:
 		_last_edited_map = object as DP_Map;
+	elif object == null:
+		DioptraInterface.set_grid_visible(false); # HACK for lightmaps
 	pass
 	
 func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
@@ -99,6 +101,9 @@ func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 	if DioptraInterface._get_instance().shortcut_select_verts.matches_event(event) && event.is_pressed() and not event.is_echo():
 		state.onSelectionTypePressed(DioptraEditorMainPlugin.SelectMode.VERTEX);
 		return EditorPlugin.AFTER_GUI_INPUT_STOP;
+		
+	# Update mouse
+	_editor_plugin.handle_general_editor_input(viewport_camera, event);
 	
 	return EditorPlugin.AFTER_GUI_INPUT_PASS;
 	

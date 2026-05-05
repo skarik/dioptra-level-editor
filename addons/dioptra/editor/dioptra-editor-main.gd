@@ -232,39 +232,46 @@ func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 	if _currentTool != null:
 		input_action = _currentTool.forward_3d_gui_input(viewport_camera, event);
 		
-	# Update mouse position
-	if input_action == EditorPlugin.AFTER_GUI_INPUT_PASS:
-		if event is InputEventMouseMotion:
-			_last_2d_mouse_position = event.position;
-			_last_3d_mouse_hit = false;
-			
-			# Raycast and update:
-			var map := get_last_edited_map();
-			var subgizmo_id := DPEditorSelection.subgizmo_intersect_ray(map, viewport_camera, event.position, DioptraEditorMainPlugin.SelectMode.FACE);
-			var selection_type := DPHelpers.get_selection_type(map, subgizmo_id);
-			var selection := DPHelpers.get_selection(map, subgizmo_id);
-			if selection_type == DPHelpers.SelectionType.FACE or selection_type == DPHelpers.SelectionType.SOLID:
-				var solid := selection.solid;
-				var face := selection.face;
-				var normal : Vector3 = -(solid.points[face.corners[1]].v3 - solid.points[face.corners[0]].v3).cross(
-					solid.points[face.corners[2]].v3 - solid.points[face.corners[0]].v3).normalized();
-					
-				var collision_plane := Plane(normal, solid.points[face.corners[0]].v3);
-				var collision := collision_plane.intersects_ray(viewport_camera.project_ray_origin(event.position), viewport_camera.project_ray_normal(event.position));
-				if collision != null:
-					var collision_point := collision as Vector3;
-					_last_3d_mouse_position = collision_point;
-					_last_3d_mouse_normal = normal;
-					_last_3d_mouse_hit = true;
-					
-			pass # End InputEventMouseMotion
-		pass # End input pass
+	handle_general_editor_input(viewport_camera, event);
 		
 	return input_action;
 	
 func _edit(object: Object) -> void:
 	if object is DP_Map:
 		_last_edited_map = object as DP_Map;
+		
+#------------------------------------------------------------------------------#
+	
+func handle_general_editor_input(viewport_camera: Camera3D, event: InputEvent) -> void:
+	# Update mouse position
+	if event is InputEventMouseMotion:
+		_last_2d_mouse_position = event.position;
+		_last_3d_mouse_hit = false;
+		
+		# Raycast and update:
+		var map := get_last_edited_map();
+		var subgizmo_id := DPEditorSelection.subgizmo_intersect_ray(map, viewport_camera, event.position, DioptraEditorMainPlugin.SelectMode.FACE);
+		var selection_type := DPHelpers.get_selection_type(map, subgizmo_id);
+		var selection := DPHelpers.get_selection(map, subgizmo_id);
+		if selection_type == DPHelpers.SelectionType.FACE or selection_type == DPHelpers.SelectionType.SOLID:
+			var solid := selection.solid;
+			var face := selection.face;
+			var normal : Vector3 = -(solid.points[face.corners[1]].v3 - solid.points[face.corners[0]].v3).cross(
+				solid.points[face.corners[2]].v3 - solid.points[face.corners[0]].v3).normalized();
+				
+			var collision_plane := Plane(normal, solid.points[face.corners[0]].v3);
+			var collision := collision_plane.intersects_ray(viewport_camera.project_ray_origin(event.position), viewport_camera.project_ray_normal(event.position));
+			if collision != null:
+				var collision_point := collision as Vector3;
+				_last_3d_mouse_position = collision_point;
+				_last_3d_mouse_normal = normal;
+				_last_3d_mouse_hit = true;
+				
+		pass # End InputEventMouseMotion
+		
+		if _last_3d_mouse_hit:
+			DioptraInterface.get_instance().cursor3d_moved.emit(_last_3d_mouse_position);
+	pass # End input pass
 	
 #------------------------------------------------------------------------------#
 

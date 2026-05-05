@@ -22,6 +22,9 @@ static func init_instance() -> void:
 	
 static func free_instance() -> void:
 	_Instance = null; # Refcounted, so should clear up
+	
+static func get_instance() -> DioptraInterface:
+	return _get_instance(); #for connecting signals :/
 
 #------------------------------------------------------------------------------#
 
@@ -137,7 +140,16 @@ func init_settings() -> void:
 			pass # End editor settings
 		pass # End editor-only info
 		
+		# Load last grid (or just update ui with latest)
+		#EditorInterface.get_edited_scene_root().get_tree().process_frame.connect(func(): DioptraInterface.set_grid_size(16), CONNECT_ONE_SHOT);
+		# Can't, have to do this another way
+		
 	pass # end init_settings()
+
+#------------------------------------------------------------------------------#
+
+# Signal for editor 3D mouse moving
+signal cursor3d_moved(position : Vector3);
 
 #------------------------------------------------------------------------------#
 
@@ -146,10 +158,23 @@ var _grid_size : int = 16;
 # Degrees per div
 var _angle_round : float = 15;
 
+# TODO: move these signals to a separate object these are not used outside of editor
+# Signal for grid size changing
+signal grid_size_changed(grid_size : int);
+# Signal for grid enable/disable
+signal grid_visual_enabled(enabled : bool);
+
 ## Sets the current grid size
 static func set_grid_size(grid_size : int) -> void:
 	var inst := _get_instance();
 	inst._grid_size = max(0, grid_size);
+	#inst.grid_size_changed.emit(inst._grid_size);
+	EditorInterface.get_edited_scene_root().get_tree().process_frame.connect(func(): inst.grid_size_changed.emit(inst._grid_size), CONNECT_ONE_SHOT);
+
+static func set_grid_visible(visible : bool) -> void:
+	var inst := _get_instance();
+	#inst.grid_visual_enabled.emit(visible); # TODO only emit when value changes
+	EditorInterface.get_edited_scene_root().get_tree().process_frame.connect(func(): inst.grid_visual_enabled.emit(visible), CONNECT_ONE_SHOT);
 
 ## Rounds the given Vector3 to the current editor grid settings.
 static func get_grid_round_v3(vector : Vector3) -> Vector3:

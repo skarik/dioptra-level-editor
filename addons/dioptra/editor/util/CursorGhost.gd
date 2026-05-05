@@ -87,7 +87,7 @@ func update(viewport_camera : Camera3D) -> void:
 			
 		for v in am.get_vertex_count():
 			am.get_surface_color()[v] = Color(color_w, 0.0);
-		am.get_surface_color()[0].a = 0.80;
+		am.get_surface_color()[0].a = 0.20;
 		
 	if am.get_index_count() > 0:
 		# Mesh
