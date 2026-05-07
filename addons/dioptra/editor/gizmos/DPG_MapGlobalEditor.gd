@@ -1,5 +1,6 @@
 @tool
 extends EditorNode3DGizmoPlugin
+## Gizmo plugin for selecting and transforming solids and decals.
 
 var mEditorPlugin : DioptraEditorMainPlugin = null;
 var mUndoRedo : EditorUndoRedoManager = null;
@@ -509,6 +510,48 @@ func _commit_subgizmos(gizmo: EditorNode3DGizmo, ids: PackedInt32Array, restores
 	
 	var node3d := gizmo.get_node_3d()
 	var map := node3d as DP_Map;
+	
+	# Reset the positions to the reference:
+	if cancel:
+		for subgizmo_id in ids:
+			var selection := DPHelpers.get_selection(map, subgizmo_id);
+			
+			# Grab reference
+			if not _transform_start.has(subgizmo_id):
+				continue; # Skip if no reference
+			var reference := _transform_start[subgizmo_id];
+			
+			# TODO: helper delta add position function but pass Vector3.zero:
+			# Offset the points
+			# Transforming solid
+			if selection.type == DPHelpers.SelectionType.SOLID:
+				var solid := selection.solid;
+				for i in solid.points.size():
+					solid.points[i].v3i = reference.points[i];
+			# Transforming face
+			elif selection.type == DPHelpers.SelectionType.FACE:
+				var solid := selection.solid;
+				var face := selection.face;
+				for i in face.corners.size():
+					var vert = face.corners[i];
+					solid.points[vert].v3i = reference.points[vert];
+			# Transforming edge
+			elif selection.type == DPHelpers.SelectionType.EDGE:
+				var solid := selection.solid;
+				var face := selection.face;
+				for i in range(selection.edge_id, selection.edge_id + 2):
+					var vert = face.corners[i % face.corners.size()];
+					solid.points[vert].v3i = reference.points[vert];
+			# Transforming vertex
+			elif selection.type == DPHelpers.SelectionType.VERTEX:
+				var solid := selection.solid;
+				var vert := selection.vertex_id;
+				solid.points[vert].v3i = reference.points[vert];
+			# Transforming decal
+			elif selection.type == DPHelpers.SelectionType.DECAL:
+				var decal := selection.decal;
+				decal.position.v3 = reference.transform.origin;
+		
 	map.rebuild_editor_map(); #todo, grab a Solid from the map
 	map.rebuild_editor_decals(); # TODO: only rebuild the decals attached to the given solid
 	
@@ -646,6 +689,11 @@ func _commit_handle(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool, r
 	
 	var node3d := gizmo.get_node_3d()
 	var map := node3d as DP_Map;
+	var selection_list := gizmo.get_subgizmo_selection();
+	
+	if cancel:
+		pass # TODO
+	
 	
 	map.update_gizmos();
 	
