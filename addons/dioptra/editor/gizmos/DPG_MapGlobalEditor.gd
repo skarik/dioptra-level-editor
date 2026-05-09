@@ -440,31 +440,8 @@ func _start_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int) -> vo
 	_start_subgizmo_transform_get_ref(gizmo, subgizmo_id, true);
 	print("start gizmo transform: %d" % subgizmo_id);
 	
-func _set_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int, transform: Transform3D) -> void:
-	# if we're beginning then mark a start with the current transform start
-	if not _is_transforming:
-		_start_subgizmo_transform(gizmo, subgizmo_id);
-	
-	#var solid_id = subgizmo_id & DPHelpers.SELBIT_MASK_SOLID;
-	#print("set gizmo transform: %d" % solid_id);
-	
-	var node3d := gizmo.get_node_3d();
-	var map := node3d as DP_Map;
-	
-	var selection := DPHelpers.get_selection(map, subgizmo_id);
-	
-	# Grab reference
-	if not _transform_start.has(subgizmo_id):
-		# Above _start_subgizmo_transform will only work for the main selected
-		# item, not ALL items that need reference. So we get reference again
-		# here.
-		_start_subgizmo_transform_get_ref(gizmo, subgizmo_id, false);
-	var reference := _transform_start[subgizmo_id];
-	
-	# Generate the delta
-	var reference_gizmo_id = _transforming_reference_subgizmo;
-	var delta_position = DioptraInterface.get_grid_round_v3((transform * reference.transform.inverse()).origin);
-	
+## Sets the delta position for the given selection
+func _set_selection_delta_position(reference : StartingTransform, selection : DPSelectionItem, delta_position : Vector3) -> void:
 	# Offset the points
 	# Transforming solid
 	if selection.type == DPHelpers.SelectionType.SOLID:
@@ -498,6 +475,34 @@ func _set_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int, transfo
 	elif selection.type == DPHelpers.SelectionType.DECAL:
 		var decal := selection.decal;
 		decal.position.v3 = reference.transform.origin + delta_position;
+	
+func _set_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int, transform: Transform3D) -> void:
+	# if we're beginning then mark a start with the current transform start
+	if not _is_transforming:
+		_start_subgizmo_transform(gizmo, subgizmo_id);
+	
+	#var solid_id = subgizmo_id & DPHelpers.SELBIT_MASK_SOLID;
+	#print("set gizmo transform: %d" % solid_id);
+	
+	var node3d := gizmo.get_node_3d();
+	var map := node3d as DP_Map;
+	
+	var selection := DPHelpers.get_selection(map, subgizmo_id);
+	
+	# Grab reference
+	if not _transform_start.has(subgizmo_id):
+		# Above _start_subgizmo_transform will only work for the main selected
+		# item, not ALL items that need reference. So we get reference again
+		# here.
+		_start_subgizmo_transform_get_ref(gizmo, subgizmo_id, false);
+	var reference := _transform_start[subgizmo_id];
+	
+	# Generate the delta
+	var reference_gizmo_id = _transforming_reference_subgizmo;
+	var delta_position = DioptraInterface.get_grid_round_v3((transform * reference.transform.inverse()).origin);
+	
+	# Move the object
+	_set_selection_delta_position(reference, selection, delta_position);
 			
 	# We did it! Update the gizmos so we can see what we're doing.
 	map.update_gizmos();
@@ -521,39 +526,12 @@ func _commit_subgizmos(gizmo: EditorNode3DGizmo, ids: PackedInt32Array, restores
 				continue; # Skip if no reference
 			var reference := _transform_start[subgizmo_id];
 			
-			# TODO: helper delta add position function but pass Vector3.zero:
-			# Offset the points
-			# Transforming solid
-			if selection.type == DPHelpers.SelectionType.SOLID:
-				var solid := selection.solid;
-				for i in solid.points.size():
-					solid.points[i].v3i = reference.points[i];
-			# Transforming face
-			elif selection.type == DPHelpers.SelectionType.FACE:
-				var solid := selection.solid;
-				var face := selection.face;
-				for i in face.corners.size():
-					var vert = face.corners[i];
-					solid.points[vert].v3i = reference.points[vert];
-			# Transforming edge
-			elif selection.type == DPHelpers.SelectionType.EDGE:
-				var solid := selection.solid;
-				var face := selection.face;
-				for i in range(selection.edge_id, selection.edge_id + 2):
-					var vert = face.corners[i % face.corners.size()];
-					solid.points[vert].v3i = reference.points[vert];
-			# Transforming vertex
-			elif selection.type == DPHelpers.SelectionType.VERTEX:
-				var solid := selection.solid;
-				var vert := selection.vertex_id;
-				solid.points[vert].v3i = reference.points[vert];
-			# Transforming decal
-			elif selection.type == DPHelpers.SelectionType.DECAL:
-				var decal := selection.decal;
-				decal.position.v3 = reference.transform.origin;
+			# Move the object
+			_set_selection_delta_position(reference, selection, Vector3.ZERO);
 		
-	map.rebuild_editor_map(); #todo, grab a Solid from the map
-	map.rebuild_editor_decals(); # TODO: only rebuild the decals attached to the given solid
+	if not cancel:
+		map.rebuild_editor_map(); #todo, grab a Solid from the map
+		map.rebuild_editor_decals(); # TODO: only rebuild the decals attached to the given solid
 	
 	map.update_gizmos();
 	
@@ -692,12 +670,26 @@ func _commit_handle(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool, r
 	var selection_list := gizmo.get_subgizmo_selection();
 	
 	if cancel:
-		pass # TODO
-	
+		# Get angle to starting position
+		for subgizmo_id in selection_list:
+			var selection := DPHelpers.get_selection(map, subgizmo_id);
+			var decal := selection.decal;
+			
+			# Skip non-decals
+			if not decal:
+				continue;
+				
+			# Stop transformation:
+			if handle_id == HandleID.ROTATE:
+				decal.rotation = _transform_start[subgizmo_id].transform.basis.get_euler();
+				
+			if handle_id == HandleID.SCALE_X or handle_id == HandleID.SCALE_Y:
+				decal.scale = Vector2(_transform_start[subgizmo_id].extra0.x, _transform_start[subgizmo_id].extra0.y);
 	
 	map.update_gizmos();
 	
-	map.rebuild_editor_decals(); # TODO: only rebuild the decals attached to the given solid
+	if not cancel:
+		map.rebuild_editor_decals(); # TODO: only rebuild the decals attached to the given solid
 	
 	# Clear off the transform start state
 	_transform_start.clear();
