@@ -102,6 +102,10 @@ func rebuild_editor_mesh_groups() -> void:
 	
 	pass
 
+func rebuild_editor_map_deferred(solid_index : int) -> void:
+	print("Deferred not implemented!!!!!");
+	pass
+
 ## Rebuilds editor map, which is a separate case than the "baked" map but uses
 ## building similar techniques.
 ## If the solid is specified, only rebuilds part of the map (fast!).
@@ -229,6 +233,9 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 					for i_vertex in range(v0, am.get_vertex_count()):
 						uvs[i_vertex] = ((Vector2(positions[i_vertex].x, -positions[i_vertex].y)).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
 				pass # End UVMode.WORLD
+			elif face.uv_mode == DPMapFace.UVMode.FACE:
+				# TODO
+				pass
 			# End UVs
 				
 			# Pack in solid info into the bones:

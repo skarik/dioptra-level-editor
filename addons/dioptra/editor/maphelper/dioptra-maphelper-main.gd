@@ -177,6 +177,8 @@ func _action_delete_selected_solids(editor : DioptraEditorMainPlugin, map : DP_M
 	else:
 		push_warning("Could not find the selection gizmo plugin when working in Maphelper.");
 	return false;
+	
+# TODO: move the UV setting to a separate class as a helper instance inside this one
 
 func _action_assign_material_to_selected_solids(editor : DioptraEditorMainPlugin, map : DP_Map, mat : Material) -> bool:
 	# TODO: assert we're in solid selection mode
@@ -200,26 +202,25 @@ func _action_assign_material_to_selected_solids(editor : DioptraEditorMainPlugin
 				selection.face.material = material_index;
 			elif selection.type == DPHelpers.SelectionType.DECAL:
 				selection.decal.material = material_index;
+				
+			# Queue rebuilding map
+			# TODO: check if there was a change
+			map.rebuild_editor_map_deferred(selection.solid_id);
 		pass # End looping thru subgizmos
 				
 		# Rebuild the mesh with the new material
 		if not subgizmo_selection.is_empty():
-			if subgizmo_selection.size() > 1:
-				map.rebuild_editor_map();
-			else:
-				var selection := DPHelpers.get_selection(map, subgizmo_selection[0]);
-				map.rebuild_editor_map(selection.solid);
 			return true;
 	
 	return false;
 
 func _action_assign_uv_properties(editor : DioptraEditorMainPlugin, map : DP_Map, scale : Vector2, offset : Vector2, angle : float) -> void:
+	print("Not implemented/used")
 	pass
 func _action_assign_uv_scale(editor : DioptraEditorMainPlugin, map : DP_Map, scale : Vector2) -> bool:
 	var target_gizmo := _get_target_gizmo(editor, map);
 	if target_gizmo:
 		var subgizmo_selection := target_gizmo.get_subgizmo_selection();
-		var last_solid = -1;
 		# Apply it to all items in selection
 		for subgizmo_id in subgizmo_selection:
 			var selection_type := DPHelpers.get_selection_type(map, subgizmo_id);
@@ -232,22 +233,19 @@ func _action_assign_uv_scale(editor : DioptraEditorMainPlugin, map : DP_Map, sca
 			elif selection_type == DPHelpers.SelectionType.FACE:
 				sel_face.uv_scale = scale;
 				
-			last_solid = selection.solid_id;
+			# Queue rebuilding map
+			# TODO: check if there was a change
+			map.rebuild_editor_map_deferred(selection.solid_id);
 		pass # End selection loop
 		
 		# Rebuild the mesh with the new material
 		if not subgizmo_selection.is_empty():
-			if subgizmo_selection.size() > 1:
-				map.rebuild_editor_map();
-			else:
-				map.rebuild_editor_map(map.solids[last_solid]);
 			return true;
 	return false;
 func _action_assign_uv_offset(editor : DioptraEditorMainPlugin, map : DP_Map, offset : Vector2) -> bool:
 	var target_gizmo := _get_target_gizmo(editor, map);
 	if target_gizmo:
 		var subgizmo_selection := target_gizmo.get_subgizmo_selection();
-		var last_solid = -1;
 		# Apply it to all items in selection
 		for subgizmo_id in subgizmo_selection:
 			var selection_type := DPHelpers.get_selection_type(map, subgizmo_id);
@@ -259,16 +257,14 @@ func _action_assign_uv_offset(editor : DioptraEditorMainPlugin, map : DP_Map, of
 					face.uv_offset = offset;
 			elif selection_type == DPHelpers.SelectionType.FACE:
 				sel_face.uv_offset = offset;
-				
-			last_solid = selection.solid_id;
+			
+			# Queue rebuilding map
+			# TODO: check if there was a change
+			map.rebuild_editor_map_deferred(selection.solid_id);
 		pass # End selection loop
 		
 		# Rebuild the mesh with the new material
 		if not subgizmo_selection.is_empty():
-			if subgizmo_selection.size() > 1:
-				map.rebuild_editor_map();
-			else:
-				map.rebuild_editor_map(map.solids[last_solid]);
 			return true;
 	return false;
 func _action_assign_uv_angle(editor : DioptraEditorMainPlugin, map : DP_Map, angle : float) -> bool:
@@ -319,6 +315,96 @@ func do_assign_uv_angle(angle : float) -> void:
 	var editor := _get_editor_plugin();
 	var map := editor.get_last_edited_map();
 	_action_assign_uv_angle(editor, map, angle);
+	
+#------------------------------------------------------------------------------#
+
+func do_util_uv_align_left() -> void:
+	var editor := _get_editor_plugin();
+	var map := editor.get_last_edited_map();
+	_action_util_uv_align(editor, map);
+	
+func _action_util_uv_align(editor : DioptraEditorMainPlugin, map : DP_Map) -> bool:
+	var uv_mode := _editor_plugin._uvModePer;
+	var target_gizmo := _get_target_gizmo(editor, map);
+	if target_gizmo:
+		var working_faces : Array[DPMapFace] = [];
+		
+		var subgizmo_selection := target_gizmo.get_subgizmo_selection();
+		# Apply it to all items in selection
+		for subgizmo_id in subgizmo_selection:
+			var selection_type := DPHelpers.get_selection_type(map, subgizmo_id);
+			var selection := DPHelpers.get_selection(map, subgizmo_id);
+			var sel_solid := selection.solid as DPMapSolid;
+			var sel_face := selection.face as DPMapFace;
+			if selection_type == DPHelpers.SelectionType.SOLID:
+				for face in sel_solid.faces:
+					working_faces.push_back(face);
+					pass
+			elif selection_type == DPHelpers.SelectionType.FACE:
+				working_faces.push_back(sel_face);
+				pass
+				
+			# Queue rebuilding map
+			# TODO: check if there was a change
+			map.rebuild_editor_map_deferred(selection.solid_id);
+		pass # End selection loop
+		
+		var groups : Array[int] = [];
+		
+		
+		if uv_mode == DioptraEditorMainPlugin.UVModePer.GROUP:
+			groups.resize(working_faces.size());
+			for i in working_faces.size():
+				groups[i] = 0;
+				
+			# For each plane, find the left-most position and align.
+			pass;
+		elif uv_mode == DioptraEditorMainPlugin.UVModePer.FACE:
+			for face in working_faces:
+				# Get the plane and the left most side
+				#if face.uv_mode == DPMapFace.UVMode.WORLD:
+					## Detect the face UV mode in world mode
+					#if face.uv_subflags & DPMapFace.UV_WORLD_FLAG_AUTO:
+						#face.uv_subflags = DPMapFace.UV_WORLD_FLAG_AUTO;
+						#var normal_abs := normal.abs();
+						#var normal_max_axis := normal_abs.max_axis_index();
+						#if   normal_max_axis == 0:	face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_X;
+						#elif normal_max_axis == 1:	face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_Y;
+						#elif normal_max_axis == 2:	face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_Z;
+					## Pull everything we need:
+					#var material := materials[face.material];
+					#var positions := am.get_surface_vertex();
+					#var uvs := am.get_surface_tex_uv();
+					#var texture_scale1d := DioptraInterface.get_pixel_scale_top() * float(DioptraInterface.get_pixel_scale_div());
+					#var texture_scale2d := (Vector2(texture_scale1d, texture_scale1d) * face.uv_scale) / Vector2(DPHelpers.get_material_primary_texture_size(material));
+					#var texture_offset = (face.uv_offset / texture_scale1d);
+					## Apply the world-mode UVs depending on the flag:
+					#if face.uv_subflags & DPMapFace.UV_WORLD_FLAG_X:
+						#for i_vertex in range(v0, am.get_vertex_count()):
+							#uvs[i_vertex] = ((Vector2(-positions[i_vertex].z, -positions[i_vertex].y)).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
+					#elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Y:
+						#for i_vertex in range(v0, am.get_vertex_count()):
+							#uvs[i_vertex] = ((Vector2(positions[i_vertex].x, positions[i_vertex].z)).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
+					#elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Z:
+						#for i_vertex in range(v0, am.get_vertex_count()):
+							#uvs[i_vertex] = ((Vector2(positions[i_vertex].x, -positions[i_vertex].y)).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
+					#pass # End UVMode.WORLD
+				#
+				
+				# Get the plane for the face
+				
+				pass
+				
+			pass
+		
+		for face in working_faces:
+			pass
+		
+		# Rebuild the mesh with the new material
+		if not subgizmo_selection.is_empty():
+			return true;
+	return false;
+	
 	
 #------------------------------------------------------------------------------#
 

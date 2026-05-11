@@ -173,13 +173,13 @@ icon_alignment = 1
 
 [node name="ButtonFitX" type="Button" parent="Container UVs/VContainer/GridContainer/HBoxContainerActions"]
 layout_mode = 2
-tooltip_text = "Fit"
+tooltip_text = "Fit Horizontally"
 icon = ExtResource("7_gtbp8")
 icon_alignment = 1
 
 [node name="ButtonFitY" type="Button" parent="Container UVs/VContainer/GridContainer/HBoxContainerActions"]
 layout_mode = 2
-tooltip_text = "Fit"
+tooltip_text = "Fit Vertically"
 icon = ExtResource("8_55n65")
 icon_alignment = 1
 
@@ -314,21 +314,25 @@ size_flags_horizontal = 8
 
 [node name="ButtonLeft" type="Button" parent="Container UVs/VContainer/GridContainer/VBoxContainerOffset/HBoxContainer3"]
 layout_mode = 2
+tooltip_text = "Align left side."
 icon = ExtResource("5_ll376")
 icon_alignment = 1
 
 [node name="ButtonRight" type="Button" parent="Container UVs/VContainer/GridContainer/VBoxContainerOffset/HBoxContainer3"]
 layout_mode = 2
+tooltip_text = "Align right side."
 icon = ExtResource("6_08nva")
 icon_alignment = 1
 
 [node name="ButtonTop" type="Button" parent="Container UVs/VContainer/GridContainer/VBoxContainerOffset/HBoxContainer3"]
 layout_mode = 2
+tooltip_text = "Align top side."
 icon = ExtResource("7_107lr")
 icon_alignment = 1
 
 [node name="ButtonDown" type="Button" parent="Container UVs/VContainer/GridContainer/VBoxContainerOffset/HBoxContainer3"]
 layout_mode = 2
+tooltip_text = "Align bottom  side."
 icon = ExtResource("8_8f21f")
 icon_alignment = 1
 
@@ -400,5 +404,6 @@ custom_arrow_step = 1.0
 [connection signal="pressed" from="Container UVs/VContainer/GridContainer/VBoxContainerRot/HBoxContainer/ButtonN90" to="." method="_on_rotate_N90"]
 [connection signal="pressed" from="Container UVs/VContainer/GridContainer/VBoxContainerRot/HBoxContainer/Button45" to="." method="_on_rotate_45"]
 [connection signal="value_changed" from="Container UVs/VContainer/GridContainer/VBoxContainerRot/HBoxContainer2/SpinBoxRot" to="." method="_on_angle_changed"]
+[connection signal="pressed" from="Container UVs/VContainer/GridContainer/VBoxContainerOffset/HBoxContainer3/ButtonLeft" to="." method="_on_util_align_left"]
 [connection signal="value_changed" from="Container UVs/VContainer/GridContainer/VBoxContainerOffset/HBoxContainerX/SpinBoxX" to="." method="_on_offset_changed"]
 [connection signal="value_changed" from="Container UVs/VContainer/GridContainer/VBoxContainerOffset/HBoxContainerY/SpinBoxY" to="." method="_on_offset_changed"]

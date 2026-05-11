@@ -230,3 +230,10 @@ func _on_mapping_changed(index: int) -> void:
 	var uses_normals := index == DPMapFace.UVMode.WORLD;
 	$"Container UVs/VContainer/GridContainer/OptionNormalAxis".disabled = not uses_normals;
 	# TODO: actually do something
+
+#------------------------------------------------------------------------------#
+
+func _on_util_align_left() -> void:
+	# Maphelper needs a separate UV worker
+	_plugin._plugin_maphelper.do_util_uv_align_left();
+	pass
