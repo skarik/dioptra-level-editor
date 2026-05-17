@@ -205,6 +205,13 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 			for i_vertex in range(v0, am.get_vertex_count()):
 				am.get_surface_normal()[i_vertex] = normal;
 				
+			# Pull everything we need for UVs:
+			var material := materials[face.material];
+			var positions := am.get_surface_vertex();
+			var uvs := am.get_surface_tex_uv();
+			var texture_scale1d := DioptraInterface.get_pixel_scale_top() * float(DioptraInterface.get_pixel_scale_div());
+			var texture_scale2d := (Vector2(texture_scale1d, texture_scale1d) * face.uv_scale) / Vector2(DPHelpers.get_material_primary_texture_size(material));
+			var texture_offset = (face.uv_offset / texture_scale1d);
 			# Build UVs for the face
 			if face.uv_mode == DPMapFace.UVMode.WORLD:
 				# Detect the face UV mode in world mode
@@ -215,13 +222,6 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 					if   normal_max_axis == 0:	face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_X;
 					elif normal_max_axis == 1:	face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_Y;
 					elif normal_max_axis == 2:	face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_Z;
-				# Pull everything we need:
-				var material := materials[face.material];
-				var positions := am.get_surface_vertex();
-				var uvs := am.get_surface_tex_uv();
-				var texture_scale1d := DioptraInterface.get_pixel_scale_top() * float(DioptraInterface.get_pixel_scale_div());
-				var texture_scale2d := (Vector2(texture_scale1d, texture_scale1d) * face.uv_scale) / Vector2(DPHelpers.get_material_primary_texture_size(material));
-				var texture_offset = (face.uv_offset / texture_scale1d);
 				# Apply the world-mode UVs depending on the flag:
 				if face.uv_subflags & DPMapFace.UV_WORLD_FLAG_X:
 					for i_vertex in range(v0, am.get_vertex_count()):
@@ -234,8 +234,29 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 						uvs[i_vertex] = ((Vector2(positions[i_vertex].x, -positions[i_vertex].y)).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
 				pass # End UVMode.WORLD
 			elif face.uv_mode == DPMapFace.UVMode.FACE:
-				# TODO
-				pass
+				# Generate X and Y directions for the face:
+				var uvdir_x := Vector3.LEFT;
+				var uvdir_y := Vector3.UP;
+				# Use normal axis to set up uvdir_x and uvdir_y
+				var normal_abs := normal.abs();
+				var normal_max_axis := normal_abs.max_axis_index();
+				# We do Y axis last because we really want it to be as unchanged as possible:
+				# If X normal is dominant:
+				if normal_max_axis == 0:
+					uvdir_x = -normal.cross(Vector3(0, -1, 0)).normalized();
+					uvdir_y = normal.cross(uvdir_x);
+				# If Y normal is dominant:
+				elif normal_max_axis == 1:
+					uvdir_x = normal.cross(Vector3(0, 0, 1)).normalized();
+					uvdir_y = -normal.cross(uvdir_x);
+				# If Z normal is dominant:
+				elif normal_max_axis == 2:
+					uvdir_x = normal.cross(Vector3(0, -1, 0)).normalized();
+					uvdir_y = -normal.cross(uvdir_x);
+				# 
+				var base_position := positions[v0];
+				
+				# generate inverse matrix based on normal & x & y
 			# End UVs
 				
 			# Pack in solid info into the bones:
