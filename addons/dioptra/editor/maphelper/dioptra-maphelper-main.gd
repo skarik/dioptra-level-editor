@@ -213,10 +213,40 @@ func _action_assign_material_to_selected_solids(editor : DioptraEditorMainPlugin
 			return true;
 	
 	return false;
+	
+func _action_assign_uv_mode(editor : DioptraEditorMainPlugin, map : DP_Map, mode : DPMapFace.UVMode) -> bool:
+	# Apply the material to all faces
+	var target_gizmo := _get_target_gizmo(editor, map);
+	if target_gizmo:
+		var subgizmo_selection := target_gizmo.get_subgizmo_selection();
+		# Apply it to all items in selection
+		for subgizmo_id in subgizmo_selection:
+			var selection := DPHelpers.get_selection(map, subgizmo_id);
+			var is_object : bool = selection.type > DPHelpers.SelectionType.VERTEX;
+			
+			if selection.type == DPHelpers.SelectionType.SOLID:
+				for face in selection.solid.faces:
+					face.uv_mode = mode;
+			elif selection.type == DPHelpers.SelectionType.FACE:
+				selection.face.uv_mode = mode;
+			elif selection.type == DPHelpers.SelectionType.DECAL:
+				selection.decal.uv_mode = mode;
+				
+			# Queue rebuilding map
+			# TODO: check if there was a change
+			map.rebuild_editor_map_deferred(selection.solid_id);
+		pass # End looping thru subgizmos
+				
+		# Rebuild the mesh with the new material
+		if not subgizmo_selection.is_empty():
+			return true;
+	
+	return false;
 
-func _action_assign_uv_properties(editor : DioptraEditorMainPlugin, map : DP_Map, scale : Vector2, offset : Vector2, angle : float) -> void:
+func _action_assign_uv_properties(editor : DioptraEditorMainPlugin, map : DP_Map, scale : Vector2, offset : Vector2, angle : float) -> bool:
 	print("Not implemented/used")
-	pass
+	return false;
+	
 func _action_assign_uv_scale(editor : DioptraEditorMainPlugin, map : DP_Map, scale : Vector2) -> bool:
 	var target_gizmo := _get_target_gizmo(editor, map);
 	if target_gizmo:
@@ -316,6 +346,11 @@ func do_assign_uv_angle(angle : float) -> void:
 	var map := editor.get_last_edited_map();
 	_action_assign_uv_angle(editor, map, angle);
 	
+func do_assign_uv_mode(mode : DPMapFace.UVMode) -> void:
+	var editor := _get_editor_plugin();
+	var map := editor.get_last_edited_map();
+	_action_assign_uv_mode(editor, map, mode);
+	
 #------------------------------------------------------------------------------#
 
 func do_util_uv_align_left() -> void:
@@ -327,6 +362,7 @@ func _action_util_uv_align(editor : DioptraEditorMainPlugin, map : DP_Map) -> bo
 	var uv_mode := _editor_plugin._uvModePer;
 	var target_gizmo := _get_target_gizmo(editor, map);
 	if target_gizmo:
+		var working_solids : Array[DPMapFace] = [];
 		var working_faces : Array[DPMapFace] = [];
 		
 		var subgizmo_selection := target_gizmo.get_subgizmo_selection();
@@ -338,9 +374,11 @@ func _action_util_uv_align(editor : DioptraEditorMainPlugin, map : DP_Map) -> bo
 			var sel_face := selection.face as DPMapFace;
 			if selection_type == DPHelpers.SelectionType.SOLID:
 				for face in sel_solid.faces:
+					working_solids.push_back(sel_solid);
 					working_faces.push_back(face);
 					pass
 			elif selection_type == DPHelpers.SelectionType.FACE:
+				working_solids.push_back(sel_solid);
 				working_faces.push_back(sel_face);
 				pass
 				
@@ -349,18 +387,24 @@ func _action_util_uv_align(editor : DioptraEditorMainPlugin, map : DP_Map) -> bo
 			map.rebuild_editor_map_deferred(selection.solid_id);
 		pass # End selection loop
 		
-		var groups : Array[int] = [];
+		#var groups : Array[int] = [];
+		#var group_count : int = 0;
+		
+		# Buckets of faces depending on the UV mode
+		var groups : Array[Array] = [];
 		
 		
 		if uv_mode == DioptraEditorMainPlugin.UVModePer.GROUP:
 			groups.resize(working_faces.size());
+			groups.push_back([]);
+			groups[0].resize(working_faces.size());
 			for i in working_faces.size():
-				groups[i] = 0;
-				
-			# For each plane, find the left-most position and align.
-			pass;
+				groups[0][i] = i;
 		elif uv_mode == DioptraEditorMainPlugin.UVModePer.FACE:
-			for face in working_faces:
+			groups.resize(working_faces.size());
+			for i in working_faces.size():
+				groups[i] = [i];
+			#for face in working_faces:
 				# Get the plane and the left most side
 				#if face.uv_mode == DPMapFace.UVMode.WORLD:
 					## Detect the face UV mode in world mode
@@ -393,12 +437,86 @@ func _action_util_uv_align(editor : DioptraEditorMainPlugin, map : DP_Map) -> bo
 				
 				# Get the plane for the face
 				
-				pass
 				
 			pass
+			
+		for group in groups:
+			# Collect the plane we're going to be working on
+			var collected_normal : Vector3 = Vector3.ZERO;
+			
+			# Generate the normal
+			for face_index in group:
+				var solid := working_solids[face_index];
+				var face := working_faces[face_index];
+				
+				# Get face corners of the given item
+				var face_corners : PackedVector3Array = [];
+				face_corners.resize(face.corners.size());
+				for i_corner in face.corners.size():
+					face_corners[i_corner] = solid.points[face.corners[i_corner]].v3;
+				
+				# Get a normal for the face
+				var normal : Vector3 = -((face_corners[1] - face_corners[0]).cross(face_corners[2] - face_corners[0])).normalized();
+				
+				# Check UV mode to modify the texturing normal:
+				if face.uv_mode == DPMapFace.UVMode.WORLD:
+					# Detect the face UV mode in world mode
+					if face.uv_subflags & DPMapFace.UV_WORLD_FLAG_AUTO:
+						face.uv_subflags = DPMapFace.UV_WORLD_FLAG_AUTO;
+						var normal_abs := normal.abs();
+						var normal_max_axis := normal_abs.max_axis_index();
+						if   normal_max_axis == 0:	face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_X;
+						elif normal_max_axis == 1:	face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_Y;
+						elif normal_max_axis == 2:	face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_Z;
+					
+					if face.uv_subflags & DPMapFace.UV_WORLD_FLAG_X:
+						normal = Vector3(signf(normal.x), 0, 0);
+					elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Y:
+						normal = Vector3(signf(normal.x), 0, 0);
+					elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Z:
+						normal = Vector3(signf(normal.x), 0, 0);
+				
+				# Collect it!
+				collected_normal += normal;
+				
+				# Make a plane and get the position of the vertices on that plane
+				#var working_plane := Plane(normal);
+				
+				# Generate X and Y directions for the face:
+				var uvdir_x := Vector3.LEFT;
+				var uvdir_y := Vector3.UP;
+				if face.uv_mode == DPMapFace.UVMode.WORLD:
+					if face.uv_subflags & DPMapFace.UV_WORLD_FLAG_X:
+						# 1, 0, 0
+						uvdir_x = Vector3(0, 0, 1);
+						uvdir_y = Vector3(0, -1, 0);
+					elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Y:
+						# 0, 1, 0
+						uvdir_x = Vector3(1, 0, 0);
+						uvdir_y = Vector3(0, 0, 1);
+					elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Z:
+						# 0, 0, 1
+						uvdir_x = Vector3(1, 0, 0);
+						uvdir_y = Vector3(0, -1, 0);
+				elif face.uv_mode == DPMapFace.UVMode.FACE:
+					var normal_abs := normal.abs(); #next - do per face texturing:
+					var normal_max_axis := normal_abs.max_axis_index();
+					# We do Y axis last because we really want it to be as unchanged as possible:
+					# If X normal is dominant:
+					if normal_max_axis == 0:
+						uvdir_x = -normal.cross(Vector3(0, -1, 0)).normalized();
+						uvdir_y = normal.cross(uvdir_x);
+					# If Y normal is dominant:
+					elif normal_max_axis == 1:
+						uvdir_x = normal.cross(Vector3(0, 0, 1)).normalized();
+						uvdir_y = -normal.cross(uvdir_x);
+					# If Z normal is dominant:
+					elif normal_max_axis == 2:
+						uvdir_x = normal.cross(Vector3(0, -1, 0)).normalized();
+						uvdir_y = -normal.cross(uvdir_x);
+				pass
 		
-		for face in working_faces:
-			pass
+			# Normalize normal to get the plane
 		
 		# Rebuild the mesh with the new material
 		if not subgizmo_selection.is_empty():

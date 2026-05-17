@@ -206,16 +206,16 @@ func _on_scale_changed(_dummy : float) -> void:
 	_plugin._plugin_maphelper.do_assign_uv_scale(uv_scale);
 
 func _on_rotate_180() -> void:
-	_angle_spinbox.value += 180;
+	_angle_spinbox.value -= 180;
 
 func _on_rotate_90() -> void:
-	_angle_spinbox.value += 90;
-	
-func _on_rotate_N90() -> void:
 	_angle_spinbox.value -= 90;
 	
+func _on_rotate_N90() -> void:
+	_angle_spinbox.value += 90;
+	
 func _on_rotate_45() -> void:
-	_angle_spinbox.value += 45;
+	_angle_spinbox.value -= 45;
 	
 func _on_angle_changed(_dummy : float) -> void:
 	var angle := wrapf(_angle_spinbox.value, -360, 360);
@@ -229,7 +229,7 @@ func _on_offset_changed(_dummy : float) -> void:
 func _on_mapping_changed(index: int) -> void:
 	var uses_normals := index == DPMapFace.UVMode.WORLD;
 	$"Container UVs/VContainer/GridContainer/OptionNormalAxis".disabled = not uses_normals;
-	# TODO: actually do something
+	_plugin._plugin_maphelper.do_assign_uv_mode(index as DPMapFace.UVMode);
 
 #------------------------------------------------------------------------------#
 

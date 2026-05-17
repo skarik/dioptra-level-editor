@@ -296,6 +296,8 @@ layout_mode = 2
 min_value = -180.0
 max_value = 180.0
 step = 0.0
+allow_greater = true
+allow_lesser = true
 suffix = "°"
 custom_arrow_step = 1.0
 

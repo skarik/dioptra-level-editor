@@ -227,7 +227,7 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 			var positions := am.get_surface_vertex();
 			var uvs := am.get_surface_tex_uv();
 			var texture_scale1d := DioptraInterface.get_pixel_scale_top() * float(DioptraInterface.get_pixel_scale_div());
-			var texture_scale2d := (Vector2(texture_scale1d, texture_scale1d) * face.uv_scale) / Vector2(DPHelpers.get_material_primary_texture_size(material));
+			var texture_scale2d := (Vector2(texture_scale1d, texture_scale1d) / face.uv_scale) / Vector2(DPHelpers.get_material_primary_texture_size(material));
 			var texture_offset = (face.uv_offset / texture_scale1d);
 			# Build UVs for the face
 			if face.uv_mode == DPMapFace.UVMode.WORLD:
@@ -260,8 +260,10 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 				# We do Y axis last because we really want it to be as unchanged as possible:
 				# If X normal is dominant:
 				if normal_max_axis == 0:
-					uvdir_x = -normal.cross(Vector3(0, -1, 0)).normalized();
-					uvdir_y = normal.cross(uvdir_x);
+					uvdir_x = normal.cross(Vector3(0, -1, 0)).normalized();
+					uvdir_y = normal.cross(-uvdir_x);
+					#uvdir_x = -uvdir_x;
+					#uvdir_y = uvdir_y;
 				# If Y normal is dominant:
 				elif normal_max_axis == 1:
 					uvdir_x = normal.cross(Vector3(0, 0, 1)).normalized();
@@ -270,14 +272,18 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 				elif normal_max_axis == 2:
 					uvdir_x = normal.cross(Vector3(0, -1, 0)).normalized();
 					uvdir_y = -normal.cross(uvdir_x);
-				# 
+				
 				var base_position := positions[v0];
+				#var base_rotation := Basis(uvdir_x, normal, uvdir_y);
 				var base_rotation := Basis(uvdir_x, uvdir_y, normal);
-				var inv_rotation := base_rotation.inverse();
+				#var inv_rotation := base_rotation.inverse();
+				#var inv_rotation := base_rotation.transposed();
+				var inv_rotation := base_rotation;
 				
 				for i_vertex in range(v0, am.get_vertex_count()):
 					var flat_position := (positions[i_vertex] - base_position) * inv_rotation;
 					uvs[i_vertex] = (Vector2(flat_position.x, flat_position.y).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
+					#uvs[i_vertex] = (Vector2(flat_position.x, flat_position.z).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
 				
 				# generate inverse matrix based on normal & x & y
 			# End UVs
