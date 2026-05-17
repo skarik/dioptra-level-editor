@@ -51,6 +51,12 @@ func _ready() -> void:
 		rebuild_editor_map();
 		rebuild_editor_decals();
 		rebuild_editor_map_collision();
+		# Disable process - it's static
+		#process_mode = Node.PROCESS_MODE_DISABLED; # not until we're sure how we're doing loading later
+
+func _process(delta: float) -> void:
+	if Engine.is_editor_hint():
+		_editor_process(delta);
 
 #------------------------------------------------------------------------------#
 
@@ -60,6 +66,15 @@ func fix_member_valid_values() -> void:
 	if material_objects == null: material_objects = [];
 	if decals == null: decals = [];
 	# TODO: mark as undoable action here.
+	pass
+
+#------------------------------------------------------------------------------#
+
+func _editor_process(delta: float) -> void:
+	# TODO: make smarter one day
+	if not _editor_solid_update_requests.is_empty():
+		rebuild_editor_map(null);
+		_editor_solid_update_requests.clear();
 	pass
 
 #------------------------------------------------------------------------------#
@@ -79,6 +94,8 @@ var _editor_mesh_groups : Array[EditorMeshGroup] = [];
 var _editor_mesh_instances : Array[MeshInstance3D] = [];
 var _editor_mesh_instances_decals : MeshInstance3D = null;
 var _editor_material_grid : Material = null;
+
+var _editor_solid_update_requests : PackedInt32Array = [];
 
 ## Rebuilds the mesh groups.
 ##
@@ -103,7 +120,7 @@ func rebuild_editor_mesh_groups() -> void:
 	pass
 
 func rebuild_editor_map_deferred(solid_index : int) -> void:
-	print("Deferred not implemented!!!!!");
+	_editor_solid_update_requests.push_back(solid_index);
 	pass
 
 ## Rebuilds editor map, which is a separate case than the "baked" map but uses
@@ -255,6 +272,12 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 					uvdir_y = -normal.cross(uvdir_x);
 				# 
 				var base_position := positions[v0];
+				var base_rotation := Basis(uvdir_x, uvdir_y, normal);
+				var inv_rotation := base_rotation.inverse();
+				
+				for i_vertex in range(v0, am.get_vertex_count()):
+					var flat_position := (positions[i_vertex] - base_position) * inv_rotation;
+					uvs[i_vertex] = (Vector2(flat_position.x, flat_position.y).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
 				
 				# generate inverse matrix based on normal & x & y
 			# End UVs
