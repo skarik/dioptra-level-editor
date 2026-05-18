@@ -132,3 +132,86 @@ static func get_selection(map : DP_Map, subgizmo_id : int) -> DPSelectionItem:
 		
 	return result;
 	
+#------------------------------------------------------------------------------#
+# Geometry
+
+static func face_fix_flags(solid : DPMapSolid, face : DPMapFace) -> void:
+	# Build a quad or triangles with the given item
+	var face_corners : PackedVector3Array = [];
+	face_corners.resize(face.corners.size());
+	for i_corner in face.corners.size():
+		face_corners[i_corner] = solid.points[face.corners[i_corner]].v3;
+	
+	# Get a normal for the face
+	var normal : Vector3 = -((face_corners[1] - face_corners[0]).cross(face_corners[2] - face_corners[0])).normalized();
+	
+	# Build UVs for the face
+	if face.uv_mode == DPMapFace.UVMode.WORLD:
+		# Detect the face UV mode in world mode
+		if face.uv_subflags & DPMapFace.UV_WORLD_FLAG_AUTO:
+			face.uv_subflags = DPMapFace.UV_WORLD_FLAG_AUTO;
+			var normal_abs := normal.abs();
+			var normal_max_axis := normal_abs.max_axis_index();
+			if   normal_max_axis == 0:	face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_X;
+			elif normal_max_axis == 1:	face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_Y;
+			elif normal_max_axis == 2:	face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_Z;
+	
+	# Done with UV flags
+
+
+static func face_get_texture_basis(solid : DPMapSolid, face : DPMapFace) -> Basis:
+	face_fix_flags(solid, face);
+	
+	# Build a quad or triangles with the given item
+	var face_corners : PackedVector3Array = [];
+	face_corners.resize(face.corners.size());
+	for i_corner in face.corners.size():
+		face_corners[i_corner] = solid.points[face.corners[i_corner]].v3;
+	
+	# Get a normal for the face
+	var normal : Vector3 = -((face_corners[1] - face_corners[0]).cross(face_corners[2] - face_corners[0])).normalized();
+	
+	# World mapping is very simple:
+	if face.uv_mode == DPMapFace.UVMode.WORLD:
+		if face.uv_subflags & DPMapFace.UV_WORLD_FLAG_X:
+			return Basis(Vector3(0, 0, -1), Vector3(0, -1, 0), Vector3(0, 0, 0));
+		elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Y:
+			return Basis(Vector3(1, 0, 0), Vector3(0, 0, 1), Vector3(0, 0, 0));
+		elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Z:
+			return Basis(Vector3(1, 0, 0), Vector3(0, -1, 0), Vector3(0, 0, 0));
+	# Face mapping needs to be aligned wit hthe face
+	elif face.uv_mode == DPMapFace.UVMode.FACE:
+		# Generate X and Y directions for the face:
+		var uvdir_x := Vector3.LEFT;
+		var uvdir_y := Vector3.UP;
+		# Use normal axis to set up uvdir_x and uvdir_y
+		var normal_abs := normal.abs();
+		var normal_max_axis := normal_abs.max_axis_index();
+		
+		# We do Y axis last because we really want it to be as unchanged as possible:
+		# If X normal is dominant:
+		if normal_max_axis == 0:
+			uvdir_x = normal.cross(Vector3(0, -1, 0)).normalized();
+			uvdir_y = normal.cross(-uvdir_x);
+		# If Y normal is dominant:
+		elif normal_max_axis == 1:
+			uvdir_x = normal.cross(Vector3(0, 0, 1)).normalized();
+			uvdir_y = -normal.cross(uvdir_x);
+		# If Z normal is dominant:
+		elif normal_max_axis == 2:
+			uvdir_x = normal.cross(Vector3(0, -1, 0)).normalized();
+			uvdir_y = -normal.cross(uvdir_x);
+			
+		var base_rotation := Basis(uvdir_x, uvdir_y, normal);
+		var inv_rotation := base_rotation;
+		return inv_rotation;
+		
+	# Catch-all: don't do anything.
+	return Basis.IDENTITY;
+
+static func face_get_texture_base_position(solid : DPMapSolid, face : DPMapFace) -> Vector3:
+	if face.uv_mode == DPMapFace.UVMode.WORLD:
+		return Vector3.ZERO;
+	elif face.uv_mode == DPMapFace.UVMode.FACE:
+		return solid.points[face.corners[0]].v3;
+	return Vector3.ZERO;

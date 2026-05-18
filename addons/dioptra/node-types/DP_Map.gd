@@ -230,62 +230,11 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 			var texture_scale2d := (Vector2(texture_scale1d, texture_scale1d) / face.uv_scale) / Vector2(DPHelpers.get_material_primary_texture_size(material));
 			var texture_offset = (face.uv_offset / texture_scale1d);
 			# Build UVs for the face
-			if face.uv_mode == DPMapFace.UVMode.WORLD:
-				# Detect the face UV mode in world mode
-				if face.uv_subflags & DPMapFace.UV_WORLD_FLAG_AUTO:
-					face.uv_subflags = DPMapFace.UV_WORLD_FLAG_AUTO;
-					var normal_abs := normal.abs();
-					var normal_max_axis := normal_abs.max_axis_index();
-					if   normal_max_axis == 0:	face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_X;
-					elif normal_max_axis == 1:	face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_Y;
-					elif normal_max_axis == 2:	face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_Z;
-				# Apply the world-mode UVs depending on the flag:
-				if face.uv_subflags & DPMapFace.UV_WORLD_FLAG_X:
-					for i_vertex in range(v0, am.get_vertex_count()):
-						uvs[i_vertex] = ((Vector2(-positions[i_vertex].z, -positions[i_vertex].y)).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
-				elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Y:
-					for i_vertex in range(v0, am.get_vertex_count()):
-						uvs[i_vertex] = ((Vector2(positions[i_vertex].x, positions[i_vertex].z)).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
-				elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Z:
-					for i_vertex in range(v0, am.get_vertex_count()):
-						uvs[i_vertex] = ((Vector2(positions[i_vertex].x, -positions[i_vertex].y)).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
-				pass # End UVMode.WORLD
-			elif face.uv_mode == DPMapFace.UVMode.FACE:
-				# Generate X and Y directions for the face:
-				var uvdir_x := Vector3.LEFT;
-				var uvdir_y := Vector3.UP;
-				# Use normal axis to set up uvdir_x and uvdir_y
-				var normal_abs := normal.abs();
-				var normal_max_axis := normal_abs.max_axis_index();
-				# We do Y axis last because we really want it to be as unchanged as possible:
-				# If X normal is dominant:
-				if normal_max_axis == 0:
-					uvdir_x = normal.cross(Vector3(0, -1, 0)).normalized();
-					uvdir_y = normal.cross(-uvdir_x);
-					#uvdir_x = -uvdir_x;
-					#uvdir_y = uvdir_y;
-				# If Y normal is dominant:
-				elif normal_max_axis == 1:
-					uvdir_x = normal.cross(Vector3(0, 0, 1)).normalized();
-					uvdir_y = -normal.cross(uvdir_x);
-				# If Z normal is dominant:
-				elif normal_max_axis == 2:
-					uvdir_x = normal.cross(Vector3(0, -1, 0)).normalized();
-					uvdir_y = -normal.cross(uvdir_x);
-				
-				var base_position := positions[v0];
-				#var base_rotation := Basis(uvdir_x, normal, uvdir_y);
-				var base_rotation := Basis(uvdir_x, uvdir_y, normal);
-				#var inv_rotation := base_rotation.inverse();
-				#var inv_rotation := base_rotation.transposed();
-				var inv_rotation := base_rotation;
-				
-				for i_vertex in range(v0, am.get_vertex_count()):
-					var flat_position := (positions[i_vertex] - base_position) * inv_rotation;
-					uvs[i_vertex] = (Vector2(flat_position.x, flat_position.y).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
-					#uvs[i_vertex] = (Vector2(flat_position.x, flat_position.z).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
-				
-				# generate inverse matrix based on normal & x & y
+			var face_basis := DPHelpers.face_get_texture_basis(solid, face);
+			var base_position := DPHelpers.face_get_texture_base_position(solid, face);
+			for i_vertex in range(v0, am.get_vertex_count()):
+				var flat_position := (positions[i_vertex] - base_position) * face_basis;
+				uvs[i_vertex] = (Vector2(flat_position.x, flat_position.y).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
 			# End UVs
 				
 			# Pack in solid info into the bones:
