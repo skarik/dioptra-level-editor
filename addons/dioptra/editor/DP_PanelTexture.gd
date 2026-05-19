@@ -234,7 +234,37 @@ func _on_mapping_changed(index: int) -> void:
 #------------------------------------------------------------------------------#
 
 func _on_util_align_left() -> void:
-	# Maphelper needs a separate UV worker
 	_plugin._plugin_maphelper.do_util_uv_align_left();
 	_on_selection_changed();
-	pass
+
+func _on_util_align_right() -> void:
+	_plugin._plugin_maphelper.do_util_uv_align_right();
+	_on_selection_changed();
+
+func _on_util_align_top() -> void:
+	_plugin._plugin_maphelper.do_util_uv_align_top();
+	_on_selection_changed();
+
+func _on_util_align_bottom() -> void:
+	_plugin._plugin_maphelper.do_util_uv_align_bottom();
+	_on_selection_changed();
+
+func _on_util_align_center_x() -> void:
+	_plugin._plugin_maphelper.do_util_uv_align_action(DioptraEditorMaphelperPlugin.UVActionType.CenterX);
+	_on_selection_changed();
+func _on_util_align_center_y() -> void:
+	_plugin._plugin_maphelper.do_util_uv_align_action(DioptraEditorMaphelperPlugin.UVActionType.CenterY);
+	_on_selection_changed();
+
+func _on_util_align_fit_xy() -> void:
+	_plugin._plugin_maphelper.do_util_uv_align_action(DioptraEditorMaphelperPlugin.UVActionType.FitX | DioptraEditorMaphelperPlugin.UVActionType.FitY);
+	_on_selection_changed();
+func _on_util_align_fit_x() -> void:
+	_plugin._plugin_maphelper.do_util_uv_align_action(DioptraEditorMaphelperPlugin.UVActionType.FitX);
+	_on_selection_changed();
+func _on_util_align_fit_y() -> void:
+	_plugin._plugin_maphelper.do_util_uv_align_action(DioptraEditorMaphelperPlugin.UVActionType.FitY);
+	_on_selection_changed();
+func _on_util_align_fit_axy() -> void:
+	_plugin._plugin_maphelper.do_util_uv_align_action(DioptraEditorMaphelperPlugin.UVActionType.GuessRotation | DioptraEditorMaphelperPlugin.UVActionType.FitX | DioptraEditorMaphelperPlugin.UVActionType.FitY);
+	_on_selection_changed();

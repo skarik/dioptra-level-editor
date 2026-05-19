@@ -353,12 +353,40 @@ func do_assign_uv_mode(mode : DPMapFace.UVMode) -> void:
 	
 #------------------------------------------------------------------------------#
 
+enum UVActionType {
+	AlignLeft		= 0x0001,
+	AlignRight		= 0x0002,
+	AlignTop		= 0x0004,
+	AlignBottom		= 0x0008,
+	CenterX			= 0x0010,
+	CenterY			= 0x0020,
+	FitX			= 0x0040,
+	FitY			= 0x0080,
+	GuessRotation	= 0x0100,
+}
+
 func do_util_uv_align_left() -> void:
 	var editor := _get_editor_plugin();
 	var map := editor.get_last_edited_map();
-	_action_util_uv_align(editor, map);
+	_action_util_uv_align(editor, map, UVActionType.AlignLeft);
+func do_util_uv_align_right() -> void:
+	var editor := _get_editor_plugin();
+	var map := editor.get_last_edited_map();
+	_action_util_uv_align(editor, map, UVActionType.AlignRight);
+func do_util_uv_align_top() -> void:
+	var editor := _get_editor_plugin();
+	var map := editor.get_last_edited_map();
+	_action_util_uv_align(editor, map, UVActionType.AlignTop);
+func do_util_uv_align_bottom() -> void:
+	var editor := _get_editor_plugin();
+	var map := editor.get_last_edited_map();
+	_action_util_uv_align(editor, map, UVActionType.AlignBottom);
+func do_util_uv_align_action(action : UVActionType) -> void:
+	var editor := _get_editor_plugin();
+	var map := editor.get_last_edited_map();
+	_action_util_uv_align(editor, map, action);
 	
-func _action_util_uv_align(editor : DioptraEditorMainPlugin, map : DP_Map) -> bool:
+func _action_util_uv_align(editor : DioptraEditorMainPlugin, map : DP_Map, action : UVActionType) -> bool:
 	var uv_mode := _editor_plugin._uvModePer;
 	var target_gizmo := _get_target_gizmo(editor, map);
 	if target_gizmo:
@@ -419,14 +447,9 @@ func _action_util_uv_align(editor : DioptraEditorMainPlugin, map : DP_Map) -> bo
 				collected_basis.y += face_basis.y;
 				collected_basis.z += face_basis.z;
 				
-				# Collect the basis points
-				#collected_basis_points.push_back(DPHelpers.face_get_texture_base_position(solid, face));
-				
 			# Orthonormalize the basis matrix
 			collected_basis.orthonormalized();
 			
-			# Get the actual basis point:
-		
 			# Get the min and max coords of the group 
 			var min_coord := Vector3.INF;
 			var max_coord := -Vector3.INF;
@@ -452,43 +475,38 @@ func _action_util_uv_align(editor : DioptraEditorMainPlugin, map : DP_Map) -> bo
 				var face_basis := DPHelpers.face_get_texture_basis(solid, face);
 				var face_basis_point := DPHelpers.face_get_texture_base_position(solid, face);
 				
-				# Get the min and max points in the space of the face:
-				#var face_min := Vector3.INF;
-				#var face_max := -Vector3.INF;
-				#for i_corner in face.corners.size():
-					#var position := (solid.points[face.corners[i_corner]].v3 - face_basis_point) * face_basis;
-					#face_min = face_min.min(position);
-					#face_max = face_max.max(position);
-				
-				# We need the min_coord in the space of the face
-				#var local_min := (min_coord_world - face_basis_point) * face_basis;
-				#var local_max := (max_coord_world - face_basis_point) * face_basis;
-				
 				# Get material properties
 				var material := map.materials[face.material];
-				#var texture_scale1d := DioptraInterface.get_pixel_scale_top() * float(DioptraInterface.get_pixel_scale_div());
-				#var texture_scale2d := (Vector2(texture_scale1d, texture_scale1d) / face.uv_scale) / Vector2(DPHelpers.get_material_primary_texture_size(material));
 				var texture_size := DPHelpers.get_material_primary_texture_size(material);
 				var units_to_offset_scale1d := DioptraInterface.get_pixel_scale_top() * float(DioptraInterface.get_pixel_scale_div());
 				var units_to_offset_scale2d := Vector2(units_to_offset_scale1d, units_to_offset_scale1d);# / face.uv_scale;
 				# Scale happens around the center of the texture origin, not the basis origin
 				
-				# Align 0 with the local_min (we base position around basis point):
-				#face.uv_offset = Vector2(local_min.x , local_min.y); # ??????? THAT'S IT??? NO.??????????
-				# am i dumb
-				#face.uv_offset.x = local_min.x / texture_scale2d.x; # ??????? THAT'S IT??? NO.??????????
-				
+				# Get positions in face-space
 				var local_basis_point := face_basis_point * face_basis;
 				var planar_min := min_coord_world * face_basis;
 				var planar_max := max_coord_world * face_basis;
 				
-				# LEFT
-				#face.uv_offset.x = (local_basis_point.x - planar_min.x) * units_to_offset_scale2d.x;
-				# RIGHT
-				#face.uv_offset.x = (local_basis_point.x - planar_max.x) * units_to_offset_scale2d.x;
-				
-				# FIT X
-				face.uv_scale.x = ((planar_max.x - planar_min.x) * units_to_offset_scale2d.x) / texture_size.x;
+				# LEFT & TOP
+				if action & UVActionType.AlignLeft:
+					face.uv_offset.x = (local_basis_point.x - planar_min.x) * units_to_offset_scale2d.x;
+				if action & UVActionType.AlignTop:
+					face.uv_offset.y = (local_basis_point.y - planar_min.y) * units_to_offset_scale2d.y;
+				# RIGHT & BOTTOM
+				if action & UVActionType.AlignRight:
+					face.uv_offset.x = (local_basis_point.x - planar_max.x) * units_to_offset_scale2d.x;
+				if action & UVActionType.AlignBottom:
+					face.uv_offset.y = (local_basis_point.y - planar_max.y) * units_to_offset_scale2d.y;
+				# CENTER X & Y
+				if action & UVActionType.CenterX:
+					face.uv_offset.x = (local_basis_point.x - (planar_min.x - planar_max.x) / 2) * units_to_offset_scale2d.x;
+				if action & UVActionType.CenterY:
+					face.uv_offset.y = (local_basis_point.y - (planar_min.y - planar_max.y) / 2) * units_to_offset_scale2d.y;
+				# FIT X & Y
+				if action & UVActionType.FitX:
+					face.uv_scale.x = ((planar_max.x - planar_min.x) * units_to_offset_scale2d.x) / texture_size.x;
+				if action & UVActionType.FitY:
+					face.uv_scale.y = ((planar_max.y - planar_min.y) * units_to_offset_scale2d.y) / texture_size.y;
 				
 		
 		# Rebuild the mesh with the new material
