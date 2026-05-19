@@ -174,11 +174,11 @@ static func face_get_texture_basis(solid : DPMapSolid, face : DPMapFace) -> Basi
 	# World mapping is very simple:
 	if face.uv_mode == DPMapFace.UVMode.WORLD:
 		if face.uv_subflags & DPMapFace.UV_WORLD_FLAG_X:
-			return Basis(Vector3(0, 0, -1), Vector3(0, -1, 0), Vector3(0, 0, 0));
+			return Basis(Vector3(0, 0, -1), Vector3(0, -1, 0), Vector3(1, 0, 0));
 		elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Y:
-			return Basis(Vector3(1, 0, 0), Vector3(0, 0, 1), Vector3(0, 0, 0));
+			return Basis(Vector3(1, 0, 0), Vector3(0, 0, 1), Vector3(0, 1, 0));
 		elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Z:
-			return Basis(Vector3(1, 0, 0), Vector3(0, -1, 0), Vector3(0, 0, 0));
+			return Basis(Vector3(1, 0, 0), Vector3(0, -1, 0), Vector3(0, 0, 1));
 	# Face mapping needs to be aligned wit hthe face
 	elif face.uv_mode == DPMapFace.UVMode.FACE:
 		# Generate X and Y directions for the face:

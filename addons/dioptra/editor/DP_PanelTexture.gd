@@ -236,4 +236,5 @@ func _on_mapping_changed(index: int) -> void:
 func _on_util_align_left() -> void:
 	# Maphelper needs a separate UV worker
 	_plugin._plugin_maphelper.do_util_uv_align_left();
+	_on_selection_changed();
 	pass

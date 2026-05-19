@@ -362,7 +362,7 @@ func _action_util_uv_align(editor : DioptraEditorMainPlugin, map : DP_Map) -> bo
 	var uv_mode := _editor_plugin._uvModePer;
 	var target_gizmo := _get_target_gizmo(editor, map);
 	if target_gizmo:
-		var working_solids : Array[DPMapFace] = [];
+		var working_solids : Array[DPMapSolid] = [];
 		var working_faces : Array[DPMapFace] = [];
 		
 		var subgizmo_selection := target_gizmo.get_subgizmo_selection();
@@ -387,12 +387,8 @@ func _action_util_uv_align(editor : DioptraEditorMainPlugin, map : DP_Map) -> bo
 			map.rebuild_editor_map_deferred(selection.solid_id);
 		pass # End selection loop
 		
-		#var groups : Array[int] = [];
-		#var group_count : int = 0;
-		
 		# Buckets of faces depending on the UV mode
 		var groups : Array[Array] = [];
-		
 		
 		if uv_mode == DioptraEditorMainPlugin.UVModePer.GROUP:
 			groups.resize(working_faces.size());
@@ -404,119 +400,96 @@ func _action_util_uv_align(editor : DioptraEditorMainPlugin, map : DP_Map) -> bo
 			groups.resize(working_faces.size());
 			for i in working_faces.size():
 				groups[i] = [i];
-			#for face in working_faces:
-				# Get the plane and the left most side
-				#if face.uv_mode == DPMapFace.UVMode.WORLD:
-					## Detect the face UV mode in world mode
-					#if face.uv_subflags & DPMapFace.UV_WORLD_FLAG_AUTO:
-						#face.uv_subflags = DPMapFace.UV_WORLD_FLAG_AUTO;
-						#var normal_abs := normal.abs();
-						#var normal_max_axis := normal_abs.max_axis_index();
-						#if   normal_max_axis == 0:	face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_X;
-						#elif normal_max_axis == 1:	face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_Y;
-						#elif normal_max_axis == 2:	face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_Z;
-					## Pull everything we need:
-					#var material := materials[face.material];
-					#var positions := am.get_surface_vertex();
-					#var uvs := am.get_surface_tex_uv();
-					#var texture_scale1d := DioptraInterface.get_pixel_scale_top() * float(DioptraInterface.get_pixel_scale_div());
-					#var texture_scale2d := (Vector2(texture_scale1d, texture_scale1d) * face.uv_scale) / Vector2(DPHelpers.get_material_primary_texture_size(material));
-					#var texture_offset = (face.uv_offset / texture_scale1d);
-					## Apply the world-mode UVs depending on the flag:
-					#if face.uv_subflags & DPMapFace.UV_WORLD_FLAG_X:
-						#for i_vertex in range(v0, am.get_vertex_count()):
-							#uvs[i_vertex] = ((Vector2(-positions[i_vertex].z, -positions[i_vertex].y)).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
-					#elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Y:
-						#for i_vertex in range(v0, am.get_vertex_count()):
-							#uvs[i_vertex] = ((Vector2(positions[i_vertex].x, positions[i_vertex].z)).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
-					#elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Z:
-						#for i_vertex in range(v0, am.get_vertex_count()):
-							#uvs[i_vertex] = ((Vector2(positions[i_vertex].x, -positions[i_vertex].y)).rotated(deg_to_rad(face.uv_rotation)) + texture_offset) * texture_scale2d;
-					#pass # End UVMode.WORLD
-				#
-				
-				# Get the plane for the face
-				
-				
-			pass
 			
 		for group in groups:
 			# Collect the plane we're going to be working on
-			var collected_normal : Vector3 = Vector3.ZERO;
+			var collected_basis : Basis = Basis(Vector3.ZERO, Vector3.ZERO, Vector3.ZERO);
 			
 			# Generate the normal
 			for face_index in group:
 				var solid := working_solids[face_index];
 				var face := working_faces[face_index];
 				
-				# Get face corners of the given item
-				var face_corners : PackedVector3Array = [];
-				face_corners.resize(face.corners.size());
-				for i_corner in face.corners.size():
-					face_corners[i_corner] = solid.points[face.corners[i_corner]].v3;
-				
-				# Get a normal for the face
-				var normal : Vector3 = -((face_corners[1] - face_corners[0]).cross(face_corners[2] - face_corners[0])).normalized();
-				
-				# Check UV mode to modify the texturing normal:
-				if face.uv_mode == DPMapFace.UVMode.WORLD:
-					# Detect the face UV mode in world mode
-					if face.uv_subflags & DPMapFace.UV_WORLD_FLAG_AUTO:
-						face.uv_subflags = DPMapFace.UV_WORLD_FLAG_AUTO;
-						var normal_abs := normal.abs();
-						var normal_max_axis := normal_abs.max_axis_index();
-						if   normal_max_axis == 0:	face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_X;
-						elif normal_max_axis == 1:	face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_Y;
-						elif normal_max_axis == 2:	face.uv_subflags |= DPMapFace.UV_WORLD_FLAG_Z;
-					
-					if face.uv_subflags & DPMapFace.UV_WORLD_FLAG_X:
-						normal = Vector3(signf(normal.x), 0, 0);
-					elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Y:
-						normal = Vector3(signf(normal.x), 0, 0);
-					elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Z:
-						normal = Vector3(signf(normal.x), 0, 0);
+				# Get the face plane basis
+				var face_basis := DPHelpers.face_get_texture_basis(solid, face);
+				var normal : Vector3 = face_basis.z;
 				
 				# Collect it!
-				collected_normal += normal;
+				collected_basis.x += face_basis.x;
+				collected_basis.y += face_basis.y;
+				collected_basis.z += face_basis.z;
 				
-				# Make a plane and get the position of the vertices on that plane
-				#var working_plane := Plane(normal);
+				# Collect the basis points
+				#collected_basis_points.push_back(DPHelpers.face_get_texture_base_position(solid, face));
 				
-				# Generate X and Y directions for the face:
-				var uvdir_x := Vector3.LEFT;
-				var uvdir_y := Vector3.UP;
-				if face.uv_mode == DPMapFace.UVMode.WORLD:
-					if face.uv_subflags & DPMapFace.UV_WORLD_FLAG_X:
-						# 1, 0, 0
-						uvdir_x = Vector3(0, 0, 1);
-						uvdir_y = Vector3(0, -1, 0);
-					elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Y:
-						# 0, 1, 0
-						uvdir_x = Vector3(1, 0, 0);
-						uvdir_y = Vector3(0, 0, 1);
-					elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Z:
-						# 0, 0, 1
-						uvdir_x = Vector3(1, 0, 0);
-						uvdir_y = Vector3(0, -1, 0);
-				elif face.uv_mode == DPMapFace.UVMode.FACE:
-					var normal_abs := normal.abs(); #next - do per face texturing:
-					var normal_max_axis := normal_abs.max_axis_index();
-					# We do Y axis last because we really want it to be as unchanged as possible:
-					# If X normal is dominant:
-					if normal_max_axis == 0:
-						uvdir_x = -normal.cross(Vector3(0, -1, 0)).normalized();
-						uvdir_y = normal.cross(uvdir_x);
-					# If Y normal is dominant:
-					elif normal_max_axis == 1:
-						uvdir_x = normal.cross(Vector3(0, 0, 1)).normalized();
-						uvdir_y = -normal.cross(uvdir_x);
-					# If Z normal is dominant:
-					elif normal_max_axis == 2:
-						uvdir_x = normal.cross(Vector3(0, -1, 0)).normalized();
-						uvdir_y = -normal.cross(uvdir_x);
-				pass
+			# Orthonormalize the basis matrix
+			collected_basis.orthonormalized();
+			
+			# Get the actual basis point:
 		
-			# Normalize normal to get the plane
+			# Get the min and max coords of the group 
+			var min_coord := Vector3.INF;
+			var max_coord := -Vector3.INF;
+			for face_index in group:
+				var solid := working_solids[face_index];
+				var face := working_faces[face_index];
+				
+				for i_corner in face.corners.size():
+					var position := solid.points[face.corners[i_corner]].v3 * collected_basis;
+					min_coord = min_coord.min(position);
+					max_coord = max_coord.max(position);
+					
+			# Get min and max coords in world coords:
+			var min_coord_world := min_coord * collected_basis.inverse();
+			var max_coord_world := max_coord * collected_basis.inverse();
+					
+			# Now do the actual action:
+			for face_index in group:
+				var solid := working_solids[face_index];
+				var face := working_faces[face_index];
+				
+				# Let's start with align left:
+				var face_basis := DPHelpers.face_get_texture_basis(solid, face);
+				var face_basis_point := DPHelpers.face_get_texture_base_position(solid, face);
+				
+				# Get the min and max points in the space of the face:
+				#var face_min := Vector3.INF;
+				#var face_max := -Vector3.INF;
+				#for i_corner in face.corners.size():
+					#var position := (solid.points[face.corners[i_corner]].v3 - face_basis_point) * face_basis;
+					#face_min = face_min.min(position);
+					#face_max = face_max.max(position);
+				
+				# We need the min_coord in the space of the face
+				#var local_min := (min_coord_world - face_basis_point) * face_basis;
+				#var local_max := (max_coord_world - face_basis_point) * face_basis;
+				
+				# Get material properties
+				var material := map.materials[face.material];
+				#var texture_scale1d := DioptraInterface.get_pixel_scale_top() * float(DioptraInterface.get_pixel_scale_div());
+				#var texture_scale2d := (Vector2(texture_scale1d, texture_scale1d) / face.uv_scale) / Vector2(DPHelpers.get_material_primary_texture_size(material));
+				var texture_size := DPHelpers.get_material_primary_texture_size(material);
+				var units_to_offset_scale1d := DioptraInterface.get_pixel_scale_top() * float(DioptraInterface.get_pixel_scale_div());
+				var units_to_offset_scale2d := Vector2(units_to_offset_scale1d, units_to_offset_scale1d);# / face.uv_scale;
+				# Scale happens around the center of the texture origin, not the basis origin
+				
+				# Align 0 with the local_min (we base position around basis point):
+				#face.uv_offset = Vector2(local_min.x , local_min.y); # ??????? THAT'S IT??? NO.??????????
+				# am i dumb
+				#face.uv_offset.x = local_min.x / texture_scale2d.x; # ??????? THAT'S IT??? NO.??????????
+				
+				var local_basis_point := face_basis_point * face_basis;
+				var planar_min := min_coord_world * face_basis;
+				var planar_max := max_coord_world * face_basis;
+				
+				# LEFT
+				#face.uv_offset.x = (local_basis_point.x - planar_min.x) * units_to_offset_scale2d.x;
+				# RIGHT
+				#face.uv_offset.x = (local_basis_point.x - planar_max.x) * units_to_offset_scale2d.x;
+				
+				# FIT X
+				face.uv_scale.x = ((planar_max.x - planar_min.x) * units_to_offset_scale2d.x) / texture_size.x;
+				
 		
 		# Rebuild the mesh with the new material
 		if not subgizmo_selection.is_empty():
