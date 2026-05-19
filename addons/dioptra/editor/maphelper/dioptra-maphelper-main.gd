@@ -442,6 +442,10 @@ func _action_util_uv_align(editor : DioptraEditorMainPlugin, map : DP_Map, actio
 				var face_basis := DPHelpers.face_get_texture_basis(solid, face);
 				var normal : Vector3 = face_basis.z;
 				
+				# Rotate the basis around the face's angle:
+				face_basis.x = face_basis.x.rotated(face_basis.z, deg_to_rad(face.uv_rotation));
+				face_basis.y = face_basis.y.rotated(face_basis.z, deg_to_rad(face.uv_rotation));
+				
 				# Collect it!
 				collected_basis.x += face_basis.x;
 				collected_basis.y += face_basis.y;
@@ -475,6 +479,10 @@ func _action_util_uv_align(editor : DioptraEditorMainPlugin, map : DP_Map, actio
 				var face_basis := DPHelpers.face_get_texture_basis(solid, face);
 				var face_basis_point := DPHelpers.face_get_texture_base_position(solid, face);
 				
+				# Rotate the basis around the face's angle:
+				face_basis.x = face_basis.x.rotated(face_basis.z, deg_to_rad(face.uv_rotation));
+				face_basis.y = face_basis.y.rotated(face_basis.z, deg_to_rad(face.uv_rotation));
+				
 				# Get material properties
 				var material := map.materials[face.material];
 				var texture_size := DPHelpers.get_material_primary_texture_size(material);
@@ -499,9 +507,9 @@ func _action_util_uv_align(editor : DioptraEditorMainPlugin, map : DP_Map, actio
 					face.uv_offset.y = (local_basis_point.y - planar_max.y) * units_to_offset_scale2d.y;
 				# CENTER X & Y
 				if action & UVActionType.CenterX:
-					face.uv_offset.x = (local_basis_point.x - (planar_min.x - planar_max.x) / 2) * units_to_offset_scale2d.x;
+					face.uv_offset.x = (local_basis_point.x - (planar_min.x + planar_max.x) / 2) * units_to_offset_scale2d.x - texture_size.x / 2 * face.uv_scale.x;
 				if action & UVActionType.CenterY:
-					face.uv_offset.y = (local_basis_point.y - (planar_min.y - planar_max.y) / 2) * units_to_offset_scale2d.y;
+					face.uv_offset.y = (local_basis_point.y - (planar_min.y + planar_max.y) / 2) * units_to_offset_scale2d.y - texture_size.y / 2 * face.uv_scale.y;
 				# FIT X & Y
 				if action & UVActionType.FitX:
 					face.uv_scale.x = ((planar_max.x - planar_min.x) * units_to_offset_scale2d.x) / texture_size.x;

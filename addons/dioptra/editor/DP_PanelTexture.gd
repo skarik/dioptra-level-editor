@@ -257,14 +257,27 @@ func _on_util_align_center_y() -> void:
 	_on_selection_changed();
 
 func _on_util_align_fit_xy() -> void:
-	_plugin._plugin_maphelper.do_util_uv_align_action(DioptraEditorMaphelperPlugin.UVActionType.FitX | DioptraEditorMaphelperPlugin.UVActionType.FitY);
+	_plugin._plugin_maphelper.do_util_uv_align_action(
+		DioptraEditorMaphelperPlugin.UVActionType.FitX 
+		| DioptraEditorMaphelperPlugin.UVActionType.FitY
+		| DioptraEditorMaphelperPlugin.UVActionType.CenterX
+		| DioptraEditorMaphelperPlugin.UVActionType.CenterY);
 	_on_selection_changed();
 func _on_util_align_fit_x() -> void:
-	_plugin._plugin_maphelper.do_util_uv_align_action(DioptraEditorMaphelperPlugin.UVActionType.FitX);
+	_plugin._plugin_maphelper.do_util_uv_align_action(
+		DioptraEditorMaphelperPlugin.UVActionType.FitX
+		| DioptraEditorMaphelperPlugin.UVActionType.CenterX);
 	_on_selection_changed();
 func _on_util_align_fit_y() -> void:
-	_plugin._plugin_maphelper.do_util_uv_align_action(DioptraEditorMaphelperPlugin.UVActionType.FitY);
+	_plugin._plugin_maphelper.do_util_uv_align_action(
+		DioptraEditorMaphelperPlugin.UVActionType.FitY
+		| DioptraEditorMaphelperPlugin.UVActionType.CenterY);
 	_on_selection_changed();
 func _on_util_align_fit_axy() -> void:
-	_plugin._plugin_maphelper.do_util_uv_align_action(DioptraEditorMaphelperPlugin.UVActionType.GuessRotation | DioptraEditorMaphelperPlugin.UVActionType.FitX | DioptraEditorMaphelperPlugin.UVActionType.FitY);
+	_plugin._plugin_maphelper.do_util_uv_align_action(
+		DioptraEditorMaphelperPlugin.UVActionType.GuessRotation 
+		| DioptraEditorMaphelperPlugin.UVActionType.FitX 
+		| DioptraEditorMaphelperPlugin.UVActionType.FitY
+		| DioptraEditorMaphelperPlugin.UVActionType.CenterX
+		| DioptraEditorMaphelperPlugin.UVActionType.CenterY);
 	_on_selection_changed();
