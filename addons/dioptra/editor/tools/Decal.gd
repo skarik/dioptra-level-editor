@@ -22,6 +22,10 @@ func cleanup() -> void:
 	
 ## Overrideable GUI input handling
 func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
+	
+	# Update tooltip
+	overlay_text = "Select a texture in the Texture or Material panel, and click on a solid to splat a decal.";
+	
 	# TODO: grab the last selected material and use that as a decal that we just BIPBAP on with a click
 	# OR: wait for a material to be set in the material editor.
 	var helper_plugin := _plugin._plugin_maphelper;
