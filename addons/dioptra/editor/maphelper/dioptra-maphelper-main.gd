@@ -69,8 +69,10 @@ func _handles(object: Object) -> bool:
 func _edit(object: Object) -> void:
 	if object is DP_Map:
 		_last_edited_map = object as DP_Map;
+		DioptraInterface.set_grid_visible(DioptraInterface.get_grid_visible(), false); # HACK for lightmaps
+		DioptraInterface.set_grid_size(DioptraInterface.get_grid_size()); # HACK for init
 	elif object == null:
-		DioptraInterface.set_grid_visible(false); # HACK for lightmaps
+		DioptraInterface.set_grid_visible(false, false); # HACK for lightmaps
 	pass
 	
 func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:

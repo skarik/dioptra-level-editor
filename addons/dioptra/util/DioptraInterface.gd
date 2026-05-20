@@ -157,6 +157,8 @@ signal cursor3d_moved(position : Vector3);
 var _grid_size : int = 16;
 # Degrees per div
 var _angle_round : float = 15;
+# Is the grid visible
+var _grid_visible : bool = true;
 
 # TODO: move these signals to a separate object these are not used outside of editor
 # Signal for grid size changing
@@ -170,11 +172,19 @@ static func set_grid_size(grid_size : int) -> void:
 	inst._grid_size = max(0, grid_size);
 	#inst.grid_size_changed.emit(inst._grid_size);
 	EditorInterface.get_edited_scene_root().get_tree().process_frame.connect(func(): inst.grid_size_changed.emit(inst._grid_size), CONNECT_ONE_SHOT);
-
-static func set_grid_visible(visible : bool) -> void:
+static func get_grid_size() -> int:
 	var inst := _get_instance();
+	return inst._grid_size;
+
+static func set_grid_visible(visible : bool, change_setting : bool = true) -> void:
+	var inst := _get_instance();
+	if change_setting:
+		inst._grid_visible = visible;
 	#inst.grid_visual_enabled.emit(visible); # TODO only emit when value changes
 	EditorInterface.get_edited_scene_root().get_tree().process_frame.connect(func(): inst.grid_visual_enabled.emit(visible), CONNECT_ONE_SHOT);
+static func get_grid_visible() -> bool:
+	var inst := _get_instance();
+	return inst._grid_visible;
 
 ## Rounds the given Vector3 to the current editor grid settings.
 static func get_grid_round_v3(vector : Vector3) -> Vector3:
