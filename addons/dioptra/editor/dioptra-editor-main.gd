@@ -5,9 +5,13 @@ class_name DioptraEditorMainPlugin
 #------------------------------------------------------------------------------#
 
 enum ToolMode {
-	SELECT = 0,
-	BOX = 1,
-	DECAL = 2,
+	SELECT,
+	BOX,
+	DECAL,
+	
+	EDIT_SLICE,
+	EDIT_HOLE,
+	EDIT_EXTRUDE,
 }
 
 enum SelectMode {
@@ -197,13 +201,21 @@ func onToolSelect(tool : ToolMode) -> void:
 		if _currentTool != null:
 			_currentTool.cleanup();
 		_currentTool = null;
+	# Instantiate the tool if needed
 	elif tool == ToolMode.BOX:
 		if not (_currentTool is DPUTool_Box):
 			newTool = DPUTool_Box.new(self);
 	elif tool == ToolMode.DECAL:
 		if not (_currentTool is DPUTool_Decal):
 			newTool = DPUTool_Decal.new(self);
-			
+	elif tool == ToolMode.EDIT_SLICE:
+		if not (_currentTool is DPUTool_EditSlice):
+			newTool = DPUTool_EditSlice.new(self);
+	elif tool == ToolMode.EDIT_HOLE:
+		pass
+	elif tool == ToolMode.EDIT_EXTRUDE:
+		pass
+				
 	# Switch to the new tool after cleaning up
 	if newTool != null:
 		if _currentTool != null:
@@ -211,7 +223,6 @@ func onToolSelect(tool : ToolMode) -> void:
 		_currentTool = newTool;
 	
 	# Tools will be automatically cleared as they are RefCounted.
-	
 	pass
 
 ## Returns editor node, mostly for updating gizmos
@@ -348,9 +359,15 @@ func _forward_3d_draw_over_viewport(viewport_control: Control) -> void:
 	if _currentTool != null:
 		if _currentTool.overlay_text != null:
 			var default_font := EditorInterface.get_editor_theme().get_font("main_bold_msdf", "EditorFonts");
-			viewport_control.draw_string(
-				default_font, 
-				Vector2(60, viewport_control.get_rect().size.y - 60),
-				_currentTool.overlay_text);
+			# Split the text along the \n
+			var lines_to_draw := _currentTool.overlay_text.split("\n");
+			lines_to_draw.reverse();
+			var offset := 60;
+			for line in lines_to_draw:
+				viewport_control.draw_string(
+					default_font, 
+					Vector2(60, viewport_control.get_rect().size.y - offset),
+					line);
+				offset += 25; # TODO: DPI Aware
 			pass
 	pass

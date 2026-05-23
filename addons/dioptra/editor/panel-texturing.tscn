@@ -186,6 +186,7 @@ icon_alignment = 1
 [node name="ButtonAutofit" type="Button" parent="Container UVs/VContainer/GridContainer/HBoxContainerActions"]
 layout_mode = 2
 tooltip_text = "Autofit (Rotates material to best fit)"
+disabled = true
 icon = ExtResource("9_hbbxq")
 icon_alignment = 1
 

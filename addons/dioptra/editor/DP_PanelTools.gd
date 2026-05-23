@@ -15,17 +15,24 @@ func onSelect_Box() -> void:
 	return onToolSelect(DioptraEditorMainPlugin.ToolMode.BOX, $Box);
 func onSelect_Decal() -> void:
 	return onToolSelect(DioptraEditorMainPlugin.ToolMode.DECAL, $Decal);
+func onSelect_Slice() -> void:
+	return onToolSelect(DioptraEditorMainPlugin.ToolMode.EDIT_SLICE, $Decal);
+func onSelect_Hole() -> void:
+	return onToolSelect(DioptraEditorMainPlugin.ToolMode.EDIT_HOLE, $Decal);
+func onSelect_Extrude() -> void:
+	return onToolSelect(DioptraEditorMainPlugin.ToolMode.EDIT_EXTRUDE, $Decal);
+	
 	
 func onToolSelect(tool : DioptraEditorMainPlugin.ToolMode, button : Button) -> void:
-	# Untoggle all the tools
-	for child in get_children():
-		var child_button := child as Button;
-		if child_button != null:
-			child_button.button_pressed = false;
-			
-	# Toggle on the actual hit button
-	if button != null:
-		button.button_pressed = true;
+	## Untoggle all the tools
+	#for child in get_children():
+		#var child_button := child as Button;
+		#if child_button != null:
+			#child_button.button_pressed = false;
+			#
+	## Toggle on the actual hit button
+	#if button != null:
+		#button.button_pressed = true;
 	
 	# Forward it
 	_plugin.onToolSelect(tool);

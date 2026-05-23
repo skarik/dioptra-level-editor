@@ -1,9 +1,12 @@
-[gd_scene load_steps=5 format=3 uid="uid://bts6ia1mem5ul"]
+[gd_scene load_steps=6 format=3 uid="uid://bts6ia1mem5ul"]
 
 [ext_resource type="Script" uid="uid://88tx0flt4ny8" path="res://addons/dioptra/editor/DP_PanelTools.gd" id="1_dku0r"]
 [ext_resource type="Texture2D" uid="uid://sl8ox5v87pin" path="res://addons/dioptra/asset/default/tool-godot.svg" id="2_wko21"]
 [ext_resource type="Texture2D" uid="uid://6qf0h3qjt6si" path="res://addons/dioptra/asset/default/tool-cub.svg" id="3_wko21"]
 [ext_resource type="Texture2D" uid="uid://cvcls1jbkg80b" path="res://addons/dioptra/asset/default/tool-spray.svg" id="4_q0hs4"]
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_q0hs4"]
+resource_name = "tool_buttongroup"
 
 [node name="DP Tools" type="HFlowContainer"]
 offset_right = 48.0
@@ -11,8 +14,10 @@ script = ExtResource("1_dku0r")
 
 [node name="Selection" type="Button" parent="."]
 layout_mode = 2
-tooltip_text = "Select"
+tooltip_text = "Select
+Switches back to default Godot mode."
 toggle_mode = true
+button_group = SubResource("ButtonGroup_q0hs4")
 icon = ExtResource("2_wko21")
 
 [node name="HSeparator" type="HSeparator" parent="."]
@@ -23,14 +28,44 @@ size_flags_horizontal = 3
 layout_mode = 2
 tooltip_text = "Make Box"
 toggle_mode = true
+button_group = SubResource("ButtonGroup_q0hs4")
 icon = ExtResource("3_wko21")
 
 [node name="Decal" type="Button" parent="."]
 layout_mode = 2
 tooltip_text = "Make Decals"
 toggle_mode = true
+button_group = SubResource("ButtonGroup_q0hs4")
 icon = ExtResource("4_q0hs4")
+
+[node name="HSeparator2" type="HSeparator" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Slice" type="Button" parent="."]
+layout_mode = 2
+tooltip_text = "Slice Solid"
+toggle_mode = true
+button_group = SubResource("ButtonGroup_q0hs4")
+icon = ExtResource("3_wko21")
+
+[node name="Hole" type="Button" parent="."]
+layout_mode = 2
+tooltip_text = "Make hole in solid"
+toggle_mode = true
+button_group = SubResource("ButtonGroup_q0hs4")
+icon = ExtResource("3_wko21")
+
+[node name="Extrude" type="Button" parent="."]
+layout_mode = 2
+tooltip_text = "Extrude face."
+toggle_mode = true
+button_group = SubResource("ButtonGroup_q0hs4")
+icon = ExtResource("3_wko21")
 
 [connection signal="pressed" from="Selection" to="." method="onSelect_Select"]
 [connection signal="pressed" from="Box" to="." method="onSelect_Box"]
 [connection signal="pressed" from="Decal" to="." method="onSelect_Decal"]
+[connection signal="pressed" from="Slice" to="." method="onSelect_Slice"]
+[connection signal="pressed" from="Hole" to="." method="onSelect_Hole"]
+[connection signal="pressed" from="Extrude" to="." method="onSelect_Extrude"]
