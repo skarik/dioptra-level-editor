@@ -4,6 +4,9 @@ class_name DPHelpers
 #------------------------------------------------------------------------------#
 
 const COLOR_GEO_ACCENT := Color(0.2, 0.95, 1.0);
+const RENDER_PRIORITY_LABEL := 11;
+const RENDER_PRIORITY_LABEL_OUTLINE := 9;
+const RENDER_PRIORITY_SELECT_LINE := 8;
 
 #------------------------------------------------------------------------------#
 

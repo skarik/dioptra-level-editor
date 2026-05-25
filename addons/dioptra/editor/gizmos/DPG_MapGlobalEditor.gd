@@ -298,11 +298,12 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 	
 	# Add the solids now:
 	if not linesNormieZTest.is_empty():
-		get_material("lines_ztest", gizmo).render_priority = Material.RENDER_PRIORITY_MAX - 1;
+		get_material("lines_ztest", gizmo).render_priority = DPHelpers.RENDER_PRIORITY_SELECT_LINE;
 		gizmo.add_lines(linesNormieZTest, get_material("lines_ztest", gizmo), false, Color(0.8, 0.8, 0.1, 0.5));
 	if not linesNormie.is_empty():
 		gizmo.add_lines(linesNormie, get_material("lines", gizmo), false, Color(0.8, 0.8, 0.1, 0.5));
 	if not linesSelect.is_empty():
+		get_material("lines", gizmo).render_priority = DPHelpers.RENDER_PRIORITY_SELECT_LINE;
 		gizmo.add_lines(linesSelect, get_material("lines", gizmo), false, Color(1.0, 1.0, 1.0, 1.0));
 	if am.get_index_count() > 0:
 		var local_mesh : ArrayMesh = ArrayMesh.new();
