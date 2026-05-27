@@ -2,10 +2,22 @@ extends DPUTool
 class_name DPUTool_EditSlice
 
 var _cursor : DPUCursorGhost = null;
-var _decal_position := MapVector3.new();
-var _decal_normal : Vector3 = Vector3.ZERO;
+var _cursor_position := MapVector3.new();
+var _cursor_normal : Vector3 = Vector3.ZERO;
 
 var _cut_lines : DPULines3D.LinesItem = null;
+
+class Cut:
+	var cutpoint_index0 : int = -1;
+	var cutpoint_index1 : int = -1;
+	var cut_edge0 : int = -1;
+	var cut_edge1 : int = -1;
+	var cut_face : int = -1;
+
+var _cut_plane : Plane;
+var _cut_solid : DPMapSolid;
+var _cut_points : PackedVector3Array = [];
+var _cut_listing : Array[Cut] = [];
 
 static var _slice_on_edge_not_axis : bool = true; ## Are we slicing on edge or axis
 static var _slice_all_faces : bool = true; ## Are we slicing all faces
@@ -56,15 +68,15 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 			if collision != null:
 				var collision_point := collision as Vector3;
 				
-				_decal_position.v3 = collision_point;
-				_decal_normal = normal;
+				_cursor_position.v3 = collision_point;
+				_cursor_normal = normal;
 				var collision_point_grid := DioptraInterface.get_grid_round_v3(collision_point);
 				
 				_update_cut_preview(selection, collision_point_grid);
 			
 				# Update ghost:
-				_cursor.position = _decal_position.v3;
-				_cursor.normal = _decal_normal;
+				_cursor.position = _cursor_position.v3;
+				_cursor.normal = _cursor_normal;
 				_cursor.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
 				
 	if event is InputEventMouseButton and not event.pressed:
@@ -107,8 +119,16 @@ func _update_cut_preview(selection : DPSelectionItem, hit_point : Vector3) -> vo
 	# We now have the cut plane!
 	var cut_plane := Plane(cut_normal, hit_point);
 	
+	# Save it:
+	_cut_plane = cut_plane;
+	_cut_solid = selection.solid;
+	_cut_listing.clear();
+	_cut_points.clear();
+	
 	# Loop through the faces:
-	for face in selection.solid.faces:
+	for face_index in selection.solid.faces.size():
+		var face := selection.solid.faces[face_index];
+		
 		if _slice_all_faces == false:
 			if face != selection.face:
 				continue; 
@@ -120,9 +140,6 @@ func _update_cut_preview(selection : DPSelectionItem, hit_point : Vector3) -> vo
 		for corner_index in face.corners.size():
 			corners[corner_index] = solid.points[face.corners[corner_index]].v3;
 		
-		# Make a polygon and cut:
-		#Geometry3D.clip_polygon(corners, cut_plane);
-		
 		# Find the two edges with the cut:
 		var edge_0 : int = 0;
 		var edge_1 : int = 0;
@@ -131,10 +148,6 @@ func _update_cut_preview(selection : DPSelectionItem, hit_point : Vector3) -> vo
 		var cutting_0 : bool = true;
 		
 		for corner_index in face.corners.size():
-			#var cut_points := Geometry3D.segment_intersects_convex(
-				#corners[corner_index + 0],
-				#corners[(corner_index + 1) % face.corners.size()],
-				#[cut_plane]);
 			var segment_cut := cut_plane.intersects_segment(
 				corners[corner_index + 0],
 				corners[(corner_index + 1) % face.corners.size()],
@@ -161,6 +174,14 @@ func _update_cut_preview(selection : DPSelectionItem, hit_point : Vector3) -> vo
 		_cut_lines.points.push_back(cut_1);
 		_cut_lines.colors.push_back(color_w);
 		_cut_lines.colors.push_back(color_w);
+		
+		# Save the cut:
+		var cut : Cut = Cut.new();
+		cut.cut_face = face_index;
+		cut.cut_edge0 = edge_0;
+		cut.cut_edge1 = edge_1;
+		cut.cutpoint_index0 = _get_or_add_cut_point(_cut_points, cut_0);
+		cut.cutpoint_index1 = _get_or_add_cut_point(_cut_points, cut_1);
 	
 	if _cut_lines.points.is_empty():
 		_cut_lines.release();
@@ -169,3 +190,154 @@ func _update_cut_preview(selection : DPSelectionItem, hit_point : Vector3) -> vo
 		_cut_lines.update();
 		
 	pass
+	
+## Adds point to the given packed vector3 array in mapcoords. If it exists, doesn't add.
+## In both cases, adds index of the point in the array
+func _get_or_add_cut_point(points : PackedVector3Array, point : Vector3) -> int:
+	var point_as_dp := MapVector3.from_v3(point);
+	var temp_mapvec := MapVector3.new();
+	for i in points.size():
+		temp_mapvec.v3 = points[i];
+		if temp_mapvec.equals(point_as_dp):
+			return i;
+	points.push_back(point);
+	return points.size() - 1;
+	
+## Gets the given point from the packed vector3 array in mapcoords.
+func _get_cut_point(points : PackedVector3Array, point : Vector3) -> int:
+	var point_as_dp := MapVector3.from_v3(point);
+	var temp_mapvec := MapVector3.new();
+	for i in points.size():
+		temp_mapvec.v3 = points[i];
+		if temp_mapvec.equals(point_as_dp):
+			return i;
+	return -1;
+	
+	
+	
+func _action_cut_solid_with_cached_edge() -> void:
+	_action_cut_solid(); # Cannot be bothered to determine which side of a cut is on the front side right now.
+	pass
+	
+func _action_cut_face_with_cached_edge() -> void:
+	# TODO
+	pass
+	
+func _action_cut_solid() -> void:
+	var map := _plugin.get_last_edited_map();
+	
+	# We need to clip with two planes: forward and back.
+	# So we're making two new solids and removing the last one
+	
+	var solid_1 := _make_clipped_solid(_cut_solid, _cut_plane);
+	var solid_2 := _make_clipped_solid(_cut_solid, -_cut_plane);
+	
+	# Remove original solid:
+	map.solids.erase(_cut_solid);
+	
+	# Add the two solids:
+	map.editor_add_solid(solid_1);
+	map.editor_add_solid(solid_2);
+	
+	pass
+
+func _make_clipped_solid(old_solid : DPMapSolid, plane : Plane) -> DPMapSolid:
+	var new_solid := DPMapSolid.new();
+	
+	var all_corners : PackedVector3Array = [];
+	var cut_planes : Array[Plane] = [];
+	var cut_faces : PackedInt32Array = [];
+	
+	for face_index in old_solid.faces.size():
+		var face = old_solid.faces[face_index];
+		
+		var corners : PackedVector3Array;
+		corners.resize(face.corners.size());
+		for corner_index in face.corners.size():
+			corners[corner_index] = old_solid.points[face.corners[corner_index]].v3;
+			
+		# Is this face in the cuts?
+		var face_is_cut := false;
+		for cut in _cut_listing:
+			if face_index == cut.cut_face:
+				face_is_cut = true;
+				break;
+			
+		var clipped := Geometry3D.clip_polygon(corners, plane);
+		if clipped.is_empty():
+			continue; # Skip anything not in the plane
+			
+		if not face_is_cut:
+			# Copy the the face over entirely:
+			var new_face := DPMapFace.new();
+			new_face.copy_from(face);
+			new_face.corners = [];
+			# Add the old face's corners:
+			for corner_index in face.corners.size():
+				var point_index := _get_or_add_cut_point(all_corners, old_solid.points[face.corners[corner_index]].v3);
+				new_face.corners.push_back(point_index);
+			# Add face to solid
+			new_solid.faces.push_back(new_face);
+		else:
+			# Building a new clipped face
+			var new_face := DPMapFace.new();
+			new_face.copy_from(face);
+			new_face.corners = [];
+			# Add the clipped polygon corners:
+			for clipped_point in clipped:
+				var point_index := _get_or_add_cut_point(all_corners, clipped_point);
+				new_face.corners.push_back(point_index);
+			# Add face to solid
+			new_solid.faces.push_back(new_face);
+			
+			# Store the plane of this face:
+			cut_planes.push_back(Plane(
+				old_solid.points[face.corners[0]].v3,
+				old_solid.points[face.corners[1]].v3,
+				old_solid.points[face.corners[2]].v3
+				))
+			# Save this face as one of the cut ones
+			cut_faces.push_back(new_solid.faces.size() - 1);
+		
+	# Add in the new face:
+	#Geometry3D.compute_convex_mesh_points()
+	
+	# Make a giant face on the cut plane
+	# Cut by all the cut planes
+	# YAY NEW SHAPE
+	# Is there a better way? Yes. Do I know it? No.
+	
+	if true:
+		#var corners : PackedVector3Array = [];
+		#var up := plane.normal.cross(Vector3.UP) if plane.normal.abs().max_axis_index() != 1 else plane.normal.cross(Vector3.RIGHT);
+		#up = up.normalized();
+		#var left := plane.normal.cross(up).normalized();
+		#corners.push_back(center + ( up + left) * 50000);
+		#corners.push_back(center + ( up - left) * 50000);
+		#corners.push_back(center + (-up - left) * 50000);
+		#corners.push_back(center + (-up + left) * 50000);
+		
+		var corners : PackedVector3Array = [];
+	
+		for cut_face_index in cut_faces:
+			var cut_face = new_solid.faces[cut_face_index];
+			
+			# Find the coplanar edge
+			for corner_index in cut_face.corners.size():
+				var corner_point_mv := new_solid.points[cut_face.corners[corner_index]];
+				var corner_point := corner_point_mv.v3;
+				var projected_point := plane.project(corner_point);
+				var projected_point_mv := MapVector3.from_v3(projected_point);
+				if corner_point_mv.equals(projected_point_mv):
+					pass
+					# We have a coplanar point, check forward & back for an edge
+	
+		pass
+		
+	# Save points now:
+	for corner in all_corners:
+		var mapvec := MapVector3.new();
+		mapvec.v3 = corner;
+		new_solid.points.push_back(mapvec);
+	
+	return new_solid;

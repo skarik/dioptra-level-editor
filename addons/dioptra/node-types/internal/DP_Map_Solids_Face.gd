@@ -31,6 +31,7 @@ enum {
 @export_storage var uv_offset : Vector2 = Vector2(0, 0);
 ## UV rotation
 @export_storage var uv_rotation : float = 0;
+## TODO: UV Shear
 
 # Serialization interface
 func _get_property_list() -> Array[Dictionary]:
@@ -61,3 +62,14 @@ func _get(property: StringName) -> Variant:
 	elif property == "uv_offset": return uv_offset;
 	elif property == "uv_rotation": return uv_rotation;
 	return null;
+	
+# Helper copy
+func copy_from(other : DPMapFace) -> void:
+	corners = other.corners.duplicate();
+	material = other.material;
+	uv_mode = other.uv_mode;
+	uv_subflags = other.uv_subflags;
+	uv_scale = other.uv_scale;
+	uv_offset = other.uv_offset;
+	uv_rotation = other.uv_rotation;
+	pass

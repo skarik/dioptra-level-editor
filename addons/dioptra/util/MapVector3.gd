@@ -75,3 +75,11 @@ func mul(value : int) -> MapVector3:
 ## Equals?
 func equals(v : MapVector3) -> bool:
 	return _value == v._value;
+
+#------------------------------------------------------------------------------#
+
+## Constructs a new mapvector
+static func from_v3(v : Vector3) -> MapVector3:
+	var mv := MapVector3.new();
+	mv.v3 = v;
+	return mv;
