@@ -204,6 +204,8 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 	# Loop through all the items in the group and rebuild the mesh
 	for i_solid in range(group.start_solid, group.end_solid):
 		var solid := solids[i_solid];
+		if not solid:
+			continue;
 		# Loop through each face in the group
 		for i_face in solid.faces.size():
 			var face := solid.faces[i_face];
@@ -393,6 +395,8 @@ func rebuild_editor_decals(in_decal : DPMapDecal = null) -> void:
 		
 		# Get all the intersecting solids
 		for solid in solids:
+			if not solid:
+				continue;
 			# TODO: Cache the AABBs
 			var min_p := solid.points[0].v3;
 			var max_p := solid.points[0].v3;
@@ -514,6 +518,7 @@ func editor_on_cursor3d_moved(cursor_position : Vector3) -> void:
 
 ## Adds the given solid to the map
 func editor_add_solid(solid : DPMapSolid) -> void:
+	assert(solid, "Null solid attempted to be added");
 	assert(not solids.has(solid), "Solid that already exists in the editor attempted to be added");
 	
 	# First, add it to the solids list:

@@ -85,7 +85,7 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 			return EditorPlugin.AFTER_GUI_INPUT_STOP;
 		elif event.button_index == MOUSE_BUTTON_LEFT:
 			# Cut
-			pass
+			_action_cut_solid();
 			return EditorPlugin.AFTER_GUI_INPUT_STOP;
 	
 	return EditorPlugin.AFTER_GUI_INPUT_PASS;
@@ -182,6 +182,7 @@ func _update_cut_preview(selection : DPSelectionItem, hit_point : Vector3) -> vo
 		cut.cut_edge1 = edge_1;
 		cut.cutpoint_index0 = _get_or_add_cut_point(_cut_points, cut_0);
 		cut.cutpoint_index1 = _get_or_add_cut_point(_cut_points, cut_1);
+		_cut_listing.push_back(cut);
 	
 	if _cut_lines.points.is_empty():
 		_cut_lines.release();
@@ -299,45 +300,112 @@ func _make_clipped_solid(old_solid : DPMapSolid, plane : Plane) -> DPMapSolid:
 			# Save this face as one of the cut ones
 			cut_faces.push_back(new_solid.faces.size() - 1);
 		
-	# Add in the new face:
-	#Geometry3D.compute_convex_mesh_points()
-	
-	# Make a giant face on the cut plane
-	# Cut by all the cut planes
-	# YAY NEW SHAPE
-	# Is there a better way? Yes. Do I know it? No.
-	
-	if true:
-		#var corners : PackedVector3Array = [];
-		#var up := plane.normal.cross(Vector3.UP) if plane.normal.abs().max_axis_index() != 1 else plane.normal.cross(Vector3.RIGHT);
-		#up = up.normalized();
-		#var left := plane.normal.cross(up).normalized();
-		#corners.push_back(center + ( up + left) * 50000);
-		#corners.push_back(center + ( up - left) * 50000);
-		#corners.push_back(center + (-up - left) * 50000);
-		#corners.push_back(center + (-up + left) * 50000);
-		
-		var corners : PackedVector3Array = [];
-	
-		for cut_face_index in cut_faces:
-			var cut_face = new_solid.faces[cut_face_index];
-			
-			# Find the coplanar edge
-			for corner_index in cut_face.corners.size():
-				var corner_point_mv := new_solid.points[cut_face.corners[corner_index]];
-				var corner_point := corner_point_mv.v3;
-				var projected_point := plane.project(corner_point);
-				var projected_point_mv := MapVector3.from_v3(projected_point);
-				if corner_point_mv.equals(projected_point_mv):
-					pass
-					# We have a coplanar point, check forward & back for an edge
-	
-		pass
-		
 	# Save points now:
 	for corner in all_corners:
 		var mapvec := MapVector3.new();
 		mapvec.v3 = corner;
 		new_solid.points.push_back(mapvec);
+	
+	# Make face on the cut plane by organizing edges:
+	# TODO: make this better somehow. This is ridiuclous.
+	if true:
+		var edges : PackedInt32Array = [];
+	
+		# First collect the new edges made by cutting:
+		for cut_face_index in cut_faces:
+			var cut_face = new_solid.faces[cut_face_index];
+			
+			var coplanar_edge00 := -1;
+			var coplanar_edge01 := -1;
+			
+			# Find the coplanar edge
+			for corner_index in cut_face.corners.size():
+				var corner_point_mv := new_solid.points[cut_face.corners[corner_index]];
+				var projected_point := plane.project(corner_point_mv.v3);
+				var projected_point_mv := MapVector3.from_v3(projected_point);
+				if corner_point_mv.equals(projected_point_mv):
+					# We have a coplanar point, check forward & back for an edge
+					for offset in [-1, 1]:
+						var next_corner_index : int = (corner_index + offset + cut_face.corners.size()) % cut_face.corners.size();
+						var next_corner_point_mv := new_solid.points[cut_face.corners[next_corner_index]]
+						var next_projected_point := plane.project(next_corner_point_mv.v3);
+						var next_proejcted_point_mv = MapVector3.from_v3(next_projected_point);
+						if next_corner_point_mv.equals(next_proejcted_point_mv):
+							if offset == -1:
+								coplanar_edge00 = next_corner_index;
+								coplanar_edge01 = corner_index;
+							else:
+								coplanar_edge00 = corner_index;
+								coplanar_edge01 = next_corner_index;
+							break;
+					if coplanar_edge00 != -1 and coplanar_edge01 != -1:
+						break;
+			
+			# Store the coplanar edge:
+			if coplanar_edge00 != -1 and coplanar_edge01 != -1:
+				edges.push_back(cut_face.corners[coplanar_edge00]);
+				edges.push_back(cut_face.corners[coplanar_edge01]);
+				
+		if edges.size() < 2:
+			push_warning("Bad math in slicing");
+		else:
+			# With a list of edges, start with the first and then sort them:
+			var sort_index := -2;
+			var previous_corner := edges[0];
+			var working := true;
+			while working:
+				working = false;
+				
+				# Find the next pair with the previous corner
+				for i in range(sort_index + 2, edges.size(), 2):
+					if edges[i] == previous_corner:
+						# Swap it into position
+						var old0 := edges[sort_index + 0];
+						var old1 := edges[sort_index + 1];
+						edges[sort_index + 0] = edges[i + 0];
+						edges[sort_index + 1] = edges[i + 1];
+						# Set up next sorting iteration
+						previous_corner = edges[sort_index + 1];
+						sort_index += 2;
+						# Next iteration
+						working = true;
+						break;
+			# The edges now have all the corners on the 2nd coord.
+			
+			# Check if we need to flip it:
+			var new_normal : Vector3 = -(
+				(new_solid.points[edges[2]].v3 - new_solid.points[edges[0]].v3)
+				.cross(new_solid.points[edges[4]].v3 - new_solid.points[edges[0]].v3)
+				).normalized();
+			if new_normal.dot(plane.normal) > 0.0:
+				edges.reverse();
+				new_normal = -new_normal;
+			
+			# Find the face with the new normal's best match
+			var best_match : DPMapFace = null;
+			var best_match_val : float = -INF;
+			for face in old_solid.faces:
+				var face_normal : Vector3 = -(
+					(old_solid.points[face.corners[1]].v3 - old_solid.points[face.corners[0]].v3)
+					.cross(old_solid.points[face.corners[2]].v3 - old_solid.points[face.corners[0]].v3)
+					).normalized();
+				var new_val : float = new_normal.dot(face_normal);
+				if new_val > best_match_val:
+					best_match = face;
+					best_match_val = new_val;
+					
+			# Start with a copy of the face
+			var new_face := DPMapFace.new();
+			new_face.copy_from(best_match);
+			new_face.corners = [];
+			
+			# Copy over the corners
+			for i in range(0, edges.size(), 2):
+				new_face.corners.push_back(edges[i]);
+				
+			# Add face to solid
+			new_solid.faces.push_back(new_face);
+			
+		pass
 	
 	return new_solid;
