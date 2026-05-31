@@ -227,18 +227,19 @@ func _action_cut_face_with_cached_edge() -> void:
 func _action_cut_solid() -> void:
 	var map := _plugin.get_last_edited_map();
 	
-	# We need to clip with two planes: forward and back.
-	# So we're making two new solids and removing the last one
-	
-	var solid_1 := _make_clipped_solid(_cut_solid, _cut_plane);
-	var solid_2 := _make_clipped_solid(_cut_solid, -_cut_plane);
-	
-	# Remove original solid:
-	map.solids.erase(_cut_solid);
-	
-	# Add the two solids:
-	map.editor_add_solid(solid_1);
-	map.editor_add_solid(solid_2);
+	if _cut_solid != null and map.solids.has(_cut_solid):
+		# We need to clip with two planes: forward and back.
+		# So we're making two new solids and removing the last one
+		
+		var solid_1 := _make_clipped_solid(_cut_solid, _cut_plane);
+		var solid_2 := _make_clipped_solid(_cut_solid, -_cut_plane);
+		
+		# Remove original solid:
+		map.solids.erase(_cut_solid);
+		
+		# Add the two solids:
+		map.editor_add_solid(solid_1);
+		map.editor_add_solid(solid_2);
 	
 	pass
 
@@ -341,8 +342,6 @@ func _make_clipped_solid(old_solid : DPMapSolid, plane : Plane) -> DPMapSolid:
 					if coplanar_edge00 != -1 and coplanar_edge01 != -1:
 						break;
 			
-			print("%d %d / %d %d" % [coplanar_edge00, coplanar_edge01, cut_face.corners[coplanar_edge00], cut_face.corners[coplanar_edge01]]);
-			
 			# Store the coplanar edge:
 			if coplanar_edge00 != -1 and coplanar_edge01 != -1:
 				edges.push_back(cut_face.corners[coplanar_edge00]);
@@ -375,9 +374,6 @@ func _make_clipped_solid(old_solid : DPMapSolid, plane : Plane) -> DPMapSolid:
 						working = true;
 						break;
 			# The edges now have all the corners on the 2nd coord.
-			
-			for i in range(0, edges.size(), 2):
-				print("%d %d" % [edges[i + 0], edges[i + 1]]);
 			
 			# Check if we need to flip it:
 			var new_normal : Vector3 = -(
