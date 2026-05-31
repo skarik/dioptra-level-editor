@@ -341,6 +341,8 @@ func _make_clipped_solid(old_solid : DPMapSolid, plane : Plane) -> DPMapSolid:
 					if coplanar_edge00 != -1 and coplanar_edge01 != -1:
 						break;
 			
+			print("%d %d / %d %d" % [coplanar_edge00, coplanar_edge01, cut_face.corners[coplanar_edge00], cut_face.corners[coplanar_edge01]]);
+			
 			# Store the coplanar edge:
 			if coplanar_edge00 != -1 and coplanar_edge01 != -1:
 				edges.push_back(cut_face.corners[coplanar_edge00]);
@@ -364,6 +366,8 @@ func _make_clipped_solid(old_solid : DPMapSolid, plane : Plane) -> DPMapSolid:
 						var old1 := edges[sort_index + 1];
 						edges[sort_index + 0] = edges[i + 0];
 						edges[sort_index + 1] = edges[i + 1];
+						edges[i + 0] = old0;
+						edges[i + 1] = old1;
 						# Set up next sorting iteration
 						previous_corner = edges[sort_index + 1];
 						sort_index += 2;
@@ -372,12 +376,15 @@ func _make_clipped_solid(old_solid : DPMapSolid, plane : Plane) -> DPMapSolid:
 						break;
 			# The edges now have all the corners on the 2nd coord.
 			
+			for i in range(0, edges.size(), 2):
+				print("%d %d" % [edges[i + 0], edges[i + 1]]);
+			
 			# Check if we need to flip it:
 			var new_normal : Vector3 = -(
 				(new_solid.points[edges[2]].v3 - new_solid.points[edges[0]].v3)
 				.cross(new_solid.points[edges[4]].v3 - new_solid.points[edges[0]].v3)
 				).normalized();
-			if new_normal.dot(plane.normal) > 0.0:
+			if new_normal.dot(plane.normal) < 0.0:
 				edges.reverse();
 				new_normal = -new_normal;
 			
