@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://bts6ia1mem5ul"]
+[gd_scene load_steps=7 format=3 uid="uid://bts6ia1mem5ul"]
 
 [ext_resource type="Script" uid="uid://88tx0flt4ny8" path="res://addons/dioptra/editor/DP_PanelTools.gd" id="1_dku0r"]
 [ext_resource type="Texture2D" uid="uid://sl8ox5v87pin" path="res://addons/dioptra/asset/default/tool-godot.svg" id="2_wko21"]
 [ext_resource type="Texture2D" uid="uid://6qf0h3qjt6si" path="res://addons/dioptra/asset/default/tool-cub.svg" id="3_wko21"]
 [ext_resource type="Texture2D" uid="uid://cvcls1jbkg80b" path="res://addons/dioptra/asset/default/tool-spray.svg" id="4_q0hs4"]
+[ext_resource type="Texture2D" uid="uid://dv2isa4jrai8q" path="res://addons/dioptra/asset/default/tool-cut.svg" id="5_blqt2"]
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_q0hs4"]
 resource_name = "tool_buttongroup"
@@ -47,9 +48,10 @@ layout_mode = 2
 tooltip_text = "Slice Solid"
 toggle_mode = true
 button_group = SubResource("ButtonGroup_q0hs4")
-icon = ExtResource("3_wko21")
+icon = ExtResource("5_blqt2")
 
 [node name="Hole" type="Button" parent="."]
+visible = false
 layout_mode = 2
 tooltip_text = "Make hole in solid"
 toggle_mode = true
@@ -57,6 +59,7 @@ button_group = SubResource("ButtonGroup_q0hs4")
 icon = ExtResource("3_wko21")
 
 [node name="Extrude" type="Button" parent="."]
+visible = false
 layout_mode = 2
 tooltip_text = "Extrude face."
 toggle_mode = true
