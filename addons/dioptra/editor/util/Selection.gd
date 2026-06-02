@@ -4,11 +4,13 @@ class_name DPEditorSelection
 ## Selection Raycast Logic:
 ## Get the subgizmo for the given camera and screenpos
 static func subgizmo_intersect_ray(map: DP_Map, camera: Camera3D, screen_pos: Vector2, selection_mode: DioptraEditorMainPlugin.SelectMode) -> int:
+	# If no map selected, return early 
+	if map == null or camera == null:
+		var selection := DPSelectionItem.new();
+		return DPHelpers.get_subgizmo(selection);
+	
 	var ray_pos := camera.project_ray_origin(screen_pos);
 	var ray_dir := camera.project_ray_normal(screen_pos);
-	
-	#var node3d := gizmo.get_node_3d();
-	#var map := node3d as DP_Map;
 	
 	var closest_solid := -1; # No selection
 	var closest_distance := 0.0;

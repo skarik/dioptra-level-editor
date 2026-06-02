@@ -225,7 +225,7 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 				am.get_surface_normal()[i_vertex] = normal;
 				
 			# Pull everything we need for UVs:
-			var material := materials[face.material];
+			var material := materials[face.material] if (face.material >= 0 and face.material < materials.size()) else null;
 			var positions := am.get_surface_vertex();
 			var uvs := am.get_surface_tex_uv();
 			var texture_scale1d := DioptraInterface.get_pixel_scale_top() * float(DioptraInterface.get_pixel_scale_div());
@@ -342,6 +342,9 @@ func rebuild_editor_decals(in_decal : DPMapDecal = null) -> void:
 	for decal in decals:
 		var am : DPArrayMesher = get_mesher.call(decal.material);
 		#var v0 := am.get_vertex_count();
+		
+		if decal.material < 0 or decal.material >= material_objects.size():
+			continue;
 		
 		# Grab all the info we need:
 		var material := material_objects[decal.material];

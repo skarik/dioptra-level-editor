@@ -342,7 +342,7 @@ func _add_box() -> void:
 	solid.faces[5].corners = [1, 5, 6, 2];
 	
 	# Set up face materials of the solid (done here due to copy-paste)
-	var material_index = _plugin.get_last_edited_map().get_or_add_material(_plugin._last_material);
+	var material_index = _plugin.get_or_add_last_edited_map().get_or_add_material(_plugin._last_material);
 	for face in solid.faces:
 		face.material = material_index;
 	

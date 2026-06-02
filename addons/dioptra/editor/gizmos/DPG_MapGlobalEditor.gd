@@ -173,7 +173,7 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 			
 		elif selection.type == DPHelpers.SelectionType.DECAL:
 			var decal := selection.decal;
-			var material := map.material_objects[decal.material];
+			var material := map.material_objects[decal.material] if (decal.material >= 0 and decal.material < map.material_objects.size()) else null;
 			var pixels_per_gdunit := DioptraInterface.get_pixel_scale_top() / float(DioptraInterface.get_pixel_scale_div());
 			var gdunit_per_dpunit := DioptraInterface.get_position_scale_div() / float(DioptraInterface.get_position_scale_top());
 			var decal_texel_size := DPHelpers.get_material_primary_texture_size(material);

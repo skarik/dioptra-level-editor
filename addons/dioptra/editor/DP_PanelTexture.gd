@@ -143,7 +143,7 @@ func update_ui_with_material(mat : Material) -> void:
 
 ## Updates the UI with the input face's parameters.
 func update_with_face_info(map : DP_Map, face : DPMapFace) -> void:
-	var mat := map.materials[face.material];
+	var mat := map.materials[face.material] if (face.material >= 0 and face.material < map.materials.size()) else null;
 	
 	# Update the material thumbnail
 	update_ui_with_material(mat);
@@ -165,7 +165,7 @@ func update_with_face_info(map : DP_Map, face : DPMapFace) -> void:
 	
 ## Updates the UI with the input decal's params
 func update_with_decal_info(map : DP_Map, decal : DPMapDecal) -> void:
-	var mat := map.material_objects[decal.material];
+	var mat := map.material_objects[decal.material] if (decal.material >= 0 and decal.material < map.material_objects.size()) else null;
 	
 	# Update the material thumbnail
 	update_ui_with_material(mat);

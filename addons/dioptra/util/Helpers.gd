@@ -65,7 +65,7 @@ static func get_subgizmo(selection : DPSelectionItem) -> int:
 ## Given a subgizmo_id from editor gizmo, returns the type of selection it is
 ## If the selection is invalid for the given map, will return none
 static func get_selection_type(map : DP_Map, subgizmo_id : int) -> SelectionType:
-	if subgizmo_id != -1:
+	if subgizmo_id != -1 and map != null:
 		var selection_type := (subgizmo_id >> SELBIT_TYPE_SHIFT) & SELBIT_TYPE_MASK;
 		if selection_type <= SelectionType.VERTEX:
 			var solid_id = subgizmo_id & SELBIT_INDEX_MASK;
