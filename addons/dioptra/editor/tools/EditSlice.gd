@@ -241,6 +241,9 @@ func _action_cut_solid() -> void:
 		map.editor_add_solid(solid_1);
 		map.editor_add_solid(solid_2);
 	
+		# Rebuild the map
+		map.rebuild_editor_map_deferred(map.solids.find(solid_1));
+		map.rebuild_editor_map_deferred(map.solids.find(solid_2));
 	pass
 
 func _make_clipped_solid(old_solid : DPMapSolid, plane : Plane) -> DPMapSolid:

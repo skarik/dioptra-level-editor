@@ -88,6 +88,14 @@ func get_surface_bone() -> PackedInt32Array:
 	return _surface_array[Mesh.ARRAY_BONES];
 func get_surface_weights() -> PackedFloat32Array:
 	return _surface_array[Mesh.ARRAY_WEIGHTS];
+func get_surface_custom0() -> PackedFloat32Array:
+	return _surface_array[Mesh.ARRAY_CUSTOM0];
+func get_surface_custom1() -> PackedFloat32Array:
+	return _surface_array[Mesh.ARRAY_CUSTOM1];
+func get_surface_custom2() -> PackedFloat32Array:
+	return _surface_array[Mesh.ARRAY_CUSTOM2];
+func get_surface_custom3() -> PackedFloat32Array:
+	return _surface_array[Mesh.ARRAY_CUSTOM3];
 func get_surface_index() -> PackedInt32Array:
 	return _surface_array[Mesh.ARRAY_INDEX];
 	
@@ -98,6 +106,9 @@ func get_vertex_count() -> int:
 	return _vertex_count;
 func get_index_count() -> int:
 	return _index_count;
+	
+func get_format() -> int:
+	return _types_contained;
 
 #------------------------------------------------------------------------------#
 

@@ -9,3 +9,5 @@ shader_parameter/enabled = true
 shader_parameter/grid_size = 1.0
 shader_parameter/cursor_position = Vector3(0, 0, 0)
 shader_parameter/cursor_radius = 0.0
+shader_parameter/enable_grid = false
+shader_parameter/enable_wires = false

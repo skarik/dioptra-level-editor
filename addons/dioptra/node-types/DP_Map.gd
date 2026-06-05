@@ -196,8 +196,10 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 		if not mesher_list.has(material_index):
 			mesher_list[material_index] = DPArrayMesher.new(
 				DPArrayMesher.TypeFlags.VERTEX | DPArrayMesher.TypeFlags.NORMAL | DPArrayMesher.TypeFlags.TEX_UV
-				| DPArrayMesher.TypeFlags.BONES
+				#| DPArrayMesher.TypeFlags.BONES
 				| DPArrayMesher.TypeFlags.INDEX
+				#| DPArrayMesher.TypeFlags.CUSTOM0
+				| DPArrayMesher.TypeFlags.COLOR
 			);
 		return mesher_list[material_index];
 	
@@ -240,11 +242,32 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 			# End UVs
 				
 			# Pack in solid info into the bones:
+			#for i_vertex in range(v0, am.get_vertex_count()):
+				#am.get_surface_bone()[i_vertex * 4 + 0] = i_solid;
+				#am.get_surface_bone()[i_vertex * 4 + 1] = i_solid >> 8;
+				#am.get_surface_bone()[i_vertex * 4 + 2] = i_face;
+				#am.get_surface_bone()[i_vertex * 4 + 3] = i_vertex;
+				
+			# Set up edge coords
+			var repeat_count : int = 6;
+			while (face_corners.size() % repeat_count) == 1 and repeat_count > 1:
+				repeat_count -= 1;
+			if repeat_count <= 1:
+				repeat_count = 6;
 			for i_vertex in range(v0, am.get_vertex_count()):
-				am.get_surface_bone()[i_vertex * 4 + 0] = i_solid;
-				am.get_surface_bone()[i_vertex * 4 + 1] = i_solid >> 8;
-				am.get_surface_bone()[i_vertex * 4 + 2] = i_face;
-				am.get_surface_bone()[i_vertex * 4 + 3] = i_vertex;
+				var i_vert_v0 := i_vertex - v0;
+				var stepped_index := (i_vert_v0 % repeat_count);
+				if stepped_index >= 4:
+					stepped_index = 6 - stepped_index;
+					
+				var coord : Vector4 = Vector4.ZERO;
+				coord[stepped_index] = 1.0;
+				
+				#am.get_surface_custom0()[i_vertex * 4 + 0] = coord.x;
+				#am.get_surface_custom0()[i_vertex * 4 + 1] = coord.y;
+				#am.get_surface_custom0()[i_vertex * 4 + 2] = coord.z;
+				#am.get_surface_custom0()[i_vertex * 4 + 3] = coord.w;
+				am.get_surface_color()[i_vertex] = Color(coord.x, coord.y, coord.z, coord.w);
 				
 			# Fill in the indicies
 			for i_corner in range(1, face.corners.size() - 1):
@@ -263,14 +286,19 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 		var am : DPArrayMesher = mesher_list[material_index];
 		# Only update if there's geometry in the index count
 		if am.get_index_count() > 0:
-			var surface_index = mesh.get_surface_count();
-			mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, am.get_surface_array());
+			#var surface_flags : int  = Mesh.ARRAY_CUSTOM_RGBA_FLOAT << Mesh.ARRAY_FORMAT_CUSTOM0_SHIFT;
+			#surface_flags |= am.get_format();
+			
+			var surface_index := mesh.get_surface_count();
+			#mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, am.get_surface_array(), [], {}, surface_flags);
+			mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, am.get_surface_array(), [], {}, 0);
 			mesh.surface_set_material(surface_index, null_mat if (material_index == -1) else material_list[material_index]);
 			has_data = true; # Mark the mesh is valid
 		pass
 	
 	# Apply the mesh
 	if has_data:
+		mesh.regen_normal_maps();
 		mesh.lightmap_unwrap(global_transform, 0.25);
 		mesh_instance.mesh = mesh;
 		
@@ -511,6 +539,8 @@ func editor_on_grid_changed(grid_size : int) -> void:
 func editor_on_grid_vis_enabled(grid_visible : bool) -> void:
 	var sm := _editor_material_grid as ShaderMaterial;
 	sm.set_shader_parameter("enabled", grid_visible);
+	sm.set_shader_parameter("enable_grid", grid_visible); #todo fix up
+	sm.set_shader_parameter("enable_wires", true); #todo fix up
 	
 func editor_on_cursor3d_moved(cursor_position : Vector3) -> void:
 	var sm := _editor_material_grid as ShaderMaterial;
