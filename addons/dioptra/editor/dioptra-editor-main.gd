@@ -254,6 +254,11 @@ func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 func _edit(object: Object) -> void:
 	if object is DP_Map:
 		_last_edited_map = object as DP_Map;
+	elif object is EditorDP_InternalTool:
+		DioptraInterface.gridwire_unhide(); # HACK for lightmaps
+		DioptraInterface.set_grid_size(DioptraInterface.get_grid_size()); # HACK for init
+	elif object == null:
+		_plugin_maphelper._queue_deselection_check = true; # HACK for lightmaps
 		
 #------------------------------------------------------------------------------#
 	

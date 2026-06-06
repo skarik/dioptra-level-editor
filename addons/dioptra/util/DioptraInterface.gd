@@ -159,12 +159,17 @@ var _grid_size : int = 16;
 var _angle_round : float = 15;
 # Is the grid visible
 var _grid_visible : bool = true;
+# Is the wire visible
+var _wire_visible : bool = false;
 
 # TODO: move these signals to a separate object these are not used outside of editor
 # Signal for grid size changing
 signal grid_size_changed(grid_size : int);
-# Signal for grid enable/disable
-signal grid_visual_enabled(enabled : bool);
+# Signal for grid options
+#signal grid_visual_enabled(enabled : bool);
+signal grid_options_changed(grid_enabled : bool, wire_enabled : bool);
+# Signal for disabling grid
+signal gridwire_disabled();
 
 ## Sets the current grid size
 static func set_grid_size(grid_size : int) -> void:
@@ -175,16 +180,33 @@ static func set_grid_size(grid_size : int) -> void:
 static func get_grid_size() -> int:
 	var inst := _get_instance();
 	return inst._grid_size;
+	
+static func gridwire_hide() -> void:
+	var inst := _get_instance();
+	EditorInterface.get_edited_scene_root().get_tree().process_frame.connect(func(): inst.gridwire_disabled.emit(), CONNECT_ONE_SHOT);
+static func gridwire_unhide() -> void:
+	var inst := _get_instance();
+	set_gridwire_options(inst._grid_visible, inst._wire_visible, true);
 
-static func set_grid_visible(visible : bool, change_setting : bool = true) -> void:
+#static func set_grid_visible(visible : bool, change_setting : bool = true) -> void:
+	#var inst := _get_instance();
+	#if change_setting:
+		#inst._grid_visible = visible;
+	##inst.grid_visual_enabled.emit(visible); # TODO only emit when value changes
+	#EditorInterface.get_edited_scene_root().get_tree().process_frame.connect(func(): inst.grid_visual_enabled.emit(visible), CONNECT_ONE_SHOT);
+#static func get_grid_visible() -> bool:
+	#var inst := _get_instance();
+	#return inst._grid_visible;
+static func set_gridwire_options(grid_visible : Variant, wire_visible : Variant, force_emit : bool = false) -> void:
 	var inst := _get_instance();
-	if change_setting:
-		inst._grid_visible = visible;
-	#inst.grid_visual_enabled.emit(visible); # TODO only emit when value changes
-	EditorInterface.get_edited_scene_root().get_tree().process_frame.connect(func(): inst.grid_visual_enabled.emit(visible), CONNECT_ONE_SHOT);
-static func get_grid_visible() -> bool:
-	var inst := _get_instance();
-	return inst._grid_visible;
+	if grid_visible != null and grid_visible is bool:
+		inst._grid_visible = grid_visible;
+	if wire_visible != null and wire_visible is bool:
+		inst._wire_visible = wire_visible;
+	# TODO only emit when value changes
+	if true or force_emit:
+		print(inst._grid_visible)
+		EditorInterface.get_edited_scene_root().get_tree().process_frame.connect(func(): inst.grid_options_changed.emit(inst._grid_visible, inst._wire_visible), CONNECT_ONE_SHOT);
 
 ## Rounds the given Vector3 to the current editor grid settings.
 static func get_grid_round_v3(vector : Vector3) -> Vector3:

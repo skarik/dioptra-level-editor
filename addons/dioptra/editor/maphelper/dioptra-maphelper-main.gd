@@ -49,7 +49,21 @@ func _process(delta: float) -> void:
 				#gizmo.get_subgizmo_selection()
 			_selection_subgizmo_restore = []; # TODO: figure this out later
 		_selection_restore = [];
-	
+		
+	# Deselection for HACK for lightmaps, turning off grid mat when delecting thinhgs
+	if _queue_deselection_check:
+		# check if we're selcting a EditorDP_InternalTool instead. If we are not, then we hide the grid
+		var has_selection : bool = false;
+		var selection := EditorInterface.get_selection();
+		if selection:
+			for node in selection.get_selected_nodes():
+				if node is DP_Map or node is EditorDP_InternalTool:
+					has_selection = true;
+					break;
+		
+		if not has_selection:
+			DioptraInterface.gridwire_hide(); # HACK for lightmaps
+			
 	pass
 
 #------------------------------------------------------------------------------#
@@ -57,6 +71,8 @@ func _process(delta: float) -> void:
 var _last_edited_map : DP_Map = null;
 var _selection_restore : Array[Node] = [];
 var _selection_subgizmo_restore : PackedInt32Array = [];
+
+var _queue_deselection_check : bool = false;
 
 #------------------------------------------------------------------------------#
 
@@ -69,10 +85,10 @@ func _handles(object: Object) -> bool:
 func _edit(object: Object) -> void:
 	if object is DP_Map:
 		_last_edited_map = object as DP_Map;
-		DioptraInterface.set_grid_visible(DioptraInterface.get_grid_visible(), false); # HACK for lightmaps
+		DioptraInterface.gridwire_unhide(); # HACK for lightmaps
 		DioptraInterface.set_grid_size(DioptraInterface.get_grid_size()); # HACK for init
 	elif object == null:
-		DioptraInterface.set_grid_visible(false, false); # HACK for lightmaps
+		_queue_deselection_check = true; # HACK for lightmaps
 	pass
 	
 func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:

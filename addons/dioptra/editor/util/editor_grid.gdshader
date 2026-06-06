@@ -120,11 +120,10 @@ void fragment() {
 		discard;
 	
 	ALPHA = alpha;
-	//ALBEDO = vec3(1, 1, 1);
-	ALBEDO = vec3(0, 0, 0);
+	ALBEDO = vec3(1, 1, 1);
 	EMISSION = emission;
 	RADIANCE = vec4(0.0);
 	IRRADIANCE = vec4(0.0);
-	//ALPHA_SCISSOR_THRESHOLD = 0.01;
+	//ALPHA_SCISSOR_THRESHOLD = 0.001;
 }
 

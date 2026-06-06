@@ -112,7 +112,6 @@ layout_mode = 2
 [node name="Wireframe" type="Button" parent="Box/View"]
 layout_mode = 2
 tooltip_text = "Show map wireframe"
-disabled = true
 toggle_mode = true
 icon = ExtResource("7_dfuey")
 
@@ -128,4 +127,5 @@ icon = ExtResource("8_oiw7u")
 [connection signal="pressed" from="Box/Selection/Edge" to="." method="onSelectionTypePressed" binds= [2]]
 [connection signal="pressed" from="Box/Selection/Vertex" to="." method="onSelectionTypePressed" binds= [3]]
 [connection signal="value_changed" from="Box/Editor/SnapSize" to="." method="on_grid_value_changed"]
+[connection signal="toggled" from="Box/View/Wireframe" to="." method="on_wire_vis_toggled"]
 [connection signal="toggled" from="Box/View/Grid" to="." method="on_grid_vis_toggled"]

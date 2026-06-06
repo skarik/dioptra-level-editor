@@ -181,10 +181,12 @@ func _rebuild_editor_map_group(group_index : int) -> void:
 		# Connect editor material callbacks
 		if not DioptraInterface.get_instance().grid_size_changed.is_connected(editor_on_grid_changed):
 			DioptraInterface.get_instance().grid_size_changed.connect(editor_on_grid_changed);
-		if not DioptraInterface.get_instance().grid_visual_enabled.is_connected(editor_on_grid_vis_enabled):
-			DioptraInterface.get_instance().grid_visual_enabled.connect(editor_on_grid_vis_enabled);
+		if not DioptraInterface.get_instance().grid_options_changed.is_connected(editor_on_update_grid_wire_settings):
+			DioptraInterface.get_instance().grid_options_changed.connect(editor_on_update_grid_wire_settings);
 		if not DioptraInterface.get_instance().cursor3d_moved.is_connected(editor_on_cursor3d_moved):
 			DioptraInterface.get_instance().cursor3d_moved.connect(editor_on_cursor3d_moved);
+		if not DioptraInterface.get_instance().gridwire_disabled.is_connected(editor_on_grid_wire_disable):
+			DioptraInterface.get_instance().gridwire_disabled.connect(editor_on_grid_wire_disable);
 		# TODO: do these callbacks go into another editor-only class
 		# These aren't exactly enabled during builds so maybe splitting the editor-only dioptrainterface is healthy long run
 	else:
@@ -536,11 +538,15 @@ func editor_on_grid_changed(grid_size : int) -> void:
 	var sm := _editor_material_grid as ShaderMaterial;
 	sm.set_shader_parameter("grid_size", DioptraInterface.get_grid_div_godot());
 	
-func editor_on_grid_vis_enabled(grid_visible : bool) -> void:
+func editor_on_grid_wire_disable() -> void:
 	var sm := _editor_material_grid as ShaderMaterial;
-	sm.set_shader_parameter("enabled", grid_visible);
-	sm.set_shader_parameter("enable_grid", grid_visible); #todo fix up
-	sm.set_shader_parameter("enable_wires", true); #todo fix up
+	sm.set_shader_parameter("enabled", false);
+	
+func editor_on_update_grid_wire_settings(grid_visible : bool, wires_visible : bool) -> void:
+	var sm := _editor_material_grid as ShaderMaterial;
+	sm.set_shader_parameter("enabled", grid_visible or wires_visible);
+	sm.set_shader_parameter("enable_grid", grid_visible);
+	sm.set_shader_parameter("enable_wires", wires_visible);
 	
 func editor_on_cursor3d_moved(cursor_position : Vector3) -> void:
 	var sm := _editor_material_grid as ShaderMaterial;

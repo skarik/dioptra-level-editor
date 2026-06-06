@@ -52,4 +52,6 @@ func on_grid_value_changed(gridValue : float) -> void:
 	DioptraInterface.set_grid_size(_last_grid_value);
 
 func on_grid_vis_toggled(enabled : bool) -> void:
-	DioptraInterface.set_grid_visible(enabled);	
+	DioptraInterface.set_gridwire_options(enabled, null);	
+func on_wire_vis_toggled(enabled : bool) -> void:
+	DioptraInterface.set_gridwire_options(null, enabled);	
