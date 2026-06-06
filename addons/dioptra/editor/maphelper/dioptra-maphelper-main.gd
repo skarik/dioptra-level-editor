@@ -123,6 +123,15 @@ func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 	# Update mouse
 	_editor_plugin.handle_general_editor_input(viewport_camera, event);
 	
+		# Update rightclick paste:
+	if event is InputEventMouseButton:
+		if event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
+			if event.shift_pressed:
+				if _editor_plugin._last_3d_mouse_hit and _editor_plugin._last_3d_mouse_hit_selection:
+					# Copy the texture options to only the hit face
+					_action_assign_last_properties(map, _editor_plugin._last_3d_mouse_hit_selection.face);
+					map.rebuild_editor_map_deferred(_editor_plugin._last_3d_mouse_hit_selection.solid_id);
+	
 	return EditorPlugin.AFTER_GUI_INPUT_PASS;
 	
 #------------------------------------------------------------------------------#
@@ -343,6 +352,16 @@ func _action_assign_uv_angle(editor : DioptraEditorMainPlugin, map : DP_Map, ang
 				map.rebuild_editor_map(map.solids[last_solid]);
 			return true;
 	return false;
+
+func _action_assign_last_properties(map : DP_Map, face : DPMapFace) -> void:
+	# Get the properties from the panel and assign those
+	face.material = map.get_or_add_material(_editor_plugin._last_material);
+	var texture_dock := _editor_plugin.DPDock_Texturing as DioptraEditorMainPlugin.cScript_Texturing;
+	face.uv_mode = texture_dock.get_current_mapping();
+	face.uv_offset = texture_dock.get_current_translation();
+	face.uv_rotation = texture_dock.get_current_rotation();
+	face.uv_scale = texture_dock.get_current_scale();
+	pass
 
 func do_assign_material(mat : Material) -> void:
 	var editor := _get_editor_plugin();

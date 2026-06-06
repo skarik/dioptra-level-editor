@@ -168,6 +168,7 @@ var _last_2d_mouse_position : Vector2;
 var _last_3d_mouse_position : Vector3;
 var _last_3d_mouse_normal : Vector3;
 var _last_3d_mouse_hit : bool;
+var _last_3d_mouse_hit_selection : DPSelectionItem;
 
 #------------------------------------------------------------------------------#
 
@@ -274,6 +275,8 @@ func handle_general_editor_input(viewport_camera: Camera3D, event: InputEvent) -
 		var selection_type := DPHelpers.get_selection_type(map, subgizmo_id);
 		var selection := DPHelpers.get_selection(map, subgizmo_id);
 		if selection_type == DPHelpers.SelectionType.FACE or selection_type == DPHelpers.SelectionType.SOLID:
+			_last_3d_mouse_hit_selection = selection;
+			
 			var solid := selection.solid;
 			var face := selection.face;
 			var normal : Vector3 = -(solid.points[face.corners[1]].v3 - solid.points[face.corners[0]].v3).cross(
@@ -291,6 +294,7 @@ func handle_general_editor_input(viewport_camera: Camera3D, event: InputEvent) -
 		
 		if _last_3d_mouse_hit:
 			DioptraInterface.get_instance().cursor3d_moved.emit(_last_3d_mouse_position);
+	
 	pass # End input pass
 	
 #------------------------------------------------------------------------------#

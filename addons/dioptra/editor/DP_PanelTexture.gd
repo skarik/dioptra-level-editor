@@ -149,9 +149,25 @@ func update_with_face_info(map : DP_Map, face : DPMapFace) -> void:
 	update_ui_with_material(mat);
 	
 	# TODO: Update the other items in the UI
+	if face.uv_mode == DPMapFace.UVMode.WORLD:
+		$"Container UVs/VContainer/GridContainer/OptionMapping".selected = 0;
+	elif face.uv_mode == DPMapFace.UVMode.FACE:
+		$"Container UVs/VContainer/GridContainer/OptionMapping".selected = 1;
+	elif face.uv_mode == DPMapFace.UVMode.HOTSPOT:
+		$"Container UVs/VContainer/GridContainer/OptionMapping".selected = 2;
+			
 	var uses_normals := face.uv_mode == DPMapFace.UVMode.WORLD;
 	$"Container UVs/VContainer/GridContainer/OptionNormalAxis".disabled = not uses_normals;
-	
+	if uses_normals:
+		if face.uv_subflags & DPMapFace.UV_WORLD_FLAG_AUTO:
+			$"Container UVs/VContainer/GridContainer/OptionNormalAxis".selected = 0;
+		elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_X:
+			$"Container UVs/VContainer/GridContainer/OptionNormalAxis".selected = 1;
+		elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Y:
+			$"Container UVs/VContainer/GridContainer/OptionNormalAxis".selected = 2;
+		elif face.uv_subflags & DPMapFace.UV_WORLD_FLAG_Z:
+			$"Container UVs/VContainer/GridContainer/OptionNormalAxis".selected = 3;
+			
 	# Update scale
 	_scale_spinbox_x.set_value_no_signal(face.uv_scale.x);
 	_scale_spinbox_y.set_value_no_signal(face.uv_scale.y);
@@ -191,6 +207,18 @@ func _on_mode_selection_changed(modeType : int) -> void:
 		#child_main_button.button_pressed = true;
 
 	pass
+	
+#------------------------------------------------------------------------------#
+# Current settings
+
+func get_current_mapping() -> DPMapFace.UVMode:
+	return $"Container UVs/VContainer/GridContainer/OptionMapping".get_item_id($"Container UVs/VContainer/GridContainer/OptionMapping".selected) as DPMapFace.UVMode;
+func get_current_translation() -> Vector2:
+	return Vector2(_offset_spinbox_x.value, _offset_spinbox_y.value);
+func get_current_rotation() -> float:
+	return wrapf(_angle_spinbox.value, -360, 360);
+func get_current_scale() -> Vector2:
+	return Vector2(_scale_spinbox_x.value, _scale_spinbox_y.value);
 	
 #------------------------------------------------------------------------------#
 # Texture transformation handlers
