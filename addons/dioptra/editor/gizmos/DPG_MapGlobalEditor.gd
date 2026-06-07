@@ -14,7 +14,7 @@ const cGlowSize = 8.0;
 func _init(editorPlugin : DioptraEditorMainPlugin, undoredo : EditorUndoRedoManager):
 	create_material("lines", Color(1.0, 1.0, 1.0), false, true, true);
 	create_material("lines_ztest", Color(1.0, 1.0, 1.0), false, false, true);
-	create_material("geo", Color(1.0, 1.0, 1.0, 0.5), false, false, true);
+	create_material("geo", Color(1.0, 1.0, 1.0, 1.0), false, false, true);
 	create_handle_material("handles");
 	_ghost_box = DPUBoxGhost.new();
 
@@ -318,6 +318,7 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 	if am.get_index_count() > 0:
 		var local_mesh : ArrayMesh = ArrayMesh.new();
 		local_mesh.add_surface_from_arrays(am.get_primitive_type(), am.get_surface_array());
+		get_material("geo", gizmo).render_priority = DPHelpers.RENDER_PRIORITY_SELECT_LINE;
 		gizmo.add_mesh(local_mesh, get_material("geo", gizmo));
 	if not handles.is_empty():
 		gizmo.add_handles(handles, get_material("handles", gizmo), []);

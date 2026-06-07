@@ -22,7 +22,7 @@ void vertex() {
 	v_barycentric = COLOR;
 }
 
-void get_grid(out float o_alpha, out vec3 o_emission)
+void get_grid(out float o_alpha, out vec3 o_emission, out vec3 o_diffuse)
 {
 	float eye_distance = v_world_position.w;
 	float pixel_scale = 0.5f * log(eye_distance * 2.0f + 1.0f); // going for aesthetics & usability, not correctness
@@ -52,22 +52,11 @@ void get_grid(out float o_alpha, out vec3 o_emission)
 	
 	o_alpha = clamp((world_gridline * 0.125 + world_majorgridline * 0.25) * (0.2 + cursor_brighten * 0.8), 0.0, 1.0);
 	o_emission = vec3(0.3, 0.3, 0.3) * (1.0 + cursor_brighten * 0.5);
+	o_diffuse = vec3(1.0, 1.0, 1.0);
 }
 
-void get_wire(out float o_alpha, out vec3 o_emission)
+void get_wire(out float o_alpha, out vec3 o_emission, out vec3 o_diffuse)
 {
-	//vec4 dBaryCoordX = dFdx(v_barycentric);
-	//vec4 dBaryCoordY = dFdy(v_barycentric);
-	//vec4 dBaryCoord  = sqrt(dBaryCoordX*dBaryCoordX + dBaryCoordY*dBaryCoordY);
-	//
-	////vec4 remap = smoothstep(vec4(0.0), dBaryCoord, v_barycentric);
-	//vec4 remap = mix(vec4(0.0), dBaryCoord, v_barycentric);
-	//float closest_edge = min(remap.x, min(remap.y, min(remap.z, remap.w)));
-	//
-	//o_alpha = clamp(closest_edge, 0.0, 1.0);
-	//o_emission = vec3(1.0, 0.0, 0.0);
-	//
-	
 	// Lines have to be from X to Y, or Y to Z, or Z to W, or W to X.
 	vec4 line_detect = vec4(
 		v_barycentric.x + v_barycentric.y,
@@ -79,12 +68,11 @@ void get_wire(out float o_alpha, out vec3 o_emission)
 	vec4 remap = step(deriv * 1.0, line_detect);
 	float closest_edge = min(remap.x, min(remap.y, min(remap.z, remap.w)));
 	
-	//o_alpha = 1.0;
-	//o_emission = vec3(closest_edge);
-	//o_emission = line_detect.xyz;
+	const vec3 LINE_COLOR = vec3(0.2, 0.65, 1.0);
 	
-	o_alpha = clamp(1.0 - closest_edge, 0.0, 1.0) * 0.5;
-	o_emission = vec3(1.0, 1.0, 1.0);
+	o_alpha = clamp(1.0 - closest_edge, 0.0, 1.0);
+	o_emission = LINE_COLOR;
+	o_diffuse = LINE_COLOR;
 }
 
 void fragment() {
@@ -95,32 +83,37 @@ void fragment() {
 	
 	float alpha = 0.0;
 	vec3 emission = vec3(0.0);
+	vec3 diffuse = vec3(1.0);
 	
 	if (enable_grid)
 	{
 		float grid_alpha = 0.0;
 		vec3 grid_emission = vec3(0.0);
-		get_grid(grid_alpha, grid_emission);
+		vec3 grid_diffuse = vec3(1.0);
+		get_grid(grid_alpha, grid_emission, grid_diffuse);
 		
 		alpha = grid_alpha;
 		emission = grid_emission;
+		diffuse = grid_diffuse;
 	}
 	
 	if (enable_wires)
 	{
 		float wire_alpha = 0.0;
 		vec3 wire_emission = vec3(0.0);
-		get_wire(wire_alpha, wire_emission);
+		vec3 wire_diffuse = vec3(0.0);
+		get_wire(wire_alpha, wire_emission, wire_diffuse);
 		
-		alpha = max(wire_alpha, alpha);
+		alpha = max(wire_alpha * 0.717, alpha);
 		emission = mix(emission, wire_emission, wire_alpha);
+		diffuse = mix(diffuse, wire_diffuse, wire_alpha);
 	}
 	
 	if (alpha <= 0.0)
 		discard;
 	
 	ALPHA = alpha;
-	ALBEDO = vec3(1, 1, 1);
+	ALBEDO = diffuse;
 	EMISSION = emission;
 	RADIANCE = vec4(0.0);
 	IRRADIANCE = vec4(0.0);
