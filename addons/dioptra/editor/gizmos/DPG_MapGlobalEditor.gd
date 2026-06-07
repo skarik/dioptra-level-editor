@@ -87,6 +87,7 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 				max_p = max_p.max(point.v3);
 			_ghost_box.box_start = min_p;
 			_ghost_box.box_end = max_p;
+			_ghost_box.dotted_edges = _is_transforming;
 			_ghost_box.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
 			
 		elif selection.type == DPHelpers.SelectionType.FACE:
@@ -115,8 +116,10 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 					max_p = max_p.max(solid.points[corner_index].v3);
 				_ghost_box.box_start = min_p;
 				_ghost_box.box_end = max_p;
+				_ghost_box.dotted_edges = false;
 				_ghost_box.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
 			else:
+				# Draw for entire solid when transforming
 				var min_p := solid.points[0].v3;
 				var max_p := solid.points[0].v3;
 				for point in solid.points:
@@ -124,6 +127,7 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 					max_p = max_p.max(point.v3);
 				_ghost_box.box_start = min_p;
 				_ghost_box.box_end = max_p;
+				_ghost_box.dotted_edges = true;
 				_ghost_box.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
 				
 			# Add glow mesh around the face

@@ -7,6 +7,7 @@ var icon_corners : bool = false;
 var show_size_labels : bool = true;
 var show_edge_highlight : bool = true;
 var show_face_highlight : bool = false;
+var dotted_edges : bool = false;
 var highlighted_face : int = -1; ## X-, X+, Y-, Y+, Z-, Z+ in order
 
 var _label_x : DPULabelPool.LabelNodeItem = null;
@@ -113,6 +114,8 @@ func update(viewport_camera : Camera3D) -> void:
 	
 	for i in _lines.colors.size():
 		_lines.colors[i] = color_w;
+	
+	_lines.dotted = dotted_edges;
 	
 	_lines.update();
 	
@@ -281,5 +284,7 @@ func _update_edge(viewport_camera : Camera3D) -> void:
 		_lines_edge.points[5] = center + Vector3(halfsize.x,  halfsize.y, halfsize.z) * signs;
 		_lines_edge.colors[4] = color_y;
 		_lines_edge.colors[5] = color_y;
+		
+		_lines_edge.dotted = dotted_edges;
 		
 		_lines_edge.update();

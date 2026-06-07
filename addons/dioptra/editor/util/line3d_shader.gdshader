@@ -3,6 +3,9 @@ render_mode skip_vertex_transform, unshaded, cull_disabled;
 
 const float AA_RADIUS = 0.707;
 
+varying float v_line_distance;
+varying float v_line_dotted;
+
 void vertex() {
 	// Start with default position
 	vec4 v_position = PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
@@ -29,6 +32,13 @@ void vertex() {
 	// Get final position
 	POSITION = v_position;
 
+	// Set up the dotted line params
+	float line_scale = 1.0;//dot(screen_normal.xy * pixel_size, screen_side);
+	line_scale *= screen_side_xy_len;
+	line_scale *= 1.0 / (1.0 + v_position.w);
+	v_line_distance = sqrt(UV.y) * abs(line_scale);
+	v_line_dotted = UV2.y;
+
 	// Pass other junk to pixel shader
 	COLOR = COLOR;
 	UV = vec2(UV.x, AA_RADIUS / (UV2.x + AA_RADIUS));
@@ -42,6 +52,10 @@ void fragment() {
 		min(1.0, in_width_grad / in_aa_width_ratio)
 		* min(1.0, (1.0 - in_width_grad) / in_aa_width_ratio);
 
+	if (v_line_dotted > 0.0)
+		if (fract(v_line_distance / v_line_dotted) < 0.5)
+			discard;
+	
 	// Apply!
 	ALBEDO = COLOR.rgb;
 	ALPHA = COLOR.a * alpha_blend;

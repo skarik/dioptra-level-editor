@@ -25,6 +25,7 @@ static func free_instance() -> void:
 class LinesItem:
 	var points : PackedVector3Array = [];
 	var colors : PackedColorArray = []; 
+	var dotted : bool = false;
 	var width : float = 2.0;
 	var segments : bool = false; ## Is this one big line or a collection of lines?
 	var dpi_aware : bool = true; ## Do we scale up and down for the DPI?
@@ -135,6 +136,12 @@ func rebuild_line_mesh() -> void:
 			var color_1 := item.colors[i + 1];
 		
 			var vertex_0 = am.get_vertex_count();
+			
+			var dotted : float = 0.0;
+			if item.dotted:
+				dotted = 0.05;
+				
+			var dist01_sqr := point_1.distance_squared_to(point_0);
 		
 			am.point_add(point_0);
 			am.point_add(point_0);
@@ -142,11 +149,11 @@ func rebuild_line_mesh() -> void:
 			am.point_add(point_1);
 			
 			am.quad_set_uvs(vertex_0, 
-				Vector2(0.0, 0.5), Vector2(1.0, 0.5),
-				Vector2(0.0, 0.5), Vector2(1.0, 0.5));
+				Vector2(0.0, 0.0), Vector2(1.0, 0.0),
+				Vector2(0.0, dist01_sqr), Vector2(1.0, dist01_sqr));
 			am.quad_set_uv2s(vertex_0, 
-				Vector2(item.width * dpi_scale, 0.0), Vector2(item.width * dpi_scale, 0.0),
-				Vector2(item.width * dpi_scale, 0.0), Vector2(item.width * dpi_scale, 0.0));
+				Vector2(item.width * dpi_scale, dotted), Vector2(item.width * dpi_scale, dotted),
+				Vector2(item.width * dpi_scale, dotted), Vector2(item.width * dpi_scale, dotted));
 			am.quad_set_normal(vertex_0, point_1 - point_0);
 			am.quad_set_colors(vertex_0, color_0, color_0, color_1, color_1);
 			
