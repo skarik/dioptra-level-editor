@@ -35,7 +35,7 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 		EditorInterface.get_selection().selection_changed.emit();
 	
 	gizmo.clear()
-	_ghost_box.cleanup();
+	#_ghost_box.cleanup();
 
 	var node3d := gizmo.get_node_3d()
 	var map := node3d as DP_Map;
@@ -107,15 +107,25 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 			pass
 			
 			# Draw ghost box for the face size
-			var min_p := solid.points[face.corners[0]].v3;
-			var max_p := solid.points[face.corners[0]].v3;
-			for corner_index in face.corners:
-				min_p = min_p.min(solid.points[corner_index].v3);
-				max_p = max_p.max(solid.points[corner_index].v3);
-			_ghost_box.box_start = min_p;
-			_ghost_box.box_end = max_p;
-			_ghost_box.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
-			
+			if not _is_transforming:
+				var min_p := solid.points[face.corners[0]].v3;
+				var max_p := solid.points[face.corners[0]].v3;
+				for corner_index in face.corners:
+					min_p = min_p.min(solid.points[corner_index].v3);
+					max_p = max_p.max(solid.points[corner_index].v3);
+				_ghost_box.box_start = min_p;
+				_ghost_box.box_end = max_p;
+				_ghost_box.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
+			else:
+				var min_p := solid.points[0].v3;
+				var max_p := solid.points[0].v3;
+				for point in solid.points:
+					min_p = min_p.min(point.v3);
+					max_p = max_p.max(point.v3);
+				_ghost_box.box_start = min_p;
+				_ghost_box.box_end = max_p;
+				_ghost_box.update(EditorInterface.get_editor_viewport_3d(0).get_camera_3d());
+				
 			# Add glow mesh around the face
 			var face_polygon : PackedVector3Array = [];
 			face_polygon.resize(corner_count);
@@ -356,6 +366,8 @@ func _subgizmos_intersect_ray(gizmo: EditorNode3DGizmo, camera: Camera3D, screen
 	var subgizmo_id = DPEditorSelection.subgizmo_intersect_ray(map, camera, screen_pos, selection_mode);
 	if subgizmo_id != -1:
 		_queue_selection_changed = true;
+	else:
+		_ghost_box.cleanup();
 		
 	return subgizmo_id;
 	

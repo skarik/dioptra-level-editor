@@ -81,7 +81,7 @@ static func request_update() -> void:
 func _request_update() -> void:
 	_line_rebuild_requested = true;
 	
-## Get a brand new label to draw the given text with
+## Get a brand new item to draw the line with
 static func get_line() -> LinesItem:
 	return get_instance()._get_line();
 
