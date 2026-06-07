@@ -94,6 +94,11 @@ func _edit(object: Object) -> void:
 func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 	var editor := _get_editor_plugin();
 	var map := editor.get_last_edited_map();
+	var has_focus := EditorInterface.get_base_control().get_window().has_focus();
+	
+	# No focus? Ignore inputs
+	if not has_focus:
+		return EditorPlugin.AFTER_GUI_INPUT_PASS;
 	
 	if editor._currentTool == null:
 		if event is InputEventKey:
