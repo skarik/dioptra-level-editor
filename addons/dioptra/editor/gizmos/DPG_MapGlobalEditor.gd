@@ -558,6 +558,9 @@ func _commit_subgizmos(gizmo: EditorNode3DGizmo, ids: PackedInt32Array, restores
 			_set_selection_delta_position(reference, selection, Vector3.ZERO);
 		
 	if not cancel:
+		var has_solids = false;
+		var has_decals = false;
+		
 		# Add item to the undo/redo stack
 		mUndoRedo.create_action("Transform Solid");
 		mUndoRedo.add_undo_property(map, "_editor_changed", true);
@@ -568,19 +571,31 @@ func _commit_subgizmos(gizmo: EditorNode3DGizmo, ids: PackedInt32Array, restores
 			var selection := DPHelpers.get_selection(map, subgizmo_id);
 			if not _transform_start.has(subgizmo_id):
 				continue; # Skip if no reference
+			# Housekeeping
+			if selection.solid_id != -1:
+				has_solids = true;
+			if selection.decal_id != -1:
+				has_decals = true;
 			# Set up the undo
 			var reference := _transform_start[subgizmo_id];
 			mUndoRedo.add_undo_method(self, "_set_selection_delta_position", reference.duplicate(), selection, Vector3.ZERO);
-			mUndoRedo.add_undo_method(map, "rebuild_editor_map_deferred", selection.solid_id);
+			if selection.solid_id != -1:
+				mUndoRedo.add_undo_method(map, "rebuild_editor_map_deferred", selection.solid_id);
+			if selection.decal_id != -1:
+				mUndoRedo.add_undo_method(map, "rebuild_editor_decals_deferred", selection.decal_id);
 			mUndoRedo.add_undo_method(map, "update_gizmos");
 			# Apply the do and set up the do
 			_start_subgizmo_transform_get_ref(gizmo, subgizmo_id, false);
 			mUndoRedo.add_do_method(self, "_set_selection_delta_position", _transform_start[subgizmo_id].duplicate(), selection, Vector3.ZERO);
-			mUndoRedo.add_do_method(map, "rebuild_editor_map_deferred", selection.solid_id);
+			if selection.solid_id != -1:
+				mUndoRedo.add_do_method(map, "rebuild_editor_map_deferred", selection.solid_id);
+			if selection.decal_id != -1:
+				mUndoRedo.add_do_method(map, "rebuild_editor_decals_deferred", selection.decal_id);
 			mUndoRedo.add_do_method(map, "update_gizmos");
 		# For both actions we also need the decals to finish updating
-		mUndoRedo.add_undo_method(map, "rebuild_editor_decals_deferred", -1);
-		mUndoRedo.add_do_method(map, "rebuild_editor_decals_deferred", -1);  # TODO: only rebuild the decals attached to the given solid
+		if not has_decals:
+			mUndoRedo.add_undo_method(map, "rebuild_editor_decals_deferred", -1);
+			mUndoRedo.add_do_method(map, "rebuild_editor_decals_deferred", -1);  # TODO: only rebuild the decals attached to the given solid
 		# Actually do the action
 		mUndoRedo.commit_action();
 	
