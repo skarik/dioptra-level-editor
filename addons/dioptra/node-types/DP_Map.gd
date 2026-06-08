@@ -75,6 +75,9 @@ func _editor_process(delta: float) -> void:
 	if not _editor_solid_update_requests.is_empty():
 		rebuild_editor_map(null);
 		_editor_solid_update_requests.clear();
+	if not _editor_decal_update_requests.is_empty():
+		rebuild_editor_decals(null);
+		_editor_decal_update_requests.clear();
 	pass
 
 #------------------------------------------------------------------------------#
@@ -88,7 +91,7 @@ class EditorMeshGroup:
 	func has_solid(map : DP_Map, solid : int) -> bool:
 		return solid >= start_solid and solid < end_solid;
 
-	pass
+var _editor_changed : bool = false;
 
 var _editor_mesh_groups : Array[EditorMeshGroup] = [];
 var _editor_mesh_instances : Array[MeshInstance3D] = [];
@@ -96,6 +99,7 @@ var _editor_mesh_instances_decals : MeshInstance3D = null;
 var _editor_material_grid : Material = null;
 
 var _editor_solid_update_requests : PackedInt32Array = [];
+var _editor_decal_update_requests : PackedInt32Array = [];
 
 ## Rebuilds the mesh groups.
 ##
@@ -119,8 +123,13 @@ func rebuild_editor_mesh_groups() -> void:
 	
 	pass
 
+## Queue a map rebuild to happen next frame
 func rebuild_editor_map_deferred(solid_index : int) -> void:
 	_editor_solid_update_requests.push_back(solid_index);
+	pass
+## Queue a map rebuild to happen next frame
+func rebuild_editor_decals_deferred(decal_index : int) -> void:
+	_editor_decal_update_requests.push_back(decal_index);
 	pass
 
 ## Rebuilds editor map, which is a separate case than the "baked" map but uses

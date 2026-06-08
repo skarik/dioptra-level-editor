@@ -417,6 +417,14 @@ class StartingTransform:
 	var points : Array[Vector3i] = [];
 	var extra0 : Vector3;
 	var extra1 : Vector3;
+	
+	func duplicate() -> StartingTransform:
+		var t = StartingTransform.new();
+		t.transform = transform;
+		t.points = points.duplicate();
+		t.extra0 = extra0;
+		t.extra1 = extra1;
+		return t;
 
 var _is_transforming : bool = false;
 var _transform_start : Dictionary[int, StartingTransform];
@@ -527,12 +535,14 @@ func _set_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int, transfo
 	pass
 
 func _commit_subgizmos(gizmo: EditorNode3DGizmo, ids: PackedInt32Array, restores: Array[Transform3D], cancel: bool) -> void:
-	print("commit subgizmos: cancel %s" % ("true" if cancel else "false"));
-	
 	_is_transforming = false;
 	
 	var node3d := gizmo.get_node_3d()
 	var map := node3d as DP_Map;
+	
+	if not map:
+		print("inalid map???")
+		return
 	
 	# Reset the positions to the reference:
 	if cancel:
@@ -548,8 +558,31 @@ func _commit_subgizmos(gizmo: EditorNode3DGizmo, ids: PackedInt32Array, restores
 			_set_selection_delta_position(reference, selection, Vector3.ZERO);
 		
 	if not cancel:
-		map.rebuild_editor_map(); #todo, grab a Solid from the map
-		map.rebuild_editor_decals(); # TODO: only rebuild the decals attached to the given solid
+		# Add item to the undo/redo stack
+		mUndoRedo.create_action("Transform Solid");
+		mUndoRedo.add_undo_property(map, "_editor_changed", true);
+		mUndoRedo.add_do_property(map, "_editor_changed", true);
+		# Add each object we're editing to the action
+		for subgizmo_id in ids:
+			print(map)
+			var selection := DPHelpers.get_selection(map, subgizmo_id);
+			if not _transform_start.has(subgizmo_id):
+				continue; # Skip if no reference
+			# Set up the undo
+			var reference := _transform_start[subgizmo_id];
+			mUndoRedo.add_undo_method(self, "_set_selection_delta_position", reference.duplicate(), selection, Vector3.ZERO);
+			mUndoRedo.add_undo_method(map, "rebuild_editor_map_deferred", selection.solid_id);
+			mUndoRedo.add_undo_method(map, "update_gizmos");
+			# Apply the do and set up the do
+			_start_subgizmo_transform_get_ref(gizmo, subgizmo_id, false);
+			mUndoRedo.add_do_method(self, "_set_selection_delta_position", _transform_start[subgizmo_id].duplicate(), selection, Vector3.ZERO);
+			mUndoRedo.add_do_method(map, "rebuild_editor_map_deferred", selection.solid_id);
+			mUndoRedo.add_do_method(map, "update_gizmos");
+		# For both actions we also need the decals to finish updating
+		mUndoRedo.add_undo_method(map, "rebuild_editor_decals_deferred", -1);
+		mUndoRedo.add_do_method(map, "rebuild_editor_decals_deferred", -1);  # TODO: only rebuild the decals attached to the given solid
+		# Actually do the action
+		mUndoRedo.commit_action();
 	
 	map.update_gizmos();
 	
