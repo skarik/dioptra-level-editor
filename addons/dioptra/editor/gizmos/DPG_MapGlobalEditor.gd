@@ -464,7 +464,6 @@ func _start_subgizmo_transform_get_ref(gizmo: EditorNode3DGizmo, subgizmo_id: in
 	
 func _start_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: int) -> void:
 	_start_subgizmo_transform_get_ref(gizmo, subgizmo_id, true);
-	print("start gizmo transform: %d" % subgizmo_id);
 	
 ## Sets the delta position for the given selection
 func _set_selection_delta_position(reference : StartingTransform, selection : DPSelectionItem, delta_position : Vector3) -> void:
@@ -561,13 +560,11 @@ func _commit_subgizmos(gizmo: EditorNode3DGizmo, ids: PackedInt32Array, restores
 		var has_solids = false;
 		var has_decals = false;
 		
-		# Add item to the undo/redo stack
-		mUndoRedo.create_action("Transform Solid");
+		mUndoRedo.create_action("Transform Solid or Decal");
 		mUndoRedo.add_undo_property(map, "_editor_changed", true);
 		mUndoRedo.add_do_property(map, "_editor_changed", true);
 		# Add each object we're editing to the action
 		for subgizmo_id in ids:
-			print(map)
 			var selection := DPHelpers.get_selection(map, subgizmo_id);
 			if not _transform_start.has(subgizmo_id):
 				continue; # Skip if no reference
@@ -748,14 +745,39 @@ func _commit_handle(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool, r
 			# Stop transformation:
 			if handle_id == HandleID.ROTATE:
 				decal.rotation = _transform_start[subgizmo_id].transform.basis.get_euler();
-				
 			if handle_id == HandleID.SCALE_X or handle_id == HandleID.SCALE_Y:
 				decal.scale = Vector2(_transform_start[subgizmo_id].extra0.x, _transform_start[subgizmo_id].extra0.y);
 	
-	map.update_gizmos();
-	
 	if not cancel:
-		map.rebuild_editor_decals(); # TODO: only rebuild the decals attached to the given solid
+		
+		mUndoRedo.create_action("Edit Decal");
+		mUndoRedo.add_undo_property(map, "_editor_changed", true);
+		mUndoRedo.add_do_property(map, "_editor_changed", true);
+		
+		# Get angle to starting position
+		for subgizmo_id in selection_list:
+			var selection := DPHelpers.get_selection(map, subgizmo_id);
+			var decal := selection.decal;
+			
+			# Skip non-decals
+			if not decal:
+				continue;
+				
+			if handle_id == HandleID.ROTATE:
+				mUndoRedo.add_undo_property(decal, "rotation", _transform_start[subgizmo_id].transform.basis.get_euler());
+				mUndoRedo.add_do_property(decal, "rotation", decal.rotation);
+			if handle_id == HandleID.SCALE_X or handle_id == HandleID.SCALE_Y:
+				mUndoRedo.add_undo_property(decal, "scale", Vector2(_transform_start[subgizmo_id].extra0.x, _transform_start[subgizmo_id].extra0.y));
+				mUndoRedo.add_do_property(decal, "scale", decal.scale);
+				
+			mUndoRedo.add_do_method(map, "rebuild_editor_decals_deferred", selection.decal_id);
+		
+		#map.rebuild_editor_decals(); # TODO: only rebuild the decals attached to the given solid
+		
+		mUndoRedo.commit_action();
+	
+	
+	map.update_gizmos();
 	
 	# Clear off the transform start state
 	_transform_start.clear();
