@@ -254,6 +254,12 @@ func _action_assign_uv_mode(editor : DioptraEditorMainPlugin, map : DP_Map, mode
 	var target_gizmo := _get_target_gizmo(editor, map);
 	if target_gizmo:
 		var subgizmo_selection := target_gizmo.get_subgizmo_selection();
+		if subgizmo_selection.is_empty():
+				return false;
+				
+		_undo_redo.create_action("UV Face/Decal Mode", UndoRedo.MERGE_DISABLE, map); 
+		#TODO: Give selections IDs to MERGE_ENDs
+		
 		# Apply it to all items in selection
 		for subgizmo_id in subgizmo_selection:
 			var selection := DPHelpers.get_selection(map, subgizmo_id);
@@ -261,21 +267,24 @@ func _action_assign_uv_mode(editor : DioptraEditorMainPlugin, map : DP_Map, mode
 			
 			if selection.type == DPHelpers.SelectionType.SOLID:
 				for face in selection.solid.faces:
-					face.uv_mode = mode;
+					_undo_redo.add_do_property(face, "uv_mode", mode);
+					_undo_redo.add_undo_property(face, "uv_mode", face.uv_mode);
 			elif selection.type == DPHelpers.SelectionType.FACE:
-				selection.face.uv_mode = mode;
+				_undo_redo.add_do_property(selection.face, "uv_mode", mode);
+				_undo_redo.add_undo_property(selection.face, "uv_mode", selection.face.uv_mode);
 			elif selection.type == DPHelpers.SelectionType.DECAL:
-				selection.decal.uv_mode = mode;
+				_undo_redo.add_do_property(selection.decal, "uv_mode", mode);
+				_undo_redo.add_undo_property(selection.decal, "uv_mode", selection.decal.uv_mode);
 				
 			# Queue rebuilding map
 			# TODO: check if there was a change
-			map.rebuild_editor_map_deferred(selection.solid_id);
+			_undo_redo.add_do_method(map, "rebuild_editor_map_deferred", selection.solid_id);
+			_undo_redo.add_undo_method(map, "rebuild_editor_map_deferred", selection.solid_id);
 		pass # End looping thru subgizmos
-				
-		# Rebuild the mesh with the new material
-		if not subgizmo_selection.is_empty():
-			return true;
-	
+		
+		# Perform the action now
+		_undo_redo.commit_action();
+		return true;
 	return false;
 
 func _action_assign_uv_properties(editor : DioptraEditorMainPlugin, map : DP_Map, scale : Vector2, offset : Vector2, angle : float) -> bool:
@@ -313,6 +322,8 @@ func _action_assign_uv_scale(editor : DioptraEditorMainPlugin, map : DP_Map, sca
 			_undo_redo.add_undo_method(map, "rebuild_editor_map_deferred", selection.solid_id);
 		pass # End selection loop
 		
+		# Perform the action now
+		_undo_redo.commit_action();
 		return true;
 	return false;
 func _action_assign_uv_offset(editor : DioptraEditorMainPlugin, map : DP_Map, offset : Vector2) -> bool:
@@ -358,7 +369,7 @@ func _action_assign_uv_angle(editor : DioptraEditorMainPlugin, map : DP_Map, ang
 			return false;
 		
 		# Start with the action
-		_undo_redo.create_action("UV Face Offset", UndoRedo.MERGE_DISABLE, map); 
+		_undo_redo.create_action("UV Face Angle", UndoRedo.MERGE_DISABLE, map); 
 		#TODO: Give selections IDs to MERGE_ENDs
 		
 		# Apply it to all items in selection
@@ -374,6 +385,7 @@ func _action_assign_uv_angle(editor : DioptraEditorMainPlugin, map : DP_Map, ang
 			elif selection_type == DPHelpers.SelectionType.FACE:
 				_undo_redo.add_do_property(sel_face, "uv_rotation", angle);
 				_undo_redo.add_undo_property(sel_face, "uv_rotation", sel_face.uv_rotation);
+				sel_face.uv_rotation = angle;
 			
 			# Queue rebuilding map
 			# TODO: check if there was a change
