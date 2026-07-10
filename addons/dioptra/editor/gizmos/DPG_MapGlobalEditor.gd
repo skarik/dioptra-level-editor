@@ -770,6 +770,7 @@ func _commit_handle(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool, r
 				mUndoRedo.add_undo_property(decal, "scale", Vector2(_transform_start[subgizmo_id].extra0.x, _transform_start[subgizmo_id].extra0.y));
 				mUndoRedo.add_do_property(decal, "scale", decal.scale);
 				
+			mUndoRedo.add_undo_method(map, "rebuild_editor_decals_deferred", selection.decal_id);
 			mUndoRedo.add_do_method(map, "rebuild_editor_decals_deferred", selection.decal_id);
 		
 		#map.rebuild_editor_decals(); # TODO: only rebuild the decals attached to the given solid
