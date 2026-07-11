@@ -224,6 +224,11 @@ func _action_assign_material_to_selected_solids(editor : DioptraEditorMainPlugin
 	var target_gizmo := _get_target_gizmo(editor, map);
 	if target_gizmo:
 		var subgizmo_selection := target_gizmo.get_subgizmo_selection();
+		if subgizmo_selection.is_empty():
+				return false;
+				
+		_undo_redo.create_action("UV Face/Decal Material", UndoRedo.MERGE_DISABLE, map); 
+				
 		# Apply it to all items in selection
 		for subgizmo_id in subgizmo_selection:
 			var selection := DPHelpers.get_selection(map, subgizmo_id);
@@ -232,20 +237,28 @@ func _action_assign_material_to_selected_solids(editor : DioptraEditorMainPlugin
 			
 			if selection.type == DPHelpers.SelectionType.SOLID:
 				for face in selection.solid.faces:
-					face.material = material_index;
+					_undo_redo.add_do_property(face, "material", material_index);
+					_undo_redo.add_undo_property(face, "material", face.material);
 			elif selection.type == DPHelpers.SelectionType.FACE:
-				selection.face.material = material_index;
+				_undo_redo.add_do_property(selection.face, "material", material_index);
+				_undo_redo.add_undo_property(selection.face, "material", selection.face.material);
 			elif selection.type == DPHelpers.SelectionType.DECAL:
-				selection.decal.material = material_index;
+				_undo_redo.add_do_property(selection.decal, "material", material_index);
+				_undo_redo.add_undo_property(selection.decal, "material", selection.decal.material);
 				
 			# Queue rebuilding map
 			# TODO: check if there was a change
-			map.rebuild_editor_map_deferred(selection.solid_id);
+			if selection.type != DPHelpers.SelectionType.DECAL:
+				_undo_redo.add_do_method(map, "rebuild_editor_map_deferred", selection.solid_id);
+				_undo_redo.add_undo_method(map, "rebuild_editor_map_deferred", selection.solid_id);
+			else:
+				_undo_redo.add_do_method(map, "rebuild_editor_decals_deferred", selection.decal_id);
+				_undo_redo.add_undo_method(map, "rebuild_editor_decals_deferred", selection.decal_id);
 		pass # End looping thru subgizmos
 				
-		# Rebuild the mesh with the new material
-		if not subgizmo_selection.is_empty():
-			return true;
+		# Perform the action now
+		_undo_redo.commit_action();
+		return true;
 	
 	return false;
 	
@@ -278,8 +291,12 @@ func _action_assign_uv_mode(editor : DioptraEditorMainPlugin, map : DP_Map, mode
 				
 			# Queue rebuilding map
 			# TODO: check if there was a change
-			_undo_redo.add_do_method(map, "rebuild_editor_map_deferred", selection.solid_id);
-			_undo_redo.add_undo_method(map, "rebuild_editor_map_deferred", selection.solid_id);
+			if selection.type != DPHelpers.SelectionType.DECAL:
+				_undo_redo.add_do_method(map, "rebuild_editor_map_deferred", selection.solid_id);
+				_undo_redo.add_undo_method(map, "rebuild_editor_map_deferred", selection.solid_id);
+			else:
+				_undo_redo.add_do_method(map, "rebuild_editor_decals_deferred", selection.decal_id);
+				_undo_redo.add_undo_method(map, "rebuild_editor_decals_deferred", selection.decal_id);
 		pass # End looping thru subgizmos
 		
 		# Perform the action now
@@ -399,13 +416,34 @@ func _action_assign_uv_angle(editor : DioptraEditorMainPlugin, map : DP_Map, ang
 	return false;
 
 func _action_assign_last_properties(map : DP_Map, face : DPMapFace) -> void:
+	var texture_dock := _editor_plugin.DPDock_Texturing as DioptraEditorMainPlugin.cScript_Texturing;
+	
+	# Start with the action
+	_undo_redo.create_action("Apply UV options to face", UndoRedo.MERGE_DISABLE, map); 
+	
+	# Add undo options with the current values
+	_undo_redo.add_undo_property(face, "material", face.material); # TODO: Track the map UV material list as well
+	_undo_redo.add_undo_property(face, "uv_mode", face.uv_mode);
+	_undo_redo.add_undo_property(face, "uv_offset", face.uv_offset);
+	_undo_redo.add_undo_property(face, "uv_rotation", face.uv_rotation);
+	_undo_redo.add_undo_property(face, "uv_scale", face.uv_scale);
+	
 	# Get the properties from the panel and assign those
 	face.material = map.get_or_add_material(_editor_plugin._last_material);
-	var texture_dock := _editor_plugin.DPDock_Texturing as DioptraEditorMainPlugin.cScript_Texturing;
 	face.uv_mode = texture_dock.get_current_mapping();
 	face.uv_offset = texture_dock.get_current_translation();
 	face.uv_rotation = texture_dock.get_current_rotation();
 	face.uv_scale = texture_dock.get_current_scale();
+	
+	# Add do actions with the new values
+	_undo_redo.add_do_property(face, "material", face.material); # TODO: Track the map UV material list as well
+	_undo_redo.add_do_property(face, "uv_mode", face.uv_mode);
+	_undo_redo.add_do_property(face, "uv_offset", face.uv_offset);
+	_undo_redo.add_do_property(face, "uv_rotation", face.uv_rotation);
+	_undo_redo.add_do_property(face, "uv_scale", face.uv_scale);
+	
+	# Perform the action now
+	_undo_redo.commit_action();
 	pass
 
 func do_assign_material(mat : Material) -> void:
