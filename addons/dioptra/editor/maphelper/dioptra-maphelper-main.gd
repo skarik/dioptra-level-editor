@@ -514,6 +514,13 @@ func _action_util_uv_align(editor : DioptraEditorMainPlugin, map : DP_Map, actio
 		var working_faces : Array[DPMapFace] = [];
 		
 		var subgizmo_selection := target_gizmo.get_subgizmo_selection();
+		if subgizmo_selection.is_empty():
+			return false;
+			
+		# Start with the action
+		# TODO Action ID and proper naming based on Enum
+		_undo_redo.create_action("UV Auto Action", UndoRedo.MERGE_DISABLE, map); 
+		
 		# Apply it to all items in selection
 		for subgizmo_id in subgizmo_selection:
 			var selection_type := DPHelpers.get_selection_type(map, subgizmo_id);
@@ -595,6 +602,12 @@ func _action_util_uv_align(editor : DioptraEditorMainPlugin, map : DP_Map, actio
 				var solid := working_solids[face_index];
 				var face := working_faces[face_index];
 				
+				# Add undo options with the current values
+				_undo_redo.add_undo_property(face, "uv_mode", face.uv_mode);
+				_undo_redo.add_undo_property(face, "uv_offset", face.uv_offset);
+				_undo_redo.add_undo_property(face, "uv_rotation", face.uv_rotation);
+				_undo_redo.add_undo_property(face, "uv_scale", face.uv_scale);
+				
 				# Let's start with align left:
 				var face_basis := DPHelpers.face_get_texture_basis(solid, face);
 				var face_basis_point := DPHelpers.face_get_texture_base_position(solid, face);
@@ -636,10 +649,15 @@ func _action_util_uv_align(editor : DioptraEditorMainPlugin, map : DP_Map, actio
 				if action & UVActionType.FitY:
 					face.uv_scale.y = ((planar_max.y - planar_min.y) * units_to_offset_scale2d.y) / texture_size.y;
 				
-		
-		# Rebuild the mesh with the new material
-		if not subgizmo_selection.is_empty():
-			return true;
+				# Add do properties with the new current values
+				_undo_redo.add_do_property(face, "uv_mode", face.uv_mode);
+				_undo_redo.add_do_property(face, "uv_offset", face.uv_offset);
+				_undo_redo.add_do_property(face, "uv_rotation", face.uv_rotation);
+				_undo_redo.add_do_property(face, "uv_scale", face.uv_scale);
+				
+		# Perform the action now
+		_undo_redo.commit_action();
+		return true;
 	return false;
 	
 	
